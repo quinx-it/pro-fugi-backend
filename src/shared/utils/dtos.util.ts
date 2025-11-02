@@ -1,0 +1,101 @@
+import {
+  applyDecorators,
+  BadRequestException,
+  createParamDecorator,
+  ExecutionContext,
+  ValidationError,
+} from '@nestjs/common';
+import { ApiBody, getSchemaPath } from '@nestjs/swagger';
+import { ClassConstructor, plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
+
+import { GLOBAL_VALIDATION_PIPE_OPTIONS } from '@/shared';
+
+export class DtosUtil {
+  static transformCommaSeparatedStringArray({
+    value,
+  }: {
+    value: unknown;
+  }): unknown {
+    if (typeof value === 'string') {
+      return value.split(',').map((item) => item.trim());
+    }
+
+    return value;
+  }
+
+  static async validateUnion<T extends object>(
+    payload: unknown,
+    candidates: ClassConstructor<T>[],
+  ): Promise<{ instance: T; errors: ValidationError[] } | null> {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const Candidate of candidates) {
+      const instance = plainToInstance(Candidate, payload);
+      // eslint-disable-next-line no-await-in-loop
+      const errors = await validate(instance, {
+        whitelist: true,
+        forbidNonWhitelisted: true,
+      });
+
+      if (errors.length === 0) {
+        return { instance, errors };
+      }
+    }
+
+    return null;
+  }
+
+  static body(
+    ...dtoClasses: ClassConstructor<object>[]
+  ): ParameterDecorator | PropertyDecorator {
+    return createParamDecorator(async (_: unknown, ctx: ExecutionContext) => {
+      const request = ctx.switchToHttp().getRequest();
+      const { body } = request;
+
+      // eslint-disable-next-line no-restricted-syntax
+      for (const dtoClass of dtoClasses) {
+        const instance = plainToInstance(dtoClass, body);
+        // eslint-disable-next-line no-await-in-loop
+        const errors = await validate(instance, GLOBAL_VALIDATION_PIPE_OPTIONS);
+
+        if (errors.length === 0) {
+          return instance; // Success: return typed instance
+        }
+      }
+
+      // Failed all — collect errors for debugging
+      const errorMessages = await Promise.all(
+        dtoClasses.map(async (DtoClass) => {
+          const instance = plainToInstance(DtoClass, body);
+          const errors = await validate(instance, { whitelist: true });
+
+          if (errors.length > 0) {
+            return `${DtoClass.name}: ${errors
+              .map((e) => Object.values(e.constraints || {}).join(', '))
+              .join('; ')}`;
+          }
+
+          return null;
+        }),
+      );
+
+      throw new BadRequestException(
+        `Validation failed for all schemas: ${errorMessages
+          .filter(Boolean)
+          .join(' | ')}`,
+      );
+    })();
+  }
+
+  static apiBody(
+    ...dtoClasses: ClassConstructor<object>[]
+  ): MethodDecorator & ClassDecorator {
+    return applyDecorators(
+      ApiBody({
+        schema: {
+          oneOf: dtoClasses.map((dto) => ({ $ref: getSchemaPath(dto) })),
+        },
+      }),
+    );
+  }
+}

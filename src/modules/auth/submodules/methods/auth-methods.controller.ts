@@ -1,5 +1,10 @@
 import { Controller, HttpStatus, Post } from '@nestjs/common';
-import { ApiTags, ApiResponse, ApiExtraModels } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiResponse,
+  ApiExtraModels,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 import { AuthEndPoint } from '@/modules/auth/constants';
 import { AuthMethodsService } from '@/modules/auth/submodules/methods/auth-methods.service';
@@ -13,6 +18,7 @@ import { DtosUtil } from '@/shared/utils/dtos.util';
 export class AuthMethodsController {
   constructor(private readonly service: AuthMethodsService) {}
 
+  @ApiBearerAuth()
   @DtosUtil.apiBody(CreatePhoneAuthMethodDto)
   @ApiResponse({ type: AuthTokensDto, status: HttpStatus.OK })
   @Post(AuthEndPoint.METHODS)

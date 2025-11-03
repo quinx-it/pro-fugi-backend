@@ -50,6 +50,13 @@ export const ERROR_MESSAGES = {
   AUTH_METHODS_SUBJECT_NOT_IN_USE_TEMPLATE: new Template<{ value: string }>(
     /* language=ejs */ 'No previously created auth methods associated with subject <%= value %> were found. This subject can only be used to instantiate a new user',
   ),
+  AUTH_METHODS_CANNOT_CREATE_NEW_USER_WHEN_AUTHORIZED:
+    'A confirmation code for a new user auth method cannot be created when user authorization is already provided. Must send an unauthorized request',
+  AUTH_METHODS_USER_HAS_ANOTHER_SUBJECT_TEMPLATE: new Template<{
+    value: string;
+  }>(
+    /* language=ejs */ 'Cannot create a confirmation code as the user had never had an auth method associated with subject <%= value %>',
+  ),
 
   // endregion
 

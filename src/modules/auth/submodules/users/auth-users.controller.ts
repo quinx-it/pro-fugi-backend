@@ -3,7 +3,6 @@ import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 
 import { AuthEndPoint } from '@/modules/auth/constants';
-import { AdminUserAuthGuard } from '@/modules/auth/submodules/roles/submodules/admins/guards';
 import { AccessTokenAuthGuard } from '@/modules/auth/submodules/tokens/guards/access-token-auth.guard';
 import { AuthUsersService } from '@/modules/auth/submodules/users/auth-users.service';
 import { UID } from '@/modules/auth/submodules/users/decorators';
@@ -16,8 +15,7 @@ export class AuthUsersController {
 
   @ApiResponse({ type: UserDto, status: HttpStatus.OK })
   @ApiBearerAuth()
-  @UseGuards(AdminUserAuthGuard)
-  @UseGuards(AccessTokenAuthGuard)
+  @UseGuards(AccessTokenAuthGuard.REQUIRED)
   @Get(AuthEndPoint.USERS_USER)
   async findOneByAuth(@UID() userId: number): Promise<UserDto> {
     const user = await this.service.findOne(userId, true);

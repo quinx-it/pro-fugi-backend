@@ -1,1 +1,1 @@
-export * from '@/modules/auth/submodules/roles/submodules/admins/dtos/admin-role.dto';
+export * from '@/modules/auth/submodules/roles/submodules/admins/dtos/auth-admin-role.dto';

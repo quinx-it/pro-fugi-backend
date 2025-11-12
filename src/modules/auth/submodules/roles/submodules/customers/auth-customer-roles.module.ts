@@ -2,16 +2,16 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthCustomerRolesService } from '@/modules/auth/submodules/roles/submodules/customers/auth-customer-roles.service';
-import { CustomerRoleEntity } from '@/modules/auth/submodules/roles/submodules/customers/entities/customer-role.entity';
-import { CustomerUserAuthGuard } from '@/modules/auth/submodules/roles/submodules/customers/guards/customer-user.auth-guard';
-import { CustomerRolesRepository } from '@/modules/auth/submodules/roles/submodules/customers/repositories/customer-roles.repository';
+import { AuthCustomerRoleEntity } from '@/modules/auth/submodules/roles/submodules/customers/entities/auth-customer-role.entity';
+import { CustomerRoleAuthGuard } from '@/modules/auth/submodules/roles/submodules/customers/guards/customer-role.auth-guard';
+import { AuthCustomerRolesRepository } from '@/modules/auth/submodules/roles/submodules/customers/repositories/auth-customer-roles.repository';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CustomerRoleEntity])],
+  imports: [TypeOrmModule.forFeature([AuthCustomerRoleEntity])],
   providers: [
     AuthCustomerRolesService,
-    CustomerRolesRepository,
-    CustomerUserAuthGuard,
+    AuthCustomerRolesRepository,
+    CustomerRoleAuthGuard,
   ],
   exports: [AuthCustomerRolesService],
 })

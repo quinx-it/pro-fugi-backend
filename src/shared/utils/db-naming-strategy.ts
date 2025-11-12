@@ -19,7 +19,10 @@ export class DbNamingStrategy
   }
 
   joinTableName(firstTableName: string, secondTableName: string): string {
-    return snakeCase(`${firstTableName}_${secondTableName}`);
+    const firstPlural = pluralize(snakeCase(firstTableName));
+    const secondPlural = pluralize(snakeCase(secondTableName));
+
+    return `${firstPlural}_of_${secondPlural}`;
   }
 
   joinTableColumnName(
@@ -27,7 +30,9 @@ export class DbNamingStrategy
     propertyName: string,
     columnName?: string,
   ): string {
-    return snakeCase(`${tableName}_${columnName || propertyName}`);
+    const baseName = snakeCase(pluralize.singular(tableName || propertyName));
+
+    return `${baseName}_id`;
   }
 
   joinColumnName(relationName: string, referencedColumnName: string): string {

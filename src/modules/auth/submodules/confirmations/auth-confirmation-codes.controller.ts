@@ -14,7 +14,8 @@ import {
   CreatePhoneConfirmationCodeDto,
 } from '@/modules/auth/submodules/confirmations/dtos';
 import { AccessTokenAuthGuard } from '@/modules/auth/submodules/tokens/guards/access-token-auth.guard';
-import { UID } from '@/modules/auth/submodules/users/decorators';
+import { AuthPayload } from '@/modules/auth/submodules/users/decorators';
+import { IAuthPayload } from '@/modules/auth/submodules/users/types';
 import { DtosUtil } from '@/shared/utils/dtos.util';
 
 @ApiTags(AuthEndPoint.PREFIX)
@@ -29,10 +30,12 @@ export class AuthConfirmationCodesController {
   @ApiResponse({ type: ConfirmationCodeDto, status: HttpStatus.CREATED })
   @Post(AuthEndPoint.CONFIRMATION_CODES)
   async createConfirmationCode(
-    @UID({ isNullable: true }) userId: number | null,
+    @AuthPayload({ isNullable: true }) authPayload: IAuthPayload,
     @DtosUtil.body(CreatePhoneConfirmationCodeDto)
     body: CreatePhoneConfirmationCodeDto,
   ): Promise<ConfirmationCodeDto> {
+    const { userId } = authPayload || { userId: null };
+
     const code = await this.service.createPhoneOne(userId, body);
 
     return plainToInstance(ConfirmationCodeDto, code);

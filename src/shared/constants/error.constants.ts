@@ -60,6 +60,15 @@ export const ERROR_MESSAGES = {
 
   // endregion
 
+  // region Products
+
+  PRODUCT_REVIEWS_ALREADY_EXISTS_FOR_ITEM:
+    'A review of this customer already exists for the product item. Delete it to be able to create a new one or edit the existing one',
+  PRODUCT_REVIEW_CUSTOMER_ID_MISMATCH:
+    'The customer is not the creator of the product review.',
+
+  // endregion
+
   // region DB
 
   DB_NO_UPDATE_VALUES_PROVIDED: 'No update values provided',
@@ -123,4 +132,15 @@ export const ERROR_MESSAGES = {
   ),
 
   // endregion
+
+  // Static
+
+  STATIC_DIRECTORY_MISMATCH_TEMPLATE: new Template<{
+    fileName: string;
+    dirName: string;
+  }>(
+    /* language=ejs */ `The static file <%= fileName %> does not belong to <%= dirName %> catalog`,
+  ),
+
+  //
 };

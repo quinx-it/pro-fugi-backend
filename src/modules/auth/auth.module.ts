@@ -14,6 +14,11 @@ import { AuthUsersModule } from '@/modules/auth/submodules/users/auth-users.modu
     AuthRolesModule,
     AuthUsersModule,
   ],
-  exports: [AuthMethodsModule, AuthTokensModule],
+  exports: [
+    AuthMethodsModule,
+    AuthTokensModule,
+    AuthUsersModule,
+    AuthRolesModule,
+  ],
 })
 export class AuthModule {}

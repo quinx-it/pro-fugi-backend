@@ -1,3 +1,3 @@
 import { ICreatable, IIdentifiable } from '@/shared';
 
-export interface IAdminRole extends IIdentifiable, ICreatable {}
+export interface IAuthAdminRole extends IIdentifiable, ICreatable {}

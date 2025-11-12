@@ -13,3 +13,7 @@ export interface IRange<T> {
 export interface IIsNullable {
   isNullable: boolean;
 }
+
+export interface IFile {
+  fileName: string;
+}

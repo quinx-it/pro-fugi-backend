@@ -9,7 +9,7 @@ import {
 } from '@/modules/auth/submodules/tokens/services';
 import { IAuthTokens } from '@/modules/auth/submodules/tokens/types';
 import { AuthUsersService } from '@/modules/auth/submodules/users/auth-users.service';
-import { UserDto } from '@/modules/auth/submodules/users/dtos/user.dto';
+import { AuthUserDto } from '@/modules/auth/submodules/users/dtos/auth-user.dto';
 import { AuthUsersUtil } from '@/modules/auth/submodules/users/utils';
 import { IAuthRefreshData } from '@/modules/auth/types';
 
@@ -32,9 +32,9 @@ export class AuthTokensService {
 
     await AuthMethodsUtil.isValidPassword(authMethod, password, true);
 
-    const { userId } = authMethod;
+    const { authUserId } = authMethod;
 
-    const user = await this.usersService.findOne(userId, true);
+    const user = await this.usersService.findOne(authUserId, true);
 
     const payload = AuthUsersUtil.getTokenPayload(user);
 
@@ -47,7 +47,7 @@ export class AuthTokensService {
   async createPairByRefresh(data: IAuthRefreshData): Promise<IAuthTokens> {
     const { refresh } = data;
 
-    const payload = await this.refreshService.validateOne<UserDto>(
+    const payload = await this.refreshService.validateOne<AuthUserDto>(
       refresh,
       true,
     );

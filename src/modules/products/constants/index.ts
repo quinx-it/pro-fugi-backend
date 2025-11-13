@@ -1,0 +1,16 @@
+export enum ProductsEndPoint {
+  ITEMS = 'products/items',
+  ITEM = 'products/items/:product_item_id',
+  ITEMS_IMAGES = 'products/items/images',
+  REVIEWS = 'products/items/:product_item_id/reviews',
+  REVIEW = 'products/items/:product_item_id/reviews/:product_review_id',
+  REVIEWS_IMAGES = 'products/items/reviews/images',
+  CATEGORIES = 'products/categories',
+  CATEGORY = 'products/categories/:product_category_id',
+  ORDERS = 'products/orders',
+  ORDERS_CUSTOMER = 'products/orders/as-customer',
+  ORDERS_ADMIN = 'products/orders/as-admin',
+  ORDER = 'products/orders/:product_order_id',
+  ORDER_ITEM = 'products/orders/:product_order_id/items/:product_order_item_id',
+  ORDER_ITEMS = 'products/orders/:product_order_id/items',
+}

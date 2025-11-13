@@ -9,9 +9,23 @@ import {
   DB_HOST_PORT,
 } from '@/configs/env';
 import { AuthPhoneMethodEntity } from '@/modules/auth/submodules/methods/submodules/phone/entities/auth-phone-method.entity';
-import { AdminRoleEntity } from '@/modules/auth/submodules/roles/submodules/admins/entities/admin-role.entity';
-import { CustomerRoleEntity } from '@/modules/auth/submodules/roles/submodules/customers/entities/customer-role.entity';
-import { UserEntity } from '@/modules/auth/submodules/users/entities';
+import { AuthAdminRoleEntity } from '@/modules/auth/submodules/roles/submodules/admins/entities/auth-admin-role.entity';
+import { AuthCustomerRoleEntity } from '@/modules/auth/submodules/roles/submodules/customers/entities/auth-customer-role.entity';
+import { AuthUserEntity } from '@/modules/auth/submodules/users/entities';
+import { ProductImageEntity } from '@/modules/products/submodules/items/entities/product-image.entity';
+import {
+  ProductOrderEntity,
+  ProductOrderItemEntity,
+  ProductOrdersSearchViewEntity,
+} from '@/modules/products/submodules/orders/entities';
+import {
+  ProductCategoryEntity,
+  ProductItemEntity,
+  ProductPriceEntity,
+  ProductReviewEntity,
+  ProductItemSearchViewEntity,
+} from '@/modules/products/submodules/reviews/entities';
+import { ProductReviewImageEntity } from '@/modules/products/submodules/reviews/entities/product-review-image.entity';
 import { DbEngine, MIGRATIONS_PATH } from '@/shared/constants/db.constants';
 import { DbNamingStrategy } from '@/shared/utils/db-naming-strategy';
 
@@ -24,9 +38,19 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
   database: DB_NAME,
   entities: [
     AuthPhoneMethodEntity,
-    UserEntity,
-    CustomerRoleEntity,
-    AdminRoleEntity,
+    AuthUserEntity,
+    AuthCustomerRoleEntity,
+    AuthAdminRoleEntity,
+    ProductItemEntity,
+    ProductPriceEntity,
+    ProductReviewEntity,
+    ProductItemSearchViewEntity,
+    ProductCategoryEntity,
+    ProductImageEntity,
+    ProductReviewImageEntity,
+    ProductOrderEntity,
+    ProductOrderItemEntity,
+    ProductOrdersSearchViewEntity,
   ],
   migrations: [MIGRATIONS_PATH],
   synchronize: false,

@@ -11,7 +11,7 @@ import {
   IAuthPhoneMethodData,
   IAuthPhoneMethod,
 } from '@/modules/auth/submodules/methods/submodules/phone/types';
-import { UserEntity } from '@/modules/auth/submodules/users/entities';
+import { AuthUserEntity } from '@/modules/auth/submodules/users/entities';
 import { DbType } from '@/shared';
 
 @Entity()
@@ -20,10 +20,10 @@ export class AuthPhoneMethodEntity implements IAuthPhoneMethod {
   id!: number;
 
   @Column(DbType.INTEGER)
-  userId!: number;
+  authUserId!: number;
 
-  @ManyToOne(() => UserEntity)
-  user!: UserEntity;
+  @ManyToOne(() => AuthUserEntity)
+  authUser!: AuthUserEntity;
 
   @Column(DbType.VARCHAR)
   phone!: string;

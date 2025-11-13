@@ -1,17 +1,17 @@
 import { AuthRole } from '@/modules/auth/submodules/roles/constants';
-import { IUser } from '@/modules/auth/submodules/users/types';
+import { IAuthUser } from '@/modules/auth/submodules/users/types';
 
 export class AuthRolesUtil {
-  static getRoles(user: IUser): AuthRole[] {
+  static getRoles(user: IAuthUser): AuthRole[] {
     const roles: AuthRole[] = [];
 
-    const { adminRole, customerRole } = user;
+    const { authAdminRole, authCustomerRole } = user;
 
-    if (adminRole) {
+    if (authAdminRole) {
       roles.push(AuthRole.ADMIN);
     }
 
-    if (customerRole) {
+    if (authCustomerRole) {
       roles.push(AuthRole.CUSTOMER);
     }
 

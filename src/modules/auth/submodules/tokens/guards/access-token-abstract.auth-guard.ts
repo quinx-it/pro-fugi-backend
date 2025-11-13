@@ -5,7 +5,7 @@ import { Request } from 'express';
 
 import { BEARER_PREFIX } from '@/modules/auth/submodules/tokens/constants';
 import { AuthAccessTokensService } from '@/modules/auth/submodules/tokens/services';
-import { UserTokenPayloadDto } from '@/modules/auth/submodules/users/dtos/user-token-payload.dto';
+import { AuthPayloadDto } from '@/modules/auth/submodules/users/dtos/auth-payload.dto';
 import { GLOBAL_VALIDATION_PIPE_OPTIONS } from '@/shared';
 
 @Injectable()
@@ -34,7 +34,7 @@ export abstract class AccessTokenAbstractAuthGuard implements CanActivate {
       return this.onTokenInvalid(request);
     }
 
-    const payloadDto = plainToInstance(UserTokenPayloadDto, payload);
+    const payloadDto = plainToInstance(AuthPayloadDto, payload);
 
     await validateOrReject(payloadDto, GLOBAL_VALIDATION_PIPE_OPTIONS);
 

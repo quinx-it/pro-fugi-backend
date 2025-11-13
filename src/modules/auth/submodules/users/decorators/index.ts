@@ -4,14 +4,17 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 
-import { UIDOptions } from '@/modules/auth/submodules/users/types';
+import {
+  IAuthPayload,
+  AuthPayloadOptions,
+} from '@/modules/auth/submodules/users/types';
 
-export const UID = createParamDecorator(
+export const AuthPayload = createParamDecorator(
   (
     // eslint-disable-next-line default-param-last
-    data: UIDOptions = { isNullable: false },
+    data: AuthPayloadOptions = { isNullable: false },
     ctx: ExecutionContext,
-  ): number | null => {
+  ): IAuthPayload | null => {
     const request = ctx.switchToHttp().getRequest();
 
     const { user } = request;
@@ -26,16 +29,6 @@ export const UID = createParamDecorator(
       throw new UnauthorizedException();
     }
 
-    const { id: userId } = user;
-
-    if (!userId) {
-      if (isNullable) {
-        return null;
-      }
-
-      throw new UnauthorizedException();
-    }
-
-    return userId;
+    return user;
   },
 );

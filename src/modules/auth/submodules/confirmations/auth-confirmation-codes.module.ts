@@ -1,5 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common';
 
+import { AuthTokensModule } from '@/modules/auth/submodules';
 import { AuthConfirmationCodesController } from '@/modules/auth/submodules/confirmations/auth-confirmation-codes.controller';
 import { AuthConfirmationCodesService } from '@/modules/auth/submodules/confirmations/auth-confirmation-codes.service';
 import { ConfirmationCodesRepository } from '@/modules/auth/submodules/confirmations/repositories/confirmation-codes.repository';
@@ -9,7 +10,12 @@ import { AuthUsersModule } from '@/modules/auth/submodules/users/auth-users.modu
 import { RedisModule } from '@/modules/redis';
 
 @Module({
-  imports: [RedisModule, forwardRef(() => AuthMethodsModule), AuthUsersModule],
+  imports: [
+    RedisModule,
+    forwardRef(() => AuthMethodsModule),
+    AuthUsersModule,
+    AuthTokensModule,
+  ],
   providers: [
     ConfirmationCodesRepository,
     NumericConfirmationCodesService,

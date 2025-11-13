@@ -18,6 +18,7 @@ export class AuthConfirmationCodesService {
   ) {}
 
   async createPhoneOne(
+    userId: number | null,
     data: ICreatePhoneConfirmationCode,
   ): Promise<IConfirmationCodeEntity> {
     const { phone, ...params } = data;
@@ -29,7 +30,14 @@ export class AuthConfirmationCodesService {
       false,
     );
 
-    if (authMethod && isNewUser) {
+    if (isNewUser && userId !== null) {
+      throw new AppException(
+        ERROR_MESSAGES.AUTH_METHODS_CANNOT_CREATE_NEW_USER_WHEN_AUTHORIZED,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (authMethod && isNewUser && userId === null) {
       throw AppException.fromTemplate(
         ERROR_MESSAGES.AUTH_METHODS_SUBJECT_ALREADY_IN_USE_TEMPLATE,
         {
@@ -39,12 +47,20 @@ export class AuthConfirmationCodesService {
       );
     }
 
-    if (!authMethod && !isNewUser) {
+    if (!authMethod && !isNewUser && userId === null) {
       throw AppException.fromTemplate(
         ERROR_MESSAGES.AUTH_METHODS_SUBJECT_NOT_IN_USE_TEMPLATE,
         {
           value: JSON.stringify({ phone }),
         },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (!isNewUser && !authMethod && userId !== null) {
+      throw AppException.fromTemplate(
+        ERROR_MESSAGES.AUTH_METHODS_USER_HAS_ANOTHER_SUBJECT_TEMPLATE,
+        { value: JSON.stringify({ phone }) },
         HttpStatus.BAD_REQUEST,
       );
     }

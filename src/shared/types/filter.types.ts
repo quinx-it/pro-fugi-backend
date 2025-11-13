@@ -10,8 +10,10 @@ export type IFilter<T> = {
     | `${string & K}${FilterSuffix.MAX}`]?: number | Date | Decimal;
 } & {
   [K in keyof T as
-    | `${string & K}$${typeof FilterSuffix.CONTAIN}`
-    | `${string & K}$${typeof FilterSuffix.CONTAINS}`]?: string;
+    | `${string & K}${typeof FilterSuffix.CONTAIN}`
+    | `${string & K}${typeof FilterSuffix.CONTAINS}`]?: string | number[];
 } & {
-  [K in keyof T as `${string & K}$${typeof FilterSuffix.IN}`]?: string;
+  [K in keyof T as `${string & K}${typeof FilterSuffix.IN}`]?:
+    | string[]
+    | number[];
 };

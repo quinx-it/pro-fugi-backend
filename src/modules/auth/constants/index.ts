@@ -3,5 +3,5 @@ export enum AuthEndPoint {
   TOKENS = 'tokens',
   CONFIRMATION_CODES = 'confirmation/codes',
   METHODS = 'methods',
-  USERS_USER = 'users/user',
+  CURRENT_USER = 'users/user',
 }

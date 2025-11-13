@@ -50,6 +50,22 @@ export const ERROR_MESSAGES = {
   AUTH_METHODS_SUBJECT_NOT_IN_USE_TEMPLATE: new Template<{ value: string }>(
     /* language=ejs */ 'No previously created auth methods associated with subject <%= value %> were found. This subject can only be used to instantiate a new user',
   ),
+  AUTH_METHODS_CANNOT_CREATE_NEW_USER_WHEN_AUTHORIZED:
+    'A confirmation code for a new user auth method cannot be created when user authorization is already provided. Must send an unauthorized request',
+  AUTH_METHODS_USER_HAS_ANOTHER_SUBJECT_TEMPLATE: new Template<{
+    value: string;
+  }>(
+    /* language=ejs */ 'Cannot create a confirmation code as the user had never had an auth method associated with subject <%= value %>',
+  ),
+
+  // endregion
+
+  // region Products
+
+  PRODUCT_REVIEWS_ALREADY_EXISTS_FOR_ITEM:
+    'A review of this customer already exists for the product item. Delete it to be able to create a new one or edit the existing one',
+  PRODUCT_REVIEW_CUSTOMER_ID_MISMATCH:
+    'The customer is not the creator of the product review.',
 
   // endregion
 
@@ -116,4 +132,15 @@ export const ERROR_MESSAGES = {
   ),
 
   // endregion
+
+  // Static
+
+  STATIC_DIRECTORY_MISMATCH_TEMPLATE: new Template<{
+    fileName: string;
+    dirName: string;
+  }>(
+    /* language=ejs */ `The static file <%= fileName %> does not belong to <%= dirName %> catalog`,
+  ),
+
+  //
 };

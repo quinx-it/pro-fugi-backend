@@ -8,7 +8,6 @@ import {
   IsNull,
   LessThanOrEqual,
   MoreThanOrEqual,
-  Not,
   Like,
 } from 'typeorm';
 
@@ -37,7 +36,7 @@ export class DbUtil {
     const { min, max } = range;
 
     if (max === undefined && min === undefined) {
-      return Not(IsNull());
+      return undefined;
     }
 
     if (max !== undefined && min !== undefined) {
@@ -139,6 +138,10 @@ export class DbUtil {
   static sortToFindOptionsOrder<T>(sort: ISort<T>): FindOptionsOrder<T> {
     const { descending, sortBy } = sort;
 
+    if (sortBy === undefined) {
+      return {};
+    }
+
     const value = descending ? SortOrder.DESCENDING : SortOrder.ASCENDING;
 
     // @ts-expect-error TODO fix typings
@@ -208,4 +211,17 @@ export class DbUtil {
   }
 
   static UNDEFINED_TAKE_AND_SKIP = { take: undefined, skip: undefined };
+
+  static getRelatedEntityOrThrow<
+    TEntity extends object,
+    TRelatedEntity extends object,
+  >(entity: TEntity, relatedEntityName: keyof TEntity): TRelatedEntity {
+    const relatedEntity = entity[relatedEntityName];
+
+    if (relatedEntity === undefined) {
+      throw new Error('Cannot get related entity');
+    }
+
+    return relatedEntity as TRelatedEntity;
+  }
 }

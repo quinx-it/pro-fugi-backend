@@ -1,15 +1,39 @@
+import { IAuthAdminRole } from '@/modules/auth/submodules/roles/submodules/admins/types';
+import { IAuthCustomerRole } from '@/modules/auth/submodules/roles/submodules/customers/types';
 import { AuthRolesUtil } from '@/modules/auth/submodules/roles/utils';
-import {
-  IUser,
-  IUserTokenPayload,
-} from '@/modules/auth/submodules/users/types';
+import { IAuthUser, IAuthPayload } from '@/modules/auth/submodules/users/types';
+import { DbUtil } from '@/shared';
 
 export class AuthUsersUtil {
-  static getTokenPayload(user: IUser): IUserTokenPayload {
+  static getTokenPayload(user: IAuthUser): IAuthPayload {
     const { id } = user;
+
+    const authCustomerRole = DbUtil.getRelatedEntityOrThrow<
+      IAuthUser,
+      IAuthCustomerRole
+    >(user, 'authCustomerRole');
+
+    const authAdminRole = DbUtil.getRelatedEntityOrThrow<
+      IAuthUser,
+      IAuthAdminRole
+    >(user, 'authAdminRole');
+
+    const { id: customerRoleId } = authCustomerRole || { id: null };
+    const { id: adminRoleId } = authAdminRole || { id: null };
 
     const roles = AuthRolesUtil.getRoles(user);
 
-    return { id, roles };
+    return { userId: id, roles, adminRoleId, customerRoleId };
+  }
+
+  static toPlain(object: IAuthUser): IAuthUser {
+    return {
+      id: object.id,
+      authAdminRole: object.authAdminRole,
+      authCustomerRole: object.authCustomerRole,
+      authPhoneMethods: object.authPhoneMethods,
+      phone: object.phone,
+      createdAt: object.createdAt,
+    };
   }
 }

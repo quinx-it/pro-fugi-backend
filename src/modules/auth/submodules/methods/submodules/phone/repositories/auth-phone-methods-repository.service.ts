@@ -54,7 +54,7 @@ export class AuthPhoneMethodsRepository {
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IAuthPhoneMethod[]> {
     const authMethods = await manager.find(AuthPhoneMethodEntity, {
-      where: { userId, phone },
+      where: { authUserId: userId, phone },
     });
 
     return authMethods;
@@ -67,7 +67,7 @@ export class AuthPhoneMethodsRepository {
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IAuthPhoneMethod> {
     const authMethod = await manager.save(AuthPhoneMethodEntity, {
-      userId,
+      authUserId: userId,
       password,
       phone,
     });

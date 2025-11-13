@@ -8,7 +8,7 @@ import {
 import { Request } from 'express';
 
 import { AuthRole } from '@/modules/auth/submodules/roles/constants';
-import { IUserTokenPayload } from '@/modules/auth/submodules/users/types';
+import { IAuthPayload } from '@/modules/auth/submodules/users/types';
 import { AppException, ERROR_MESSAGES } from '@/shared';
 
 @Injectable()
@@ -24,7 +24,7 @@ export abstract class RoleAuthGuard<TAuthRole extends AuthRole>
       throw new UnauthorizedException();
     }
 
-    const { roles } = user as IUserTokenPayload;
+    const { roles } = user as IAuthPayload;
 
     const { authRole } = this;
 

@@ -8,12 +8,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { bullConfig, cacheConfig } from '@/configs';
 import { typeOrmConfig } from '@/configs/db.config';
 import { AuthModule } from '@/modules/auth/auth.module';
+import { ProductsModule } from '@/modules/products';
 import { RedisModule } from '@/modules/redis/redis.module';
 import { SERVE_STATIC_OPTIONS, UniversalExceptionFilter } from '@/shared';
 
 @Module({
   imports: [
     AuthModule,
+    ProductsModule,
 
     RedisModule,
     TypeOrmModule.forRoot(typeOrmConfig),

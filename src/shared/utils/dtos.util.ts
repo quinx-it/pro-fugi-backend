@@ -5,9 +5,9 @@ import {
   ExecutionContext,
   ValidationError,
 } from '@nestjs/common';
-import { ApiBody, getSchemaPath } from '@nestjs/swagger';
+import { ApiBody, ApiQuery, getSchemaPath } from '@nestjs/swagger';
 import { ClassConstructor, plainToInstance } from 'class-transformer';
-import { validate } from 'class-validator';
+import { validate, ValidateIf } from 'class-validator';
 
 import { GLOBAL_VALIDATION_PIPE_OPTIONS } from '@/shared';
 
@@ -19,6 +19,21 @@ export class DtosUtil {
   }): unknown {
     if (typeof value === 'string') {
       return value.split(',').map((item) => item.trim());
+    }
+
+    return value;
+  }
+
+  static transformCommaSeparatedIntArray({
+    value,
+  }: {
+    value: unknown;
+  }): unknown {
+    if (typeof value === 'string') {
+      return value
+        .split(',')
+        .map((item) => item.trim())
+        .map((item) => parseInt(item, 10));
     }
 
     return value;
@@ -92,6 +107,64 @@ export class DtosUtil {
   ): MethodDecorator & ClassDecorator {
     return applyDecorators(
       ApiBody({
+        schema: {
+          oneOf: dtoClasses.map((dto) => ({ $ref: getSchemaPath(dto) })),
+        },
+      }),
+    );
+  }
+
+  static isNullable(): PropertyDecorator {
+    return (target: object, propertyKey: string | symbol) => {
+      ValidateIf((obj) => obj[propertyKey as string] !== null)(
+        target,
+        propertyKey,
+      );
+    };
+  }
+
+  static query(
+    ...dtoClasses: ClassConstructor<object>[]
+  ): ParameterDecorator | PropertyDecorator {
+    return createParamDecorator(async (_: unknown, ctx: ExecutionContext) => {
+      const request = ctx.switchToHttp().getRequest();
+      const { query } = request;
+
+      for (const dtoClass of dtoClasses) {
+        const instance = plainToInstance(dtoClass, query);
+        const errors = await validate(instance, GLOBAL_VALIDATION_PIPE_OPTIONS);
+
+        if (errors.length === 0) return instance;
+      }
+
+      const errorMessages = await Promise.all(
+        dtoClasses.map(async (DtoClass) => {
+          const instance = plainToInstance(DtoClass, query);
+          const errors = await validate(instance, { whitelist: true });
+
+          if (errors.length > 0) {
+            return `${DtoClass.name}: ${errors
+              .map((e) => Object.values(e.constraints || {}).join(', '))
+              .join('; ')}`;
+          }
+
+          return null;
+        }),
+      );
+
+      throw new BadRequestException(
+        `Query validation failed for all schemas: ${errorMessages
+          .filter(Boolean)
+          .join(' | ')}`,
+      );
+    })();
+  }
+
+  static apiQuery(
+    ...dtoClasses: ClassConstructor<object>[]
+  ): MethodDecorator & ClassDecorator {
+    return applyDecorators(
+      ApiQuery({
         schema: {
           oneOf: dtoClasses.map((dto) => ({ $ref: getSchemaPath(dto) })),
         },

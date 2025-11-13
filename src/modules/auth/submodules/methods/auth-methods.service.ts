@@ -38,16 +38,16 @@ export class AuthMethodsService {
 
     const result = await this.dataSource.transaction(async (manager) => {
       const userId =
-        oldAuthMethod?.userId ||
+        oldAuthMethod?.authUserId ||
         (await this.usersService.createOne(manager)).id;
 
-      const { customerRole } = await this.usersService.findOne(
+      const { authCustomerRole } = await this.usersService.findOne(
         userId,
         true,
         manager,
       );
 
-      if (customerRole === null) {
+      if (authCustomerRole === null) {
         await this.customerRolesService.createOne(userId, manager);
       }
 

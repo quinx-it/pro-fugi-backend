@@ -57,6 +57,9 @@ export const ERROR_MESSAGES = {
   }>(
     /* language=ejs */ 'Cannot create a confirmation code as the user had never had an auth method associated with subject <%= value %>',
   ),
+  AUTH_ROLE_REQUIRED_TEMPLATE: new Template<{ role: string }>(
+    /* language=ejs */ 'An auth of role <%= role %> is required',
+  ),
 
   // endregion
 
@@ -66,6 +69,35 @@ export const ERROR_MESSAGES = {
     'A review of this customer already exists for the product item. Delete it to be able to create a new one or edit the existing one',
   PRODUCT_REVIEW_CUSTOMER_ID_MISMATCH:
     'The customer is not the creator of the product review.',
+  PRODUCT_SPECS_SCHEMA_ITEM_NAME_DUPLICATES:
+    'Product category specification scheme must not have duplicate keys',
+  PRODUCT_SPECS_KEY_NOT_ALLOWED_BY_SCHEMA_TEMPLATE: new Template<{
+    value: string;
+  }>(
+    /* language=ejs */ `Specification key <%= value %> is not allowed by product category schema.`,
+  ),
+  PRODUCT_SPECS_SCHEMA_ITEM_CANNOT_HAVE_BOTH_ENUM_AND_RANGE:
+    'Cannot have both not-nullish range and enumeration params in a product specification schema',
+  PRODUCT_ITEMS_SPECS_SEARCH_REQUIRES_CATEGORY_ID:
+    'Product items specification search requires categoryId to be provided',
+  PRODUCT_ITEM_HAS_NO_RELEVANT_PRICE_TEMPLATE: new Template<{
+    id: string;
+    name: string;
+  }>(
+    /* language=ejs */ 'Product item { "id": <%= id %>, "name": <%= name %> } has no relevant price',
+  ),
+  PRODUCT_ITEM_NOT_ENOUGH_IN_STOCK: new Template<{
+    id: string;
+    name: string;
+  }>(
+    /* language=ejs */ 'Product item { "id": <%= id %>, "name": <%= name %> } in stock number is not enough to satisfy the order',
+  ),
+  PRODUCT_ITEM_IS_ARCHIVED: new Template<{
+    id: string;
+    name: string;
+  }>(
+    /* language=ejs */ 'Product item { "id": <%= id %>, "name": <%= name %> } is archived',
+  ),
 
   // endregion
 
@@ -73,6 +105,9 @@ export const ERROR_MESSAGES = {
 
   DB_NO_UPDATE_VALUES_PROVIDED: 'No update values provided',
   DB_RANGE_INVALID: 'Range invalid',
+  DB_CANNOT_GET_RELATED_ENTITY_TEMPLATE: new Template<{
+    relatedEntityName: string;
+  }>(/* language=ejs */ `Cannot get related entity <%= relatedEntityName %>`),
 
   // endregion
 
@@ -129,6 +164,9 @@ export const ERROR_MESSAGES = {
   ),
   AT_LEAST_ONE_MUST_BE_NOT_NULL_TEMPLATE: new Template<{ value: string }>(
     /* language=ejs */ `At least one of the values must be not null <%= value %>`,
+  ),
+  MUST_BE_IN_TEMPLATE: new Template<{ value: string; list: string }>(
+    /* language=ejs */ `<%= value %> must be in <%= list %>`,
   ),
 
   // endregion

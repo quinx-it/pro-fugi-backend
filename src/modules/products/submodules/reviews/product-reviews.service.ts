@@ -3,7 +3,6 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
 
 import { IAuthCustomerRole } from '@/modules/auth/submodules/roles/submodules/customers/types';
-import { AuthUsersService } from '@/modules/auth/submodules/users/auth-users.service';
 import { ProductReviewsImagesRepository } from '@/modules/products/submodules/reviews/repositories';
 import { ProductReviewsRepository } from '@/modules/products/submodules/reviews/repositories/product-reviews.repository';
 import {
@@ -79,7 +78,13 @@ export class ProductReviewsService {
 
     if (productReview?.productItemId !== productItemId) {
       if (throwIfNotFound) {
-        throw new Error('Not found');
+        throw AppException.fromTemplate(
+          ERROR_MESSAGES.NOT_FOUND_TEMPLATE,
+          {
+            value: 'Product review',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       return null;

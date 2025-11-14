@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNumber, ValidateIf } from 'class-validator';
+import { IsEnum, IsNumber } from 'class-validator';
 
 import { AuthRole } from '@/modules/auth/submodules/roles/constants';
 import { IAuthPayload } from '@/modules/auth/submodules/users/types';

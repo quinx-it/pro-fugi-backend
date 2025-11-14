@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsNumber, IsOptional, ValidateNested } from 'class-validator';
+import { IsInt, IsNumber, ValidateNested } from 'class-validator';
 
 import { ICreateProductOrderItem } from '@/modules/products/submodules/orders/types';
 import { IdentityDto } from '@/shared/dtos/identity.dto';

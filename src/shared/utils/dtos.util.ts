@@ -130,11 +130,24 @@ export class DtosUtil {
       const request = ctx.switchToHttp().getRequest();
       const { query } = request;
 
-      for (const dtoClass of dtoClasses) {
-        const instance = plainToInstance(dtoClass, query);
-        const errors = await validate(instance, GLOBAL_VALIDATION_PIPE_OPTIONS);
+      let validOne: unknown;
 
-        if (errors.length === 0) return instance;
+      await Promise.all(
+        dtoClasses.map(async (dtoClass) => {
+          const instance = plainToInstance(dtoClass, query);
+          const errors = await validate(
+            instance,
+            GLOBAL_VALIDATION_PIPE_OPTIONS,
+          );
+
+          if (errors.length === 0) {
+            validOne = instance;
+          }
+        }),
+      );
+
+      if (validOne) {
+        return validOne;
       }
 
       const errorMessages = await Promise.all(

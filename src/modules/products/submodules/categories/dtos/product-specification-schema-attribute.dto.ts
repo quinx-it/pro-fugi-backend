@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsString, ValidateIf, ValidateNested } from 'class-validator';
+import { IsArray, IsString, ValidateNested } from 'class-validator';
 
 import { IProductSpecificationSchemaAttribute } from '@/modules/products/submodules/items/types';
 import { RangeDto } from '@/shared/dtos/range.dto';

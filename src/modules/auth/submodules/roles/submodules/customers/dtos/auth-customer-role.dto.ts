@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
-import { IsInt, IsString, ValidateIf } from 'class-validator';
+import { IsInt, IsString } from 'class-validator';
 
 import { IAuthCustomerRole } from '@/modules/auth/submodules/roles/submodules/customers/types';
 import { IProductOrder } from '@/modules/products/submodules/orders/types';

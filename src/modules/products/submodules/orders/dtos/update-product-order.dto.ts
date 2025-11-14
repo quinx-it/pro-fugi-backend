@@ -1,17 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsIn,
-  IsNumber,
-  IsOptional,
-  IsString,
-  ValidateIf,
-} from 'class-validator';
+import { IsIn, IsNumber, IsOptional, IsString } from 'class-validator';
 
 import {
   ProductOrderDeliveryType,
   ProductOrderStatus,
 } from '@/modules/products/submodules/orders/constants';
 import { IUpdateProductOrder } from '@/modules/products/submodules/orders/types';
+import { DtosUtil } from '@/shared/utils/dtos.util';
 
 export class UpdateProductOrderDto implements IUpdateProductOrder {
   @ApiProperty()
@@ -21,13 +16,13 @@ export class UpdateProductOrderDto implements IUpdateProductOrder {
 
   @ApiProperty()
   @IsOptional()
-  @ValidateIf((obj) => obj.adress !== null)
+  @DtosUtil.isNullable()
   @IsString()
   address?: string | null;
 
   @ApiProperty()
   @IsOptional()
-  @ValidateIf((obj) => obj.adress !== null)
+  @DtosUtil.isNullable()
   @IsString()
   phone?: string | null;
 

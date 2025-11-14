@@ -1,7 +1,10 @@
+import { HttpStatus } from '@nestjs/common';
+
 import {
   IProductSpecificationAttribute,
   IProductSpecificationSchemaAttribute,
 } from '@/modules/products/submodules/items/types';
+import { AppException, ERROR_MESSAGES } from '@/shared';
 
 export class ProductSpecificationUtil {
   static validateMany(
@@ -35,13 +38,19 @@ export class ProductSpecificationUtil {
     );
 
     if (schemaAttributes.length > 1) {
-      throw new Error('Multiple found');
+      throw new AppException(
+        ERROR_MESSAGES.PRODUCT_SPECS_SCHEMA_ITEM_NAME_DUPLICATES,
+      );
     }
 
     if (schemaAttributes.length === 0) {
       if (!allowNotSpecified) {
         if (throwIfInvalid) {
-          throw new Error('Unspecified attribute');
+          throw AppException.fromTemplate(
+            ERROR_MESSAGES.PRODUCT_SPECS_KEY_NOT_ALLOWED_BY_SCHEMA_TEMPLATE,
+            { value: specificationAttribute.name },
+            HttpStatus.BAD_REQUEST,
+          );
         }
 
         return false;
@@ -52,17 +61,29 @@ export class ProductSpecificationUtil {
 
     const [schemaAttribute] = schemaAttributes;
 
-    const { range, enumeration } = schemaAttribute;
+    const { range, enumeration, name } = schemaAttribute;
 
     if (range !== null && enumeration !== null) {
-      throw new Error('Invalid schema. Cannot have both range and enum');
+      if (throwIfInvalid) {
+        throw new AppException(
+          ERROR_MESSAGES.PRODUCT_SPECS_SCHEMA_ITEM_CANNOT_HAVE_BOTH_ENUM_AND_RANGE,
+        );
+      }
     }
 
+    const typeOfValue = typeof value;
+
     if (range !== null) {
-      if (typeof value !== 'number') {
+      if (typeOfValue !== 'number') {
         if (throwIfInvalid) {
-          throw new Error(
-            'A range specification attribute must be of type number',
+          throw AppException.fromTemplate(
+            ERROR_MESSAGES.TYPE_MISMATCH_TEMPLATE,
+            {
+              value: 'range specification value',
+              expectedType: 'number',
+              actualType: typeOfValue,
+            },
+            HttpStatus.BAD_REQUEST,
           );
         }
       }
@@ -71,7 +92,10 @@ export class ProductSpecificationUtil {
 
       if (min && (value as number) < min) {
         if (throwIfInvalid) {
-          throw new Error('Invalid range');
+          throw AppException.fromTemplate(
+            ERROR_MESSAGES.MUST_BE_GREATER_OR_EQUAL_TEMPLATE,
+            { key: name, value: min.toString() },
+          );
         }
 
         return false;
@@ -79,7 +103,12 @@ export class ProductSpecificationUtil {
 
       if (max && (value as number) > max) {
         if (throwIfInvalid) {
-          throw new Error('Invalid range');
+          if (throwIfInvalid) {
+            throw AppException.fromTemplate(
+              ERROR_MESSAGES.MUST_BE_LESS_OR_EQUAL_TEMPLATE,
+              { key: name, value: max.toString() },
+            );
+          }
         }
 
         return false;
@@ -87,10 +116,16 @@ export class ProductSpecificationUtil {
     }
 
     if (enumeration !== null) {
-      if (typeof value !== 'string') {
+      if (typeOfValue !== 'string') {
         if (throwIfInvalid) {
-          throw new Error(
-            'An enum specification attribute must be of type string',
+          throw AppException.fromTemplate(
+            ERROR_MESSAGES.TYPE_MISMATCH_TEMPLATE,
+            {
+              value: 'enumeration specification value',
+              expectedType: 'string',
+              actualType: typeOfValue,
+            },
+            HttpStatus.BAD_REQUEST,
           );
         }
 
@@ -99,7 +134,10 @@ export class ProductSpecificationUtil {
 
       if (!enumeration.includes(value as string)) {
         if (throwIfInvalid) {
-          throw new Error('Value is not a part of schema enum');
+          throw AppException.fromTemplate(ERROR_MESSAGES.MUST_BE_IN_TEMPLATE, {
+            value: value.toString(),
+            list: enumeration.join(', '),
+          });
         }
 
         return false;

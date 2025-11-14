@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
@@ -36,6 +37,7 @@ import {
   UpdateProductOrderItemDto,
 } from '@/modules/products/submodules/orders/dtos';
 import { ProductOrdersService } from '@/modules/products/submodules/orders/product-orders.service';
+import { AppException, ERROR_MESSAGES } from '@/shared';
 import { DtosUtil } from '@/shared/utils/dtos.util';
 
 @Controller()
@@ -129,7 +131,11 @@ export class ProductOrdersController {
 
     if (body instanceof CreateProductOrderAsAdminDto) {
       if (!adminRoleId) {
-        throw new Error('Forbidden');
+        throw AppException.fromTemplate(
+          ERROR_MESSAGES.AUTH_ROLE_REQUIRED_TEMPLATE,
+          { role: 'admin' },
+          HttpStatus.FORBIDDEN,
+        );
       }
 
       const productOrder = await this.service.createOne(

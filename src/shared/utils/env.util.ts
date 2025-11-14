@@ -1,7 +1,7 @@
 import { makeValidator } from 'envalid';
 import ms from 'ms';
 
-import { ERROR_MESSAGES } from '@/shared';
+import { AppException, ERROR_MESSAGES } from '@/shared';
 
 const numOrBool = makeValidator((value: string) => {
   const num = parseInt(value, 10);
@@ -15,14 +15,14 @@ const numOrBool = makeValidator((value: string) => {
     return bool;
   }
 
-  throw new Error(ERROR_MESSAGES.ENV_VALUE_MUST_BE_NUM_OR_BOOL);
+  throw new AppException(ERROR_MESSAGES.ENV_VALUE_MUST_BE_NUM_OR_BOOL);
 });
 
 const msStringValue = makeValidator((value: string) => {
   const parsingResult = ms(value as ms.StringValue);
 
   if (parsingResult === undefined) {
-    throw new Error(ERROR_MESSAGES.ENV_VALUE_MUST_BE_MS_STR_VALUE);
+    throw new AppException(ERROR_MESSAGES.ENV_VALUE_MUST_BE_MS_STR_VALUE);
   }
 
   return value as ms.StringValue;

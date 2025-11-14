@@ -1,4 +1,7 @@
+import { HttpStatus } from '@nestjs/common';
+
 import { IProductSpecificationSchemaAttribute } from '@/modules/products/submodules/items/types';
+import { AppException, ERROR_MESSAGES } from '@/shared';
 
 export class ProductSpecificationSchemaUtil {
   static validateMany(
@@ -10,7 +13,10 @@ export class ProductSpecificationSchemaUtil {
 
     if (uniqueNames.length !== names.length) {
       if (throwIfInvalid) {
-        throw new Error('Each schema attr must have a unique name');
+        throw new AppException(
+          ERROR_MESSAGES.PRODUCT_SPECS_SCHEMA_ITEM_NAME_DUPLICATES,
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       return false;
@@ -34,7 +40,10 @@ export class ProductSpecificationSchemaUtil {
 
     if (range !== null && enumeration !== null) {
       if (throwIfInvalid) {
-        throw new Error('Invalid schema. Cannot have both range and enum');
+        throw new AppException(
+          ERROR_MESSAGES.PRODUCT_SPECS_SCHEMA_ITEM_CANNOT_HAVE_BOTH_ENUM_AND_RANGE,
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       return false;

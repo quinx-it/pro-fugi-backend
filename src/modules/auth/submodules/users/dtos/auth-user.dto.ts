@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Type } from 'class-transformer';
-import { IsDate, ValidateIf, ValidateNested } from 'class-validator';
+import { IsDate, ValidateNested } from 'class-validator';
 
 import { IAuthPhoneMethod } from '@/modules/auth/submodules/methods/submodules/phone/types';
 import { AuthAdminRoleDto } from '@/modules/auth/submodules/roles/submodules/admins/dtos';

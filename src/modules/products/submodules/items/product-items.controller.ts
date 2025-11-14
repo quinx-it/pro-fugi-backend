@@ -23,13 +23,11 @@ import {
 import { plainToInstance } from 'class-transformer';
 
 import { AuthRole } from '@/modules/auth/submodules/roles/constants';
-import { AuthRoles } from '@/modules/auth/submodules/roles/decorators';
 import { AdminRoleAuthGuard } from '@/modules/auth/submodules/roles/submodules/admins/guards';
 import { AccessTokenAuthGuard } from '@/modules/auth/submodules/tokens/guards/access-token-auth.guard';
 import { AuthPayload } from '@/modules/auth/submodules/users/decorators';
 import { IAuthPayload } from '@/modules/auth/submodules/users/types';
 import { ProductsEndPoint } from '@/modules/products/constants';
-import {} from '@/modules/products/submodules/categories/dtos';
 import { PRODUCT_ITEMS_IMAGES_PATH } from '@/modules/products/submodules/items/constants';
 import { CreateProductItemDto } from '@/modules/products/submodules/items/dtos';
 import { FindProductItemsDto } from '@/modules/products/submodules/items/dtos/find-product-items.dto';

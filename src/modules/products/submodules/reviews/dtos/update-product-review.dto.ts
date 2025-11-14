@@ -1,12 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsString, ValidateIf } from 'class-validator';
+import { IsInt, IsOptional, IsString } from 'class-validator';
 
 import { ICreateProductReview } from '@/modules/products/submodules/reviews/types';
+import { DtosUtil } from '@/shared/utils/dtos.util';
 
 export class UpdateProductReviewDto implements Partial<ICreateProductReview> {
   @ApiProperty()
   @IsOptional()
-  @ValidateIf((obj) => obj.text !== null)
+  @DtosUtil.isNullable()
   @IsString()
   text?: string | null;
 

@@ -1,11 +1,9 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
 
-import { AuthCustomerRoleEntity } from '@/modules/auth/submodules/roles/submodules/customers/entities/auth-customer-role.entity';
 import { AuthCustomerRolesRepository } from '@/modules/auth/submodules/roles/submodules/customers/repositories/auth-customer-roles.repository';
 import { IAuthCustomerRole } from '@/modules/auth/submodules/roles/submodules/customers/types';
-import { AppException, ERROR_MESSAGES } from '@/shared';
 
 @Injectable()
 export class AuthCustomerRolesService {

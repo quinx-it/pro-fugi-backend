@@ -15,8 +15,11 @@ import {
   ProductOrderStatus,
 } from '@/modules/products/submodules/orders/constants';
 import { ProductOrderItemEntity } from '@/modules/products/submodules/orders/entities/product-order-item.entity';
-import { IProductOrder } from '@/modules/products/submodules/orders/types';
-import { DbType, RefIntegrityRule } from '@/shared';
+import {
+  IProductOrder,
+  IProductOrderItem,
+} from '@/modules/products/submodules/orders/types';
+import { DbType, DbUtil, RefIntegrityRule } from '@/shared';
 
 @Entity()
 export class ProductOrderEntity implements IProductOrder {
@@ -75,11 +78,10 @@ export class ProductOrderEntity implements IProductOrder {
   configFreeShippingThreshold!: number;
 
   get productItemsPrice(): number {
-    const { productOrderItems } = this;
-
-    if (!productOrderItems) {
-      throw new Error('Relation not loaded');
-    }
+    const productOrderItems = DbUtil.getRelatedEntityOrThrow<
+      IProductOrder,
+      IProductOrderItem[]
+    >(this, 'productOrderItems');
 
     const itemsPrice = productOrderItems.reduce(
       (acc, curr) => acc + curr.pricePerProductItem * curr.count,
@@ -94,12 +96,12 @@ export class ProductOrderEntity implements IProductOrder {
       productItemsPrice,
       configShippingPrice,
       configFreeShippingThreshold,
-      productOrderItems,
     } = this;
 
-    if (!productOrderItems) {
-      throw new Error('Relation not loaded');
-    }
+    const productOrderItems = DbUtil.getRelatedEntityOrThrow<
+      IProductOrder,
+      IProductOrderItem[]
+    >(this, 'productOrderItems');
 
     return productItemsPrice >= configFreeShippingThreshold ||
       !productOrderItems.length

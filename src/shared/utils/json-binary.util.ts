@@ -20,15 +20,18 @@ export class JsonBinaryUtil {
     const parameters: Record<string, unknown> = {};
     let paramIndex = 0;
 
+    // eslint-disable-next-line no-restricted-syntax
     for (const { name, value } of input) {
       const key = name as string;
 
+      // eslint-disable-next-line no-continue
       if (value === undefined || value === null) continue;
 
       const paramName = `p${(paramIndex += 1)}`;
       let foundSuffix = false;
 
-      for (const [suffix, buildExpr] of Object.entries(SUFFIX_MAP)) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [suffix] of Object.entries(SUFFIX_MAP)) {
         if (key.endsWith(suffix)) {
           const baseKey = key.slice(0, -suffix.length);
 
@@ -44,7 +47,6 @@ export class JsonBinaryUtil {
               Array.isArray(value) ? value : [value],
             );
           } else {
-            // Исправленный подход для числовых сравнений
             const numericCondition = `EXISTS (
               SELECT 1 FROM jsonb_array_elements(${alias}) AS attr
               WHERE attr ->> 'name' = '${baseKey}'
@@ -62,7 +64,6 @@ export class JsonBinaryUtil {
       }
 
       if (!foundSuffix) {
-        // Точное совпадение для строковых значений
         const exactMatchCondition = `EXISTS (
           SELECT 1 FROM jsonb_array_elements(${alias}) AS attr
           WHERE attr ->> 'name' = '${key}'

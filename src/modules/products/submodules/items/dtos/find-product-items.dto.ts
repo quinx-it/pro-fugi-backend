@@ -1,3 +1,4 @@
+import { HttpStatus } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import camelcaseKeys from 'camelcase-keys';
 import { Expose, Type, Transform } from 'class-transformer';
@@ -11,7 +12,13 @@ import {
 
 import { ProductSpecificationAttributeDto } from '@/modules/products/submodules/items/entities';
 import { IProductItemSearchView } from '@/modules/products/submodules/items/types';
-import { IFilter, IPagination, ISort } from '@/shared';
+import {
+  AppException,
+  ERROR_MESSAGES,
+  IFilter,
+  IPagination,
+  ISort,
+} from '@/shared';
 
 export class FindProductItemsDto
   implements
@@ -31,12 +38,12 @@ export class FindProductItemsDto
   @Expose({ name: 'description_contains' })
   descriptionContains?: string;
 
-  @ApiProperty({ name: 'category_id', required: false })
+  @ApiProperty({ name: 'product_category_id', required: false })
   @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  @Expose({ name: 'category_id' })
-  categoryId?: number;
+  @Expose({ name: 'product_category_id' })
+  productCategoryId?: number;
 
   @ApiProperty({ name: 'in_stock_count_min', required: false })
   @IsOptional()
@@ -129,7 +136,10 @@ export class FindProductItemsDto
     const { categoryId, specification } = camelcaseKeys(obj);
 
     if (!categoryId && specification) {
-      throw new Error('Cannot look for specs when no categoryId provided');
+      throw new AppException(
+        ERROR_MESSAGES.PRODUCT_ITEMS_SPECS_SEARCH_REQUIRES_CATEGORY_ID,
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     if (specification === undefined) {
@@ -161,7 +171,7 @@ export class FindProductItemsDto
     const {
       nameContains,
       descriptionContains,
-      categoryId,
+      productCategoryId,
       priceMin,
       priceMax,
       ratingMin,
@@ -171,7 +181,7 @@ export class FindProductItemsDto
     return {
       nameContains,
       descriptionContains,
-      productCategoryId: categoryId,
+      productCategoryId,
       priceMin,
       priceMax,
       ratingMin,

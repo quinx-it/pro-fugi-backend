@@ -10,7 +10,7 @@ import { AuthPhoneMethodEntity } from '@/modules/auth/submodules/methods/submodu
 import { AuthAdminRoleEntity } from '@/modules/auth/submodules/roles/submodules/admins/entities/auth-admin-role.entity';
 import { AuthCustomerRoleEntity } from '@/modules/auth/submodules/roles/submodules/customers/entities/auth-customer-role.entity';
 import { IAuthUser } from '@/modules/auth/submodules/users/types';
-import { DbType } from '@/shared';
+import { DbType, DbUtil } from '@/shared';
 
 @Entity()
 export class AuthUserEntity implements IAuthUser {
@@ -36,11 +36,10 @@ export class AuthUserEntity implements IAuthUser {
   authAdminRole?: AuthAdminRoleEntity | null;
 
   get phone(): string | null {
-    const { authPhoneMethods } = this;
-
-    if (!authPhoneMethods) {
-      throw new Error('Relation not loaded');
-    }
+    const authPhoneMethods = DbUtil.getRelatedEntityOrThrow<
+      AuthUserEntity,
+      AuthPhoneMethodEntity[]
+    >(this, 'authPhoneMethods');
 
     const latestAuthPhoneMethod = authPhoneMethods.reduce((latest, current) =>
       current.createdAt > latest.createdAt ? current : latest,

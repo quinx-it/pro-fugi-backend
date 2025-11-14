@@ -6,6 +6,7 @@ import { AuthCustomerRolesService } from '@/modules/auth/submodules/roles/submod
 import { IUpdateAuthCustomerRole } from '@/modules/auth/submodules/roles/submodules/customers/types';
 import { AuthUsersRepository } from '@/modules/auth/submodules/users/repositories/auth-users.repository';
 import { IAuthUser } from '@/modules/auth/submodules/users/types';
+import { AppException, ERROR_MESSAGES } from '@/shared';
 
 @Injectable()
 export class AuthUsersService {
@@ -58,7 +59,9 @@ export class AuthUsersService {
 
     if (authCustomerRole) {
       if (!userAuthCustomerRole) {
-        throw new Error('Not a customer');
+        throw AppException.fromTemplate(ERROR_MESSAGES.NOT_FOUND_TEMPLATE, {
+          value: 'Auth customer role',
+        });
       }
 
       const { id: authCustomerRoleId } = userAuthCustomerRole;

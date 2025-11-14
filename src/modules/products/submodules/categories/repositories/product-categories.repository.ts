@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
 
 import { ProductCategoryEntity } from '@/modules/products/submodules/categories/entities/product-category.entity';
 import { IProductCategory } from '@/modules/products/submodules/categories/types';
 import { IProductSpecificationSchemaAttribute } from '@/modules/products/submodules/items/types';
-import { DbUtil, IPagination } from '@/shared';
+import { AppException, DbUtil, ERROR_MESSAGES, IPagination } from '@/shared';
 
 @Injectable()
 export class ProductCategoriesRepository {
@@ -57,7 +57,11 @@ export class ProductCategoriesRepository {
     });
 
     if (!productCategory && throwIfNotFound) {
-      throw new Error('Not found');
+      throw AppException.fromTemplate(
+        ERROR_MESSAGES.NOT_FOUND_TEMPLATE,
+        { value: 'Product category' },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     return productCategory;

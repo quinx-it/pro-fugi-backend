@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
 
 import { ProductReviewEntity } from '@/modules/products/submodules/reviews/entities';
 import { IProductReview } from '@/modules/products/submodules/reviews/types';
-import { DbUtil, IPagination } from '@/shared';
+import { AppException, DbUtil, ERROR_MESSAGES, IPagination } from '@/shared';
 
 @Injectable()
 export class ProductReviewsRepository {
@@ -63,7 +63,13 @@ export class ProductReviewsRepository {
     });
 
     if (!productReview && throwIfNotFound) {
-      throw new Error('Not found');
+      throw AppException.fromTemplate(
+        ERROR_MESSAGES.NOT_FOUND_TEMPLATE,
+        {
+          value: 'Product review',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     return productReview;

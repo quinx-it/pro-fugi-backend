@@ -219,7 +219,10 @@ export class DbUtil {
     const relatedEntity = entity[relatedEntityName];
 
     if (relatedEntity === undefined) {
-      throw new Error('Cannot get related entity');
+      throw AppException.fromTemplate(
+        ERROR_MESSAGES.DB_CANNOT_GET_RELATED_ENTITY_TEMPLATE,
+        { relatedEntityName: relatedEntityName.toString() },
+      );
     }
 
     return relatedEntity as TRelatedEntity;

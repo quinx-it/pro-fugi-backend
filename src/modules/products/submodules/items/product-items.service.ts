@@ -10,12 +10,14 @@ import {
 import { ProductItemsRepository } from '@/modules/products/submodules/items/repositories/product-items.repository';
 import {
   ICreateProductImage,
+  IProductImage,
   IProductItem,
   IProductItemSearchView,
   IProductSpecificationAttribute,
 } from '@/modules/products/submodules/items/types';
 import { ProductSpecificationUtil } from '@/modules/products/submodules/items/utils/product-specification.util';
 import {
+  DbUtil,
   IFilter,
   IPaginated,
   IPagination,
@@ -124,15 +126,19 @@ export class ProductItemsService {
     priceValue?: number,
   ): Promise<IProductItem> {
     const result = await this.dataSource.transaction(async (manager) => {
-      const {
-        price,
-        productImages: existingImages,
-        productCategoryId: currentCategoryId,
-      } = await this.itemsRepo.findOne(itemId, true);
+      const currentProductItem = await this.itemsRepo.findOne(itemId, true);
+
+      const { price, productCategoryId: currentProductCategoryId } =
+        currentProductItem;
+
+      const currentProductImages = DbUtil.getRelatedEntityOrThrow<
+        IProductItem,
+        IProductImage[]
+      >(currentProductItem, 'productImages');
 
       if (specification) {
         const { specificationSchema } = await this.categoriesService.findOne(
-          categoryId || currentCategoryId,
+          categoryId || currentProductCategoryId,
           true,
           manager,
         );
@@ -147,12 +153,12 @@ export class ProductItemsService {
 
       let actualSpecification = specification;
 
-      if (categoryId && currentCategoryId !== categoryId && !specification) {
+      if (
+        categoryId &&
+        currentProductCategoryId !== categoryId &&
+        !specification
+      ) {
         actualSpecification = [];
-      }
-
-      if (existingImages === undefined) {
-        throw new Error('Relation not loaded');
       }
 
       if (priceValue !== undefined && priceValue !== price) {
@@ -161,7 +167,7 @@ export class ProductItemsService {
 
       if (images !== undefined) {
         await this.imagesRepo.destroyMany(
-          existingImages.map((image) => image.id),
+          currentProductImages.map((image) => image.id),
           manager,
         );
         await this.imagesRepo.createMany(itemId, images, manager);

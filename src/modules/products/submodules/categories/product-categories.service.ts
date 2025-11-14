@@ -3,8 +3,10 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
 
 import { ProductCategoriesRepository } from '@/modules/products/submodules/categories/repositories';
-import { IProductCategory } from '@/modules/products/submodules/categories/types';
-import { IProductSpecificationSchemaAttribute } from '@/modules/products/submodules/items/types';
+import {
+  IProductCategory,
+  IProductSpecificationSchema,
+} from '@/modules/products/submodules/categories/types';
 import { IPaginated, IPagination, PaginationUtil } from '@/shared';
 
 @Injectable()
@@ -60,7 +62,7 @@ export class ProductCategoriesService {
 
   async createOne(
     name: string,
-    specificationSchema: IProductSpecificationSchemaAttribute[],
+    specificationSchema: IProductSpecificationSchema,
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IProductCategory> {
     const productCategory = await this.repo.createOne(
@@ -75,7 +77,7 @@ export class ProductCategoriesService {
   async updateOne(
     productCategoryId: number,
     name?: string,
-    specificationSchema?: IProductSpecificationSchemaAttribute[],
+    specificationSchema?: IProductSpecificationSchema,
     isArchived?: boolean,
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IProductCategory> {

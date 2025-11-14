@@ -6,7 +6,7 @@ import { ProductItemEntity } from '@/modules/products/submodules/items/entities/
 import {
   IProductItem,
   IProductItemSearchView,
-  IProductSpecificationAttribute,
+  IProductSpecification,
 } from '@/modules/products/submodules/items/types';
 import { ProductItemsUtil } from '@/modules/products/submodules/items/utils/product-items.util';
 import { ProductItemSearchViewEntity } from '@/modules/products/submodules/reviews/entities';
@@ -26,7 +26,7 @@ export class ProductItemsRepository {
 
   async findManyAndCount(
     filter: IFilter<IProductItemSearchView>,
-    specificationFilter: IProductSpecificationAttribute[],
+    specificationFilter: IProductSpecification,
     sort: ISort<IProductItemSearchView>,
     pagination: IPagination,
     manager: EntityManager = this.dataSource.manager,
@@ -36,16 +36,16 @@ export class ProductItemsRepository {
     const { take, skip } = DbUtil.paginationToTakeAndSkip(pagination);
 
     const specification =
-      JSON.stringify(specificationFilter) === JSON.stringify([])
+      JSON.stringify(specificationFilter) === JSON.stringify({})
         ? undefined
-        : (JsonBinaryUtil.parseJsonbQuery(
-            specificationFilter as unknown as Record<string, number | string>[],
-            { columnAlias: 'specification' },
-          ) as FindOptionsWhere<ProductItemEntity>);
+        : (JsonBinaryUtil.parseJsonbQuery(specificationFilter, {
+            columnAlias: 'specification',
+          }) as FindOptionsWhere<ProductItemSearchViewEntity>);
 
     const [productViews, totalCount] = await manager.findAndCount(
       ProductItemSearchViewEntity,
       {
+        // @ts-expect-error !!!!!
         where: {
           ...where,
           specification,
@@ -117,19 +117,21 @@ export class ProductItemsRepository {
   }
 
   async createOne(
-    title: string,
+    name: string,
     description: string,
-    specification: IProductSpecificationAttribute[],
-    categoryId: number,
+    specification: IProductSpecification,
+    productCategoryId: number,
+    inStockNumber: number,
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IProductItem> {
     const { id } = await manager.save(
       ProductItemEntity,
       manager.create(ProductItemEntity, {
-        name: title,
+        name,
         description,
         specification,
-        productCategoryId: categoryId,
+        productCategoryId,
+        inStockNumber,
       }),
     );
 
@@ -140,22 +142,25 @@ export class ProductItemsRepository {
 
   async updateOne(
     id: number,
-    title?: string,
+    name?: string,
     description?: string,
-    specification?: IProductSpecificationAttribute[],
-    categoryId?: number,
+    specification?: IProductSpecification,
+    productCategoryId?: number,
+    inStockNumber?: number,
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IProductItem> {
     if (
-      title !== undefined ||
+      name !== undefined ||
       description !== undefined ||
-      specification !== undefined
+      specification !== undefined ||
+      inStockNumber !== undefined
     ) {
       await manager.update(ProductItemEntity, id, {
-        name: title,
+        name,
         description,
         specification,
-        productCategoryId: categoryId,
+        productCategoryId,
+        inStockNumber,
       });
     }
 

@@ -48,13 +48,56 @@ export class AuthCustomerRolesRepository {
     return providerEntity;
   }
 
+  async findOneByUserId(
+    authUserId: number,
+    throwIfNotFound: true,
+    manager?: EntityManager,
+  ): Promise<IAuthCustomerRole>;
+
+  async findOneByUserId(
+    authUserId: number,
+    throwIfNotFound: false,
+    manager?: EntityManager,
+  ): Promise<IAuthCustomerRole | null>;
+
+  async findOneByUserId(
+    authUserId: number,
+    throwIfNotFound: boolean,
+    manager: EntityManager = this.dataSource.manager,
+  ): Promise<IAuthCustomerRole | null> {
+    const providerEntity = await manager.findOne(AuthCustomerRoleEntity, {
+      where: { authUserId },
+    });
+
+    if (!providerEntity) {
+      if (throwIfNotFound) {
+        throw AppException.fromTemplate(
+          ERROR_MESSAGES.NOT_FOUND_TEMPLATE,
+          {
+            value: ERROR_MESSAGES.AUTH_USERS_PROVIDER_ENTITY_NAME,
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return null;
+    }
+
+    return providerEntity;
+  }
+
   async createOne(
     userId: number,
+    firstName: string | null,
+    lastName: string | null,
+    address: string | null,
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IAuthCustomerRole> {
     const { id } = await manager.save(AuthCustomerRoleEntity, {
       authUserId: userId,
-      firstName: null,
+      firstName,
+      lastName,
+      address,
     });
 
     const customerRole = await this.findOne(id, true, manager);

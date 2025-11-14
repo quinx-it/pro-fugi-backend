@@ -35,7 +35,7 @@ export class ProductImagesRepository {
       return 0;
     }
 
-    const { affected } = await manager.delete(ProductImagesRepository, ids);
+    const { affected } = await manager.delete(ProductImageEntity, ids);
 
     return affected || 0;
   }

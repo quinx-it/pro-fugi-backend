@@ -1,9 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsPhoneNumber, IsString } from 'class-validator';
 
-import { ICreateAuthTokensByPhone } from '@/modules/auth/submodules/tokens/types';
+import { ICreateAuthRefreshTokenByPhone } from '@/modules/auth/submodules/tokens/types';
 
-export class CreateAuthTokensByPhoneDto implements ICreateAuthTokensByPhone {
+export class CreateAuthRefreshTokensByPhoneDto
+  implements ICreateAuthRefreshTokenByPhone
+{
   @ApiProperty()
   @IsString()
   @IsPhoneNumber()

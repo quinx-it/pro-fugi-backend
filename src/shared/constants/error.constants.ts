@@ -32,12 +32,6 @@ export const ERROR_MESSAGES = {
   AUTH_USERS_DATA_INVALID: 'User data is invalid',
   AUTH_USERS_PROVIDER_ENTITY_NAME: 'Admin user',
   AUTH_METHODS_USERNAME_ENTITY_NAME: 'Phone and password auth option',
-  AUTH_USERS_ROLE_MISMATCH_TEMPLATE: new Template<{
-    expectedRole: string;
-    actualRoles: string;
-  }>(
-    /* language=ejs */ 'A role of "<%= expectedRole %>" is required, but only "<%= actualRoles %>" roles are found',
-  ),
   AUTH_TOKENS_INVALID_OR_EXPIRED: 'Auth token is either invalid or expired',
   AUTH_CONFIRMATION_CODES_INVALID_OR_EXPIRED:
     'The confirmation code is either invalid or expired',
@@ -57,8 +51,8 @@ export const ERROR_MESSAGES = {
   }>(
     /* language=ejs */ 'Cannot create a confirmation code as the user had never had an auth method associated with subject <%= value %>',
   ),
-  AUTH_ROLE_REQUIRED_TEMPLATE: new Template<{ role: string }>(
-    /* language=ejs */ 'An auth of role <%= role %> is required',
+  AUTH_ROLE_REQUIRED_TEMPLATE: new Template<{ authRole: string }>(
+    /* language=ejs */ 'An auth of role of <%= authRole %> is required',
   ),
 
   // endregion
@@ -76,8 +70,11 @@ export const ERROR_MESSAGES = {
   }>(
     /* language=ejs */ `Specification key <%= value %> is not allowed by product category schema.`,
   ),
-  PRODUCT_SPECS_SCHEMA_ITEM_CANNOT_HAVE_BOTH_ENUM_AND_RANGE:
-    'Cannot have both not-nullish range and enumeration params in a product specification schema',
+  PRODUCT_SPECS_SCHEMA_VALUE_INVALID_TEMPLATE: new Template<{ value: string }>(
+    /* language=ejs */ 'Invalid specs schema value: <%= value %> . Must be either an array of strings, a number range or null',
+  ),
+  PRODUCT_SPECS_SCHEMA_VALUE_INVALID:
+    'Invalid specification schema. Must have no duplicate keys and each must be either an array of strings, a number range or null',
   PRODUCT_ITEMS_SPECS_SEARCH_REQUIRES_CATEGORY_ID:
     'Product items specification search requires categoryId to be provided',
   PRODUCT_ITEM_HAS_NO_RELEVANT_PRICE_TEMPLATE: new Template<{
@@ -97,6 +94,9 @@ export const ERROR_MESSAGES = {
     name: string;
   }>(
     /* language=ejs */ 'Product item { "id": <%= id %>, "name": <%= name %> } is archived',
+  ),
+  PRODUCT_SPECS_SCHEMA_KEY_ABSENT: new Template<{ key: string }>(
+    /* language=ejs */ 'Key <%= key %> must be a part of product specification',
   ),
 
   // endregion

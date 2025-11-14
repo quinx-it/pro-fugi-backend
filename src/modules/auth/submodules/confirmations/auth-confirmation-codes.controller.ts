@@ -34,9 +34,9 @@ export class AuthConfirmationCodesController {
     @DtosUtil.body(CreatePhoneConfirmationCodeDto)
     body: CreatePhoneConfirmationCodeDto,
   ): Promise<ConfirmationCodeDto> {
-    const { userId } = authPayload || { userId: null };
+    const { authUserId } = authPayload || { authUserId: null };
 
-    const code = await this.service.createPhoneOne(userId, body);
+    const code = await this.service.createPhoneOne(authUserId, body);
 
     return plainToInstance(ConfirmationCodeDto, code);
   }

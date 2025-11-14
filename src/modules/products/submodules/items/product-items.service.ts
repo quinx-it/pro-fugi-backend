@@ -13,9 +13,9 @@ import {
   IProductImage,
   IProductItem,
   IProductItemSearchView,
-  IProductSpecificationAttribute,
+  IProductSpecification,
 } from '@/modules/products/submodules/items/types';
-import { ProductSpecificationUtil } from '@/modules/products/submodules/items/utils/product-specification.util';
+import ProductSpecificationUtil from '@/modules/products/submodules/items/utils/product-specification.util';
 import {
   DbUtil,
   IFilter,
@@ -37,7 +37,7 @@ export class ProductItemsService {
 
   async findMany(
     filter: IFilter<IProductItemSearchView>,
-    specsFilter: IProductSpecificationAttribute[],
+    specsFilter: IProductSpecification,
     sort: ISort<IProductItemSearchView>,
     pagination: IPagination,
   ): Promise<IPaginated<IProductItem>> {
@@ -78,10 +78,11 @@ export class ProductItemsService {
   async createOne(
     title: string,
     description: string,
-    specification: IProductSpecificationAttribute[],
+    specification: IProductSpecification,
     categoryId: number,
     images: ICreateProductImage[],
     priceValue: number,
+    inStockNumber: number,
   ): Promise<IProductItem> {
     const result = await this.dataSource.transaction(async (manager) => {
       const { specificationSchema } = await this.categoriesService.findOne(
@@ -95,6 +96,7 @@ export class ProductItemsService {
         specification,
         true,
         true,
+        true,
       );
 
       const { id: itemId } = await this.itemsRepo.createOne(
@@ -102,6 +104,7 @@ export class ProductItemsService {
         description,
         specification,
         categoryId,
+        inStockNumber,
         manager,
       );
 
@@ -120,13 +123,18 @@ export class ProductItemsService {
     itemId: number,
     title?: string,
     description?: string,
-    specification?: IProductSpecificationAttribute[],
+    specification?: IProductSpecification,
     categoryId?: number,
     images?: ICreateProductImage[],
     priceValue?: number,
+    inStockNumber?: number,
   ): Promise<IProductItem> {
     const result = await this.dataSource.transaction(async (manager) => {
-      const currentProductItem = await this.itemsRepo.findOne(itemId, true);
+      const currentProductItem = await this.itemsRepo.findOne(
+        itemId,
+        true,
+        manager,
+      );
 
       const { price, productCategoryId: currentProductCategoryId } =
         currentProductItem;
@@ -148,6 +156,7 @@ export class ProductItemsService {
           specification,
           true,
           true,
+          true,
         );
       }
 
@@ -158,7 +167,7 @@ export class ProductItemsService {
         currentProductCategoryId !== categoryId &&
         !specification
       ) {
-        actualSpecification = [];
+        actualSpecification = {};
       }
 
       if (priceValue !== undefined && priceValue !== price) {
@@ -179,6 +188,7 @@ export class ProductItemsService {
         description,
         actualSpecification,
         categoryId,
+        inStockNumber,
         manager,
       );
 

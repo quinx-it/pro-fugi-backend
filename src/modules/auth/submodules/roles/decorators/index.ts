@@ -30,8 +30,8 @@ export const AuthRoles = createParamDecorator(
       throw new UnauthorizedException();
     }
 
-    const { roles } = user as IAuthPayload;
+    const { authRoles } = user as IAuthPayload;
 
-    return roles;
+    return authRoles;
   },
 );

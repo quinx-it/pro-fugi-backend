@@ -15,7 +15,7 @@ import { ProductPriceEntity } from '@/modules/products/submodules/items/entities
 import {
   IProductItem,
   IProductPrice,
-  IProductSpecificationAttribute,
+  IProductSpecification,
 } from '@/modules/products/submodules/items/types';
 import { ProductOrderItemEntity } from '@/modules/products/submodules/orders/entities/product-order-item.entity';
 import { ProductReviewEntity } from '@/modules/products/submodules/reviews/entities/product-review.entity';
@@ -58,8 +58,8 @@ export class ProductItemEntity implements IProductItem {
   @Column(DbType.INTEGER)
   productCategoryId!: number;
 
-  @Column(DbType.JSONB, { default: JSON.stringify([]) })
-  specification: IProductSpecificationAttribute[] = [];
+  @Column(DbType.JSONB, { default: JSON.stringify({}) })
+  specification: IProductSpecification = {};
 
   @OneToMany(() => ProductImageEntity, (image) => image.productItem)
   productImages?: ProductImageEntity[];

@@ -26,10 +26,16 @@ export interface AuthPayloadOptions {
 }
 
 export interface IAuthPayload {
+  authUserId: number;
+  authCustomerRoleId: number | null;
+  authAdminRoleId: number | null;
+  authRoles: AuthRole[];
+}
+
+export interface IAuthRolePayload {
   userId: number;
-  customerRoleId: number | null;
-  adminRoleId: number | null;
-  roles: AuthRole[];
+  roleId: number;
+  role: AuthRole;
 }
 
 export interface IAuthAdminPayload {

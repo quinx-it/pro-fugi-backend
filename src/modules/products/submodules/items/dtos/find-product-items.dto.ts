@@ -10,8 +10,10 @@ import {
   IsString,
 } from 'class-validator';
 
-import { ProductSpecificationAttributeDto } from '@/modules/products/submodules/items/entities';
-import { IProductItemSearchView } from '@/modules/products/submodules/items/types';
+import {
+  IProductItemSearchView,
+  IProductSpecification,
+} from '@/modules/products/submodules/items/types';
 import {
   AppException,
   ERROR_MESSAGES,
@@ -133,9 +135,9 @@ export class FindProductItemsDto
   })
   @IsOptional()
   @Transform(({ obj }) => {
-    const { categoryId, specification } = camelcaseKeys(obj);
+    const { productCategoryId, specification } = camelcaseKeys(obj);
 
-    if (!categoryId && specification) {
+    if (!productCategoryId && specification) {
       throw new AppException(
         ERROR_MESSAGES.PRODUCT_ITEMS_SPECS_SEARCH_REQUIRES_CATEGORY_ID,
         HttpStatus.BAD_REQUEST,
@@ -143,7 +145,7 @@ export class FindProductItemsDto
     }
 
     if (specification === undefined) {
-      return [];
+      return {};
     }
 
     if (typeof specification === 'string') {
@@ -153,7 +155,7 @@ export class FindProductItemsDto
     return specification;
   })
   @Expose({ name: 'specification' })
-  specification?: ProductSpecificationAttributeDto[];
+  specification?: IProductSpecification;
 
   get pagination(): IPagination {
     const { page, limit, offset } = this;

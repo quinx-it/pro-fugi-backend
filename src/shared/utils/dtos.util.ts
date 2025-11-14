@@ -115,12 +115,7 @@ export class DtosUtil {
   }
 
   static isNullable(): PropertyDecorator {
-    return (target: object, propertyKey: string | symbol) => {
-      ValidateIf((obj) => obj[propertyKey as string] !== null)(
-        target,
-        propertyKey,
-      );
-    };
+    return ValidateIf((obj, value) => value !== null);
   }
 
   static query(

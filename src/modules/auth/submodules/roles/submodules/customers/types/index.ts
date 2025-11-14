@@ -13,6 +13,12 @@ export interface IAuthCustomerRole {
   createdAt: Date;
 }
 
+export interface ICreateAuthCustomerRole {
+  firstName: string | null;
+  lastName: string | null;
+  address: string | null;
+}
+
 export interface IUpdateAuthCustomerRole {
   firstName?: string | null;
   lastName?: string | null;

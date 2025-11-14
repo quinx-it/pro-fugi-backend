@@ -4,6 +4,7 @@ import { DataSource, EntityManager } from 'typeorm';
 
 import { productsConfig } from '@/configs/products.config';
 import { IAuthPhoneMethod } from '@/modules/auth/submodules/methods/submodules/phone/types';
+import { AuthRole } from '@/modules/auth/submodules/roles/constants';
 import { AuthCustomerRolesService } from '@/modules/auth/submodules/roles/submodules/customers/auth-customer-roles.service';
 import { AuthUsersService } from '@/modules/auth/submodules/users/auth-users.service';
 import { IAuthUser } from '@/modules/auth/submodules/users/types';
@@ -254,7 +255,7 @@ export class ProductOrdersService {
     if (customerRoleId) {
       throw AppException.fromTemplate(
         ERROR_MESSAGES.AUTH_ROLE_REQUIRED_TEMPLATE,
-        { role: 'admin' },
+        { authRole: AuthRole.ADMIN },
         HttpStatus.FORBIDDEN,
       );
     }
@@ -385,7 +386,7 @@ export class ProductOrdersService {
     if (customerRoleId) {
       throw AppException.fromTemplate(
         ERROR_MESSAGES.AUTH_ROLE_REQUIRED_TEMPLATE,
-        { role: 'admin' },
+        { authRole: AuthRole.ADMIN },
         HttpStatus.FORBIDDEN,
       );
     }
@@ -426,7 +427,7 @@ export class ProductOrdersService {
     if (customerRoleId) {
       throw AppException.fromTemplate(
         ERROR_MESSAGES.AUTH_ROLE_REQUIRED_TEMPLATE,
-        { role: 'admin' },
+        { authRole: AuthRole.ADMIN },
         HttpStatus.FORBIDDEN,
       );
     }
@@ -492,7 +493,7 @@ export class ProductOrdersService {
     if (customerRoleId) {
       throw AppException.fromTemplate(
         ERROR_MESSAGES.AUTH_ROLE_REQUIRED_TEMPLATE,
-        { role: 'admin' },
+        { authRole: AuthRole.ADMIN },
         HttpStatus.FORBIDDEN,
       );
     }

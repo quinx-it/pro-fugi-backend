@@ -3,7 +3,7 @@ import { ViewEntity, ViewColumn } from 'typeorm';
 import { PRODUCT_ITEMS_SEARCH_VIEW_SQL_NAME } from '@/modules/products/submodules/items/constants';
 import {
   IProductItemSearchView,
-  IProductSpecificationAttribute,
+  IProductSpecification,
 } from '@/modules/products/submodules/items/types';
 
 @ViewEntity({
@@ -33,7 +33,7 @@ export class ProductItemSearchViewEntity implements IProductItemSearchView {
   rating!: number | null;
 
   @ViewColumn()
-  specification: IProductSpecificationAttribute[] = [];
+  specification!: IProductSpecification;
 
   @ViewColumn()
   productCategoryId!: number;

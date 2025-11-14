@@ -2,18 +2,10 @@ import { IProductCategory } from '@/modules/products/submodules/categories/types
 import { ProductImageType } from '@/modules/products/submodules/items/constants';
 import { IProductOrderItem } from '@/modules/products/submodules/orders/types';
 import { IProductReview } from '@/modules/products/submodules/reviews/types';
-import { IIdentifiable, IRange } from '@/shared';
+import { IIdentifiable } from '@/shared';
 
-export interface IProductSpecificationSchemaAttribute {
-  name: string;
-  range: Partial<IRange<number>> | null;
-  enumeration: string[] | null;
-}
-
-export interface IProductSpecificationAttribute {
-  name: string;
-  value: number | string;
-}
+export type IProductSpecificationValue = number | string;
+export type IProductSpecification = Record<string, IProductSpecificationValue>;
 
 export interface ICreateProductImage {
   fileName: string;
@@ -25,7 +17,7 @@ export interface ICreateProductItem {
   description: string;
   price: number;
   inStockNumber: number;
-  specification: IProductSpecificationAttribute[];
+  specification: IProductSpecification;
   productCategory: IIdentifiable;
   isArchived: boolean;
   productImages: ICreateProductImage[];
@@ -41,7 +33,7 @@ export interface IProductItem {
   rating: number | null;
   inStockNumber: number;
   isArchived: boolean;
-  specification: IProductSpecificationAttribute[];
+  specification: IProductSpecification;
 
   productCategory?: IProductCategory;
   productCategoryId: number;
@@ -69,7 +61,7 @@ export interface IProductItemSearchView {
   inStockNumber: number;
   productReviewsCount: number;
   productCategoryId: number;
-  specification: IProductSpecificationAttribute[];
+  specification: IProductSpecification;
   isArchived: boolean;
 }
 

@@ -7,7 +7,9 @@ import { CreateProductOrderItemDto } from '@/modules/products/submodules/orders/
 import { ICreateProductOrder } from '@/modules/products/submodules/orders/types';
 import { DtosUtil } from '@/shared/utils/dtos.util';
 
-export class CreateProductOrderDto implements ICreateProductOrder {
+export class CreateProductOrderDto
+  implements Omit<ICreateProductOrder, 'authCustomerRoleId'>
+{
   @ApiProperty({ type: 'string', nullable: true })
   @DtosUtil.isNullable()
   @IsString()
@@ -32,6 +34,4 @@ export class CreateProductOrderDto implements ICreateProductOrder {
   @Type(() => CreateProductOrderItemDto)
   @ValidateNested({ each: true })
   productOrderItems!: CreateProductOrderItemDto[];
-
-  authCustomerRoleId: number | null = null;
 }

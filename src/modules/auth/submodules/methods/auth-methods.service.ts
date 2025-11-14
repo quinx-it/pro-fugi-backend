@@ -41,15 +41,7 @@ export class AuthMethodsService {
         oldAuthMethod?.authUserId ||
         (await this.usersService.createOne(manager)).id;
 
-      const { authCustomerRole } = await this.usersService.findOne(
-        userId,
-        true,
-        manager,
-      );
-
-      if (authCustomerRole === null) {
-        await this.customerRolesService.createOne(userId, manager);
-      }
+      await this.usersService.findOne(userId, true, manager);
 
       const authMethod = await this.phoneOptionsService.createOne(
         userId,

@@ -3,6 +3,7 @@ import { Exclude, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
+  IsDefined,
   IsNumber,
   IsString,
   ValidateNested,
@@ -10,10 +11,10 @@ import {
 
 import { ProductCategoryWithNoSchemaDto } from '@/modules/products/submodules/categories/dtos/product-category-with-no-schema.dto';
 import { ProductImageDto } from '@/modules/products/submodules/items/dtos/product-image.dto';
-import { ProductSpecificationAttributeDto } from '@/modules/products/submodules/items/entities';
 import {
   IProductItem,
   IProductPrice,
+  IProductSpecification,
 } from '@/modules/products/submodules/items/types';
 import { ProductOrderItemDto } from '@/modules/products/submodules/orders/dtos/product-order-item.dto';
 import { IProductReview } from '@/modules/products/submodules/reviews/types';
@@ -52,17 +53,19 @@ export class ProductItemDto implements IProductItem {
   @Exclude()
   productReviews?: IProductReview[];
 
-  @ApiProperty()
+  @ApiProperty({ type: () => ProductImageDto, isArray: true })
+  @IsArray()
   @Type(() => ProductImageDto)
   @ValidateNested({ each: true })
   productImages?: ProductImageDto[];
 
-  @ApiProperty()
+  @ApiProperty({ type: () => ProductOrderItemDto, isArray: true })
+  @IsArray()
   @Type(() => ProductOrderItemDto)
   @ValidateNested({ each: true })
   productOrders?: ProductOrderItemDto[];
 
-  @ApiProperty()
+  @ApiProperty({ type: () => ProductCategoryWithNoSchemaDto })
   @Type(() => ProductCategoryWithNoSchemaDto)
   @ValidateNested()
   productCategory?: ProductCategoryWithNoSchemaDto;
@@ -81,9 +84,7 @@ export class ProductItemDto implements IProductItem {
   @IsBoolean()
   isArchived!: boolean;
 
-  @ApiProperty({ type: ProductSpecificationAttributeDto })
-  @IsArray()
-  @Type(() => ProductSpecificationAttributeDto)
-  @ValidateNested({ each: true })
-  specification!: ProductSpecificationAttributeDto[];
+  @ApiProperty({ type: 'object' })
+  @IsDefined()
+  specification!: IProductSpecification;
 }

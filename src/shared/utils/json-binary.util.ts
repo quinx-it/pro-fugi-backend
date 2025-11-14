@@ -7,88 +7,121 @@ const SUFFIX_MAP: Record<string, (path: string, param: string) => string> = {
   Gte: (p, param) => `((${p})::numeric >= ${param})`,
   Lt: (p, param) => `((${p})::numeric < ${param})`,
   Lte: (p, param) => `((${p})::numeric <= ${param})`,
-  Contains: (p, param) => `${p} @> ${param}`,
 };
 
 export class JsonBinaryUtil {
   static parseJsonbQuery(
-    input: Record<string, number | string>[],
+    input: Record<string, string | number | string[] | number[]>,
     options: { columnAlias?: string } = {},
   ): unknown {
     const alias = options.columnAlias || 'json_col';
+
     const conditions: string[] = [];
     const parameters: Record<string, unknown> = {};
     let paramIndex = 0;
 
-    // eslint-disable-next-line no-restricted-syntax
-    for (const { name, value } of input) {
-      const key = name as string;
+    Object.keys(input).forEach((key) => {
+      const value = input[key];
 
-      // eslint-disable-next-line no-continue
-      if (value === undefined || value === null) continue;
+      if (value === undefined || value === null) {
+        return;
+      }
 
-      const paramName = `p${(paramIndex += 1)}`;
+      paramIndex += 1;
+      const paramName = `p${paramIndex}`;
       let foundSuffix = false;
 
-      // eslint-disable-next-line no-restricted-syntax
-      for (const [suffix] of Object.entries(SUFFIX_MAP)) {
-        if (key.endsWith(suffix)) {
-          const baseKey = key.slice(0, -suffix.length);
+      Object.keys(SUFFIX_MAP).forEach((suffix) => {
+        const buildExpr = SUFFIX_MAP[suffix];
 
-          if (suffix === 'Contains') {
-            const containsCondition = `EXISTS (
-              SELECT 1 FROM jsonb_array_elements(${alias}) AS attr
-              WHERE attr ->> 'name' = '${baseKey}'
-              AND jsonb_typeof(attr->'value') = 'array'
-              AND (attr->'value')::jsonb @> :${paramName}::jsonb
-            )`;
-            conditions.push(containsCondition);
-            parameters[paramName] = JSON.stringify(
-              Array.isArray(value) ? value : [value],
-            );
-          } else {
-            const numericCondition = `EXISTS (
-              SELECT 1 FROM jsonb_array_elements(${alias}) AS attr
-              WHERE attr ->> 'name' = '${baseKey}'
-              AND (attr ->> 'value')::numeric ${this.getOperator(
-                suffix,
-              )} :${paramName}::numeric
-            )`;
-            conditions.push(numericCondition);
-            parameters[paramName] = value;
-          }
-
-          foundSuffix = true;
-          break;
+        if (!key.endsWith(suffix)) {
+          return;
         }
+
+        foundSuffix = true;
+
+        const baseKey = key.slice(0, -suffix.length);
+        const pathSegments = baseKey.split('.');
+
+        const jsonPath =
+          pathSegments.length > 1
+            ? `${alias} #>> '{${pathSegments.join(',')}}'`
+            : `${alias} ->> '${pathSegments[0]}'`;
+
+        conditions.push(buildExpr(jsonPath, `:${paramName}`));
+        parameters[paramName] = value;
+      });
+
+      if (foundSuffix) {
+        return;
       }
 
-      if (!foundSuffix) {
-        const exactMatchCondition = `EXISTS (
-          SELECT 1 FROM jsonb_array_elements(${alias}) AS attr
-          WHERE attr ->> 'name' = '${key}'
-          AND attr ->> 'value' = :${paramName}
-        )`;
-        conditions.push(exactMatchCondition);
-        parameters[paramName] = String(value);
+      if (key.endsWith('In')) {
+        const baseKey = key.slice(0, -2);
+        const pathSegments = baseKey.split('.');
+
+        const jsonPath =
+          pathSegments.length > 1
+            ? `${alias} #>> '{${pathSegments.join(',')}}'`
+            : `${alias} ->> '${pathSegments[0]}'`;
+
+        const arr = Array.isArray(value) ? value : [value];
+        parameters[paramName] = arr;
+
+        const isNumericArray = arr.length > 0 && typeof arr[0] === 'number';
+
+        if (isNumericArray) {
+          conditions.push(
+            `((${jsonPath})::numeric = ANY(:${paramName}::numeric[]))`,
+          );
+        } else {
+          conditions.push(`(${jsonPath} = ANY(:${paramName}::text[]))`);
+        }
+
+        return;
       }
-    }
+
+      if (key.endsWith('Contains') || key.endsWith('Contain')) {
+        const baseKey = key.replace(/Contains?$/, '');
+        const pathSegments = baseKey.split('.');
+
+        const jsonPath =
+          pathSegments.length > 1
+            ? `${alias} #>> '{${pathSegments.join(',')}}'`
+            : `${alias} ->> '${pathSegments[0]}'`;
+
+        const subConditions: string[] = [];
+
+        if (Array.isArray(value)) {
+          value.forEach((v, i) => {
+            const subParamName = `${paramName}_${i}`;
+            subConditions.push(`${jsonPath} ILIKE :${subParamName}`);
+            parameters[subParamName] = `%${v}%`;
+          });
+        } else {
+          subConditions.push(`${jsonPath} ILIKE :${paramName}`);
+          parameters[paramName] = `%${value}%`;
+        }
+
+        if (subConditions.length > 0) {
+          conditions.push(`(${subConditions.join(' OR ')})`);
+        }
+
+        return;
+      }
+
+      const pathSegments = key.split('.');
+      const jsonPath =
+        pathSegments.length > 1
+          ? `${alias} #>> '{${pathSegments.join(',')}}'`
+          : `${alias} ->> '${pathSegments[0]}'`;
+
+      conditions.push(`${jsonPath} = :${paramName}`);
+      parameters[paramName] = String(value);
+    });
 
     const sql = conditions.length > 0 ? conditions.join(' AND ') : 'TRUE';
 
-    return conditions.length > 0 ? Raw(() => sql, parameters) : undefined;
-  }
-
-  private static getOperator(suffix: string): string {
-    const operatorMap: Record<string, string> = {
-      Min: '>=',
-      Max: '<=',
-      Gt: '>',
-      Gte: '>=',
-      Lt: '<',
-      Lte: '<=',
-    };
-
-    return operatorMap[suffix] || '=';
+    return Raw(() => sql, parameters);
   }
 }

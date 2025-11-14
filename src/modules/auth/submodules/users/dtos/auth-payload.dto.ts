@@ -8,19 +8,19 @@ import { DtosUtil } from '@/shared/utils/dtos.util';
 export class AuthPayloadDto implements IAuthPayload {
   @ApiProperty()
   @IsNumber()
-  userId!: number;
+  authUserId!: number;
 
   @ApiProperty()
   @DtosUtil.isNullable()
   @IsNumber()
-  customerRoleId!: number | null;
+  authCustomerRoleId!: number | null;
 
   @ApiProperty()
   @DtosUtil.isNullable()
   @IsNumber()
-  adminRoleId!: number | null;
+  authAdminRoleId!: number | null;
 
   @ApiProperty()
   @IsEnum(AuthRole, { each: true })
-  roles!: AuthRole[];
+  authRoles!: AuthRole[];
 }

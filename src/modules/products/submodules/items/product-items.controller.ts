@@ -59,15 +59,15 @@ export class ProductItemsController {
     @Query()
     query: FindProductItemsDto,
   ): Promise<PaginatedProductItemsDto> {
-    const { roles } = authPayload || { roles: [] as AuthRole[] };
+    const { authRoles } = authPayload || { authRoles: [] as AuthRole[] };
 
-    const isArchived = roles.includes(AuthRole.ADMIN) ? false : undefined;
+    const isArchived = authRoles.includes(AuthRole.ADMIN) ? false : undefined;
 
     const { specification, filter, sort, pagination } = query;
 
     const products = await this.service.findMany(
       { ...filter, isArchived },
-      specification || [],
+      specification || {},
       sort,
       pagination,
     );
@@ -88,6 +88,7 @@ export class ProductItemsController {
       specification,
       productCategory,
       productImages,
+      inStockNumber,
     } = body;
 
     const product = await this.service.createOne(
@@ -97,6 +98,7 @@ export class ProductItemsController {
       productCategory.id,
       productImages,
       price,
+      inStockNumber,
     );
 
     return plainToInstance(ProductItemDto, product);
@@ -118,6 +120,7 @@ export class ProductItemsController {
       specification,
       productCategory,
       productImages,
+      inStockNumber,
     } = body;
 
     const product = await this.service.updateOne(
@@ -128,6 +131,7 @@ export class ProductItemsController {
       productCategory.id,
       productImages,
       price,
+      inStockNumber,
     );
 
     return plainToInstance(ProductItemDto, product);

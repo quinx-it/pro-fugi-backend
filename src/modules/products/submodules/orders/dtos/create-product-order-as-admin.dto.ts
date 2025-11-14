@@ -34,13 +34,13 @@ export class CreateProductOrderAsAdminDto implements ICreateProductOrder {
   @IsIn(Object.values(ProductOrderDeliveryType))
   deliveryType!: ProductOrderDeliveryType;
 
-  @ApiProperty()
-  @IsInt()
-  authCustomerRoleId!: number;
-
   @ApiProperty({ type: CreateProductOrderItemAsAdminDto, isArray: true })
   @IsArray()
   @Type(() => CreateProductOrderItemDto)
   @ValidateNested({ each: true })
   productOrderItems!: CreateProductOrderItemAsAdminDto[];
+
+  @ApiProperty()
+  @IsInt()
+  authCustomerRoleId!: number;
 }

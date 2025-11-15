@@ -31,7 +31,7 @@ export class AuthMethodsService {
       true,
     );
 
-    const oldAuthMethod = await this.phoneOptionsService.findLatestOne(
+    const oldAuthMethod = await this.phoneOptionsService.findLatestOneOfPhone(
       phone,
       false,
     );

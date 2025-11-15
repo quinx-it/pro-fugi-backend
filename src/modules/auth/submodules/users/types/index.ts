@@ -39,15 +39,15 @@ export interface IAuthRolePayload {
 }
 
 export interface IAuthAdminPayload {
-  userId: number;
-  customerRoleId: number | null;
-  adminRoleId: number;
-  roles: AuthRole[];
+  authUserId: number;
+  authCustomerRoleId: null;
+  authAdminRoleId: number;
+  authRoles: AuthRole[];
 }
 
 export interface IAuthCustomerPayload {
-  userId: number;
-  customerRoleId: number;
-  adminRoleId: number | null;
-  roles: AuthRole[];
+  authUserId: number;
+  authCustomerRoleId: number;
+  authAdminRoleId: null;
+  authRoles: AuthRole[];
 }

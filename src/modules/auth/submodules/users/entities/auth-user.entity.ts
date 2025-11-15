@@ -41,6 +41,10 @@ export class AuthUserEntity implements IAuthUser {
       AuthPhoneMethodEntity[]
     >(this, 'authPhoneMethods');
 
+    if (!authPhoneMethods.length) {
+      return null;
+    }
+
     const latestAuthPhoneMethod = authPhoneMethods.reduce((latest, current) =>
       current.createdAt > latest.createdAt ? current : latest,
     );

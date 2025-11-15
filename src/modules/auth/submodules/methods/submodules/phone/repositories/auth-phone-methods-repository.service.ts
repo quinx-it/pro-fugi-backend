@@ -49,8 +49,8 @@ export class AuthPhoneMethodsRepository {
   }
 
   async findMany(
-    userId: number | undefined,
-    phone: string | undefined,
+    userId?: number,
+    phone?: string,
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IAuthPhoneMethod[]> {
     const authMethods = await manager.find(AuthPhoneMethodEntity, {

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 import { AuthRole } from '@/modules/auth/submodules/roles/constants';
 import { ICreateAuthAccessTokenByRefresh } from '@/modules/auth/submodules/tokens/types';
@@ -12,6 +12,7 @@ export class CreateAuthAccessTokenByRefreshDto
   refresh!: string;
 
   @ApiProperty()
+  @IsOptional()
   @IsEnum(AuthRole)
-  authRole!: AuthRole | null;
+  authRole?: AuthRole;
 }

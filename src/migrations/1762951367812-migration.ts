@@ -251,8 +251,8 @@ export class Migration1762951367812 implements MigrationInterface {
            delivery_type,
            manual_price_adjustment,
            created_at,
-           items_price,
-           shipping_price,
+           product_items_price,
+           delivery_price,
            total_price
             )
       AS
@@ -274,13 +274,13 @@ export class Migration1762951367812 implements MigrationInterface {
              product_orders.delivery_type,
              product_orders.manual_price_adjustment,
              product_orders.created_at,
-             sum(product_order_items.price_per_product_item * product_order_items.count) AS items_price,
+             sum(product_order_items.price_per_product_item * product_order_items.count) AS product_items_price,
              CASE
                WHEN sum(product_order_items.price_per_product_item * product_order_items.count)::double precision
                  >= product_orders.config_free_shipping_threshold
                  THEN 0::double precision
                ELSE product_orders.config_shipping_price
-               END                                                                       AS shipping_price,
+               END                                                                       AS delivery_price,
              sum(product_order_items.price_per_product_item * product_order_items.count)::double precision
                + CASE
                    WHEN sum(product_order_items.price_per_product_item * product_order_items.count)::double precision

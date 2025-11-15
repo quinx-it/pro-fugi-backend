@@ -15,17 +15,54 @@ export class AuthPhoneMethodsService {
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {}
 
-  async findLatestOne(
+  async findLatestOneOfUser(
+    authUserId: number,
+    throwIfNotFound: boolean,
+  ): Promise<IAuthPhoneMethod | null>;
+
+  async findLatestOneOfUser(
+    authUserId: number,
+    throwIfNotFound: true,
+  ): Promise<IAuthPhoneMethod>;
+
+  async findLatestOneOfUser(
+    authUserId: number,
+    throwIfNotFound: boolean,
+  ): Promise<IAuthPhoneMethod | null> {
+    const authMethods = await this.repo.findMany(authUserId);
+
+    if (authMethods.length === 0) {
+      if (throwIfNotFound) {
+        throw AppException.fromTemplate(
+          ERROR_MESSAGES.NOT_FOUND_TEMPLATE,
+          {
+            value: 'Auth method',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return null;
+    }
+
+    const authMethod = authMethods.reduce((latest, current) =>
+      current.createdAt > latest.createdAt ? current : latest,
+    );
+
+    return authMethod;
+  }
+
+  async findLatestOneOfPhone(
     phone: string,
     throwIfNotFound: boolean,
   ): Promise<IAuthPhoneMethod | null>;
 
-  async findLatestOne(
+  async findLatestOneOfPhone(
     phone: string,
     throwIfNotFound: true,
   ): Promise<IAuthPhoneMethod>;
 
-  async findLatestOne(
+  async findLatestOneOfPhone(
     phone: string,
     throwIfNotFound: boolean,
   ): Promise<IAuthPhoneMethod | null> {

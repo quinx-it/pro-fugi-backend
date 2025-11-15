@@ -1,4 +1,5 @@
 import { IAuthPhoneMethodData } from '@/modules/auth/submodules/methods/submodules/phone/types';
+import { AuthRole } from '@/modules/auth/submodules/roles/constants';
 import { IAuthRefreshData } from '@/modules/auth/types';
 
 export interface IAuthTokens {
@@ -10,5 +11,7 @@ export interface IPayload<T> {
   data: T;
 }
 
-export type ICreateAuthTokensByPhone = IAuthPhoneMethodData;
-export type ICreateAuthTokensByRefresh = IAuthRefreshData;
+export type ICreateAuthRefreshTokenByPhone = IAuthPhoneMethodData;
+export interface ICreateAuthAccessTokenByRefresh extends IAuthRefreshData {
+  authRole?: AuthRole;
+}

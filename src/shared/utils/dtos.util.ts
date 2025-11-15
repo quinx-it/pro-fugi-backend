@@ -115,12 +115,7 @@ export class DtosUtil {
   }
 
   static isNullable(): PropertyDecorator {
-    return (target: object, propertyKey: string | symbol) => {
-      ValidateIf((obj) => obj[propertyKey as string] !== null)(
-        target,
-        propertyKey,
-      );
-    };
+    return ValidateIf((obj, value) => value !== null);
   }
 
   static query(
@@ -130,11 +125,24 @@ export class DtosUtil {
       const request = ctx.switchToHttp().getRequest();
       const { query } = request;
 
-      for (const dtoClass of dtoClasses) {
-        const instance = plainToInstance(dtoClass, query);
-        const errors = await validate(instance, GLOBAL_VALIDATION_PIPE_OPTIONS);
+      let validOne: unknown;
 
-        if (errors.length === 0) return instance;
+      await Promise.all(
+        dtoClasses.map(async (dtoClass) => {
+          const instance = plainToInstance(dtoClass, query);
+          const errors = await validate(
+            instance,
+            GLOBAL_VALIDATION_PIPE_OPTIONS,
+          );
+
+          if (errors.length === 0) {
+            validOne = instance;
+          }
+        }),
+      );
+
+      if (validOne) {
+        return validOne;
       }
 
       const errorMessages = await Promise.all(

@@ -10,12 +10,14 @@ import {
 import { ProductItemsRepository } from '@/modules/products/submodules/items/repositories/product-items.repository';
 import {
   ICreateProductImage,
+  IProductImage,
   IProductItem,
   IProductItemSearchView,
-  IProductSpecificationAttribute,
+  IProductSpecification,
 } from '@/modules/products/submodules/items/types';
-import { ProductSpecificationUtil } from '@/modules/products/submodules/items/utils/product-specification.util';
+import ProductSpecificationUtil from '@/modules/products/submodules/items/utils/product-specification.util';
 import {
+  DbUtil,
   IFilter,
   IPaginated,
   IPagination,
@@ -35,7 +37,7 @@ export class ProductItemsService {
 
   async findMany(
     filter: IFilter<IProductItemSearchView>,
-    specsFilter: IProductSpecificationAttribute[],
+    specsFilter: IProductSpecification,
     sort: ISort<IProductItemSearchView>,
     pagination: IPagination,
   ): Promise<IPaginated<IProductItem>> {
@@ -76,10 +78,11 @@ export class ProductItemsService {
   async createOne(
     title: string,
     description: string,
-    specification: IProductSpecificationAttribute[],
+    specification: IProductSpecification,
     categoryId: number,
     images: ICreateProductImage[],
     priceValue: number,
+    inStockNumber: number,
   ): Promise<IProductItem> {
     const result = await this.dataSource.transaction(async (manager) => {
       const { specificationSchema } = await this.categoriesService.findOne(
@@ -93,6 +96,7 @@ export class ProductItemsService {
         specification,
         true,
         true,
+        true,
       );
 
       const { id: itemId } = await this.itemsRepo.createOne(
@@ -100,6 +104,7 @@ export class ProductItemsService {
         description,
         specification,
         categoryId,
+        inStockNumber,
         manager,
       );
 
@@ -118,21 +123,30 @@ export class ProductItemsService {
     itemId: number,
     title?: string,
     description?: string,
-    specification?: IProductSpecificationAttribute[],
+    specification?: IProductSpecification,
     categoryId?: number,
     images?: ICreateProductImage[],
     priceValue?: number,
+    inStockNumber?: number,
   ): Promise<IProductItem> {
     const result = await this.dataSource.transaction(async (manager) => {
-      const {
-        price,
-        productImages: existingImages,
-        productCategoryId: currentCategoryId,
-      } = await this.itemsRepo.findOne(itemId, true);
+      const currentProductItem = await this.itemsRepo.findOne(
+        itemId,
+        true,
+        manager,
+      );
+
+      const { price, productCategoryId: currentProductCategoryId } =
+        currentProductItem;
+
+      const currentProductImages = DbUtil.getRelatedEntityOrThrow<
+        IProductItem,
+        IProductImage[]
+      >(currentProductItem, 'productImages');
 
       if (specification) {
         const { specificationSchema } = await this.categoriesService.findOne(
-          categoryId || currentCategoryId,
+          categoryId || currentProductCategoryId,
           true,
           manager,
         );
@@ -142,17 +156,18 @@ export class ProductItemsService {
           specification,
           true,
           true,
+          true,
         );
       }
 
       let actualSpecification = specification;
 
-      if (categoryId && currentCategoryId !== categoryId && !specification) {
-        actualSpecification = [];
-      }
-
-      if (existingImages === undefined) {
-        throw new Error('Relation not loaded');
+      if (
+        categoryId &&
+        currentProductCategoryId !== categoryId &&
+        !specification
+      ) {
+        actualSpecification = {};
       }
 
       if (priceValue !== undefined && priceValue !== price) {
@@ -161,7 +176,7 @@ export class ProductItemsService {
 
       if (images !== undefined) {
         await this.imagesRepo.destroyMany(
-          existingImages.map((image) => image.id),
+          currentProductImages.map((image) => image.id),
           manager,
         );
         await this.imagesRepo.createMany(itemId, images, manager);
@@ -173,6 +188,7 @@ export class ProductItemsService {
         description,
         actualSpecification,
         categoryId,
+        inStockNumber,
         manager,
       );
 

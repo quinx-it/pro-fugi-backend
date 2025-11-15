@@ -25,11 +25,7 @@ export class DbNamingStrategy
     return `${firstPlural}_of_${secondPlural}`;
   }
 
-  joinTableColumnName(
-    tableName: string,
-    propertyName: string,
-    columnName?: string,
-  ): string {
+  joinTableColumnName(tableName: string, propertyName: string): string {
     const baseName = snakeCase(pluralize.singular(tableName || propertyName));
 
     return `${baseName}_id`;

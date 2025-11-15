@@ -2,7 +2,6 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
 
-import { AuthCustomerRoleEntity } from '@/modules/auth/submodules/roles/submodules/customers/entities/auth-customer-role.entity';
 import { AuthCustomerRolesRepository } from '@/modules/auth/submodules/roles/submodules/customers/repositories/auth-customer-roles.repository';
 import { IAuthCustomerRole } from '@/modules/auth/submodules/roles/submodules/customers/types';
 import { AppException, ERROR_MESSAGES } from '@/shared';
@@ -40,9 +39,30 @@ export class AuthCustomerRolesService {
 
   async createOne(
     userId: number,
+    firstName: string | null,
+    lastName: string | null,
+    address: string | null,
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IAuthCustomerRole> {
-    const customerRole = await this.repo.createOne(userId, manager);
+    const existingCustomerRole = await this.repo.findOneByUserId(userId, false);
+
+    if (existingCustomerRole) {
+      throw AppException.fromTemplate(
+        ERROR_MESSAGES.ALREADY_EXISTS_TEMPLATE,
+        {
+          value: 'Auth customer role',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const customerRole = await this.repo.createOne(
+      userId,
+      firstName,
+      lastName,
+      address,
+      manager,
+    );
 
     return customerRole;
   }

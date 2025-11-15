@@ -7,7 +7,6 @@ import {
 } from 'typeorm';
 
 import { ProductItemEntity } from '@/modules/products/submodules/items/entities';
-import { IProductItem } from '@/modules/products/submodules/items/types';
 import { ProductOrderEntity } from '@/modules/products/submodules/orders/entities/product-order.entity';
 import {
   IProductOrder,

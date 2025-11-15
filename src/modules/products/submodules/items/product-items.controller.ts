@@ -23,13 +23,11 @@ import {
 import { plainToInstance } from 'class-transformer';
 
 import { AuthRole } from '@/modules/auth/submodules/roles/constants';
-import { AuthRoles } from '@/modules/auth/submodules/roles/decorators';
 import { AdminRoleAuthGuard } from '@/modules/auth/submodules/roles/submodules/admins/guards';
 import { AccessTokenAuthGuard } from '@/modules/auth/submodules/tokens/guards/access-token-auth.guard';
 import { AuthPayload } from '@/modules/auth/submodules/users/decorators';
 import { IAuthPayload } from '@/modules/auth/submodules/users/types';
 import { ProductsEndPoint } from '@/modules/products/constants';
-import {} from '@/modules/products/submodules/categories/dtos';
 import { PRODUCT_ITEMS_IMAGES_PATH } from '@/modules/products/submodules/items/constants';
 import { CreateProductItemDto } from '@/modules/products/submodules/items/dtos';
 import { FindProductItemsDto } from '@/modules/products/submodules/items/dtos/find-product-items.dto';
@@ -61,15 +59,15 @@ export class ProductItemsController {
     @Query()
     query: FindProductItemsDto,
   ): Promise<PaginatedProductItemsDto> {
-    const { roles } = authPayload || { roles: [] as AuthRole[] };
+    const { authRoles } = authPayload || { authRoles: [] as AuthRole[] };
 
-    const isArchived = roles.includes(AuthRole.ADMIN) ? false : undefined;
+    const isArchived = authRoles.includes(AuthRole.ADMIN) ? false : undefined;
 
     const { specification, filter, sort, pagination } = query;
 
     const products = await this.service.findMany(
       { ...filter, isArchived },
-      specification || [],
+      specification || {},
       sort,
       pagination,
     );
@@ -90,6 +88,7 @@ export class ProductItemsController {
       specification,
       productCategory,
       productImages,
+      inStockNumber,
     } = body;
 
     const product = await this.service.createOne(
@@ -99,6 +98,7 @@ export class ProductItemsController {
       productCategory.id,
       productImages,
       price,
+      inStockNumber,
     );
 
     return plainToInstance(ProductItemDto, product);
@@ -120,6 +120,7 @@ export class ProductItemsController {
       specification,
       productCategory,
       productImages,
+      inStockNumber,
     } = body;
 
     const product = await this.service.updateOne(
@@ -130,6 +131,7 @@ export class ProductItemsController {
       productCategory.id,
       productImages,
       price,
+      inStockNumber,
     );
 
     return plainToInstance(ProductItemDto, product);

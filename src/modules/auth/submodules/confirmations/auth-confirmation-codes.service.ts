@@ -25,7 +25,7 @@ export class AuthConfirmationCodesService {
 
     const { isNewUser } = params;
 
-    const authMethod = await this.phoneMethodsService.findLatestOne(
+    const authMethod = await this.phoneMethodsService.findLatestOneOfPhone(
       phone,
       false,
     );
@@ -40,16 +40,6 @@ export class AuthConfirmationCodesService {
     if (authMethod && isNewUser && userId === null) {
       throw AppException.fromTemplate(
         ERROR_MESSAGES.AUTH_METHODS_SUBJECT_ALREADY_IN_USE_TEMPLATE,
-        {
-          value: JSON.stringify({ phone }),
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    if (!authMethod && !isNewUser && userId === null) {
-      throw AppException.fromTemplate(
-        ERROR_MESSAGES.AUTH_METHODS_SUBJECT_NOT_IN_USE_TEMPLATE,
         {
           value: JSON.stringify({ phone }),
         },

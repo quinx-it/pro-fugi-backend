@@ -1,21 +1,50 @@
-import {
-  IProductSpecificationAttribute,
-  IProductSpecificationSchemaAttribute,
-} from '@/modules/products/submodules/items/types';
+import { HttpStatus } from '@nestjs/common';
 
-export class ProductSpecificationUtil {
+import { IProductSpecificationSchema } from '@/modules/products/submodules/categories/types';
+import {
+  IProductSpecification,
+  IProductSpecificationValue,
+} from '@/modules/products/submodules/items/types';
+import { AppException, ERROR_MESSAGES, IRange, RangeUtil } from '@/shared';
+
+class ProductSpecificationUtil {
   static validateMany(
-    schema: IProductSpecificationSchemaAttribute[],
-    specification: IProductSpecificationAttribute[],
-    allowNotSpecified: boolean,
+    schema: IProductSpecificationSchema,
+    specification: IProductSpecification,
+    requireAllKeys: boolean,
+    allowNotSpecifiedKeys: boolean,
     throwIfInvalid: boolean,
   ): boolean {
-    return specification
-      .map((specificationAttribute) =>
+    if (requireAllKeys) {
+      const schemaKeys = Object.keys(schema);
+      const specsKeys = Object.keys(specification);
+
+      const missingKeys = schemaKeys.map((schemaKey) =>
+        !specsKeys.includes(schemaKey) ? schemaKey : undefined,
+      );
+
+      const [missingKey] = missingKeys;
+
+      if (missingKey) {
+        if (throwIfInvalid) {
+          throw AppException.fromTemplate(
+            ERROR_MESSAGES.PRODUCT_SPECS_SCHEMA_KEY_ABSENT,
+            { key: missingKey },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
+        return false;
+      }
+    }
+
+    return Object.entries(specification)
+      .map(([key, value]) =>
         ProductSpecificationUtil.validateOne(
           schema,
-          specificationAttribute,
-          allowNotSpecified,
+          key,
+          value,
+          allowNotSpecifiedKeys,
           throwIfInvalid,
         ),
       )
@@ -23,25 +52,30 @@ export class ProductSpecificationUtil {
   }
 
   static validateOne(
-    schema: IProductSpecificationSchemaAttribute[],
-    specificationAttribute: IProductSpecificationAttribute,
+    schema: IProductSpecificationSchema,
+    specificationKey: string,
+    specificationValue: IProductSpecificationValue,
     allowNotSpecified: boolean,
     throwIfInvalid: boolean,
   ): boolean {
-    const { value } = specificationAttribute;
-
-    const schemaAttributes = schema.filter(
-      (schemaAttribute) => schemaAttribute.name === specificationAttribute.name,
+    const schemaKeys = Object.keys(schema).filter(
+      (schemaKey) => schemaKey === specificationKey,
     );
 
-    if (schemaAttributes.length > 1) {
-      throw new Error('Multiple found');
+    if (schemaKeys.length > 1) {
+      throw new AppException(
+        ERROR_MESSAGES.PRODUCT_SPECS_SCHEMA_ITEM_NAME_DUPLICATES,
+      );
     }
 
-    if (schemaAttributes.length === 0) {
+    if (schemaKeys.length === 0) {
       if (!allowNotSpecified) {
         if (throwIfInvalid) {
-          throw new Error('Unspecified attribute');
+          throw AppException.fromTemplate(
+            ERROR_MESSAGES.PRODUCT_SPECS_KEY_NOT_ALLOWED_BY_SCHEMA_TEMPLATE,
+            { value: specificationKey },
+            HttpStatus.BAD_REQUEST,
+          );
         }
 
         return false;
@@ -50,56 +84,76 @@ export class ProductSpecificationUtil {
       return true;
     }
 
-    const [schemaAttribute] = schemaAttributes;
+    const [schemaKey] = schemaKeys;
+    const schemaValue = schema[schemaKey];
 
-    const { range, enumeration } = schemaAttribute;
+    const typeOfValue = typeof specificationValue;
 
-    if (range !== null && enumeration !== null) {
-      throw new Error('Invalid schema. Cannot have both range and enum');
-    }
-
-    if (range !== null) {
-      if (typeof value !== 'number') {
+    if (RangeUtil.isRange(schemaValue)) {
+      if (typeOfValue !== 'number') {
         if (throwIfInvalid) {
-          throw new Error(
-            'A range specification attribute must be of type number',
+          throw AppException.fromTemplate(
+            ERROR_MESSAGES.TYPE_MISMATCH_TEMPLATE,
+            {
+              value: 'range specification value',
+              expectedType: 'number',
+              actualType: typeOfValue,
+            },
+            HttpStatus.BAD_REQUEST,
           );
         }
       }
 
-      const { min, max } = range;
+      const { min, max } = schemaValue as Partial<IRange<number>>;
 
-      if (min && (value as number) < min) {
+      if (min && (specificationValue as number) < min) {
         if (throwIfInvalid) {
-          throw new Error('Invalid range');
-        }
-
-        return false;
-      }
-
-      if (max && (value as number) > max) {
-        if (throwIfInvalid) {
-          throw new Error('Invalid range');
-        }
-
-        return false;
-      }
-    }
-
-    if (enumeration !== null) {
-      if (typeof value !== 'string') {
-        if (throwIfInvalid) {
-          throw new Error(
-            'An enum specification attribute must be of type string',
+          throw AppException.fromTemplate(
+            ERROR_MESSAGES.MUST_BE_GREATER_OR_EQUAL_TEMPLATE,
+            { key: specificationKey, value: min.toString() },
           );
         }
 
         return false;
       }
 
-      if (!enumeration.includes(value as string)) {
+      if (max && (specificationValue as number) > max) {
         if (throwIfInvalid) {
-          throw new Error('Value is not a part of schema enum');
+          if (throwIfInvalid) {
+            throw AppException.fromTemplate(
+              ERROR_MESSAGES.MUST_BE_LESS_OR_EQUAL_TEMPLATE,
+              { key: specificationKey, value: max.toString() },
+            );
+          }
+        }
+
+        return false;
+      }
+    }
+
+    if (Array.isArray(schemaValue)) {
+      if (typeOfValue !== 'string') {
+        if (throwIfInvalid) {
+          throw AppException.fromTemplate(
+            ERROR_MESSAGES.TYPE_MISMATCH_TEMPLATE,
+            {
+              value: 'enumeration specification value',
+              expectedType: 'string',
+              actualType: typeOfValue,
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
+        return false;
+      }
+
+      if (!schemaValue.includes(specificationValue as string)) {
+        if (throwIfInvalid) {
+          throw AppException.fromTemplate(ERROR_MESSAGES.MUST_BE_IN_TEMPLATE, {
+            value: specificationKey.toString(),
+            list: schemaValue.join(', '),
+          });
         }
 
         return false;
@@ -109,3 +163,5 @@ export class ProductSpecificationUtil {
     return true;
   }
 }
+
+export default ProductSpecificationUtil;

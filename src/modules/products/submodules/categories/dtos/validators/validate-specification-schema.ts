@@ -5,23 +5,20 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 
+import { IProductSpecificationSchema } from '@/modules/products/submodules/categories/types';
 import { ProductSpecificationSchemaUtil } from '@/modules/products/submodules/categories/utils/product-specification-schema.util';
-import { IProductSpecificationSchemaAttribute } from '@/modules/products/submodules/items/types';
+import { ERROR_MESSAGES } from '@/shared';
 
 @ValidatorConstraint({ name: 'ValidSpecificationSchema', async: false })
 export class ValidSpecificationSchemaConstraint
   implements ValidatorConstraintInterface
 {
-  validate(schema: IProductSpecificationSchemaAttribute[]): boolean {
-    if (!Array.isArray(schema)) {
-      return false;
-    }
-
+  validate(schema: IProductSpecificationSchema): boolean {
     return ProductSpecificationSchemaUtil.validateMany(schema, true);
   }
 
   defaultMessage(): string {
-    return 'Product specification schema is invalid. Check for duplicate names or conflicting range/enum definitions.';
+    return ERROR_MESSAGES.PRODUCT_SPECS_SCHEMA_VALUE_INVALID;
   }
 }
 

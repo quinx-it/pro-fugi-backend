@@ -17,7 +17,7 @@ export class ProductOrderItemDto implements IProductOrderItem {
   @IsInt()
   id!: number;
 
-  @ApiProperty({ type: ProductItemDto })
+  @ApiProperty({ type: () => ProductItemDto })
   @Type(() => ProductItemDto)
   @ValidateNested()
   productItem!: ProductItemDto;

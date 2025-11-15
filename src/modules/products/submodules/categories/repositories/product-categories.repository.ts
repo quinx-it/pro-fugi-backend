@@ -1,11 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
 
 import { ProductCategoryEntity } from '@/modules/products/submodules/categories/entities/product-category.entity';
-import { IProductCategory } from '@/modules/products/submodules/categories/types';
-import { IProductSpecificationSchemaAttribute } from '@/modules/products/submodules/items/types';
-import { DbUtil, IPagination } from '@/shared';
+import {
+  IProductCategory,
+  IProductSpecificationSchema,
+} from '@/modules/products/submodules/categories/types';
+import { AppException, DbUtil, ERROR_MESSAGES, IPagination } from '@/shared';
 
 @Injectable()
 export class ProductCategoriesRepository {
@@ -57,7 +59,11 @@ export class ProductCategoriesRepository {
     });
 
     if (!productCategory && throwIfNotFound) {
-      throw new Error('Not found');
+      throw AppException.fromTemplate(
+        ERROR_MESSAGES.NOT_FOUND_TEMPLATE,
+        { value: 'Product category' },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     return productCategory;
@@ -65,7 +71,7 @@ export class ProductCategoriesRepository {
 
   async createOne(
     name: string,
-    specificationSchema: IProductSpecificationSchemaAttribute[],
+    specificationSchema: IProductSpecificationSchema,
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IProductCategory> {
     const productCategory = await manager.save(
@@ -82,7 +88,7 @@ export class ProductCategoriesRepository {
   async updateOne(
     productCategoryId: number,
     name?: string,
-    specificationSchema?: IProductSpecificationSchemaAttribute[],
+    specificationSchema?: IProductSpecificationSchema,
     isArchived?: boolean,
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IProductCategory> {

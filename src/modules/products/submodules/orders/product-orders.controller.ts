@@ -36,7 +36,6 @@ import {
   UpdateProductOrderItemDto,
 } from '@/modules/products/submodules/orders/dtos';
 import { ProductOrdersService } from '@/modules/products/submodules/orders/product-orders.service';
-import { DtosUtil } from '@/shared/utils/dtos.util';
 
 @Controller()
 @ApiExtraModels(
@@ -59,10 +58,10 @@ export class ProductOrdersController {
   async findManyAsCustomer(
     @AuthPayload() authPayload: IAuthCustomerPayload,
   ): Promise<ProductOrderDto[]> {
-    const { customerRoleId } = authPayload;
+    const { authCustomerRoleId } = authPayload;
 
     const { items: productOrders } = await this.service.findMany(
-      { authCustomerRoleId: customerRoleId },
+      { authCustomerRoleId },
       { sortBy: 'createdAt', descending: true },
       { page: 0, limit: 5, offset: 0 },
     );
@@ -93,10 +92,10 @@ export class ProductOrdersController {
     @AuthPayload() authPayload: IAuthPayload,
     @Param('product_order_id', ParseIntPipe) productOrderId: number,
   ): Promise<ProductOrderDto> {
-    const { customerRoleId, adminRoleId } = authPayload;
+    const { authCustomerRoleId, authAdminRoleId } = authPayload;
 
     const productOrder = await this.service.findOne(
-      adminRoleId ? undefined : customerRoleId || undefined,
+      authAdminRoleId ? undefined : authCustomerRoleId || undefined,
       productOrderId,
       true,
     );
@@ -105,19 +104,36 @@ export class ProductOrdersController {
   }
 
   @ApiBearerAuth()
-  @DtosUtil.apiBody(CreateProductOrderDto, CreateProductOrderAsAdminDto)
+  @UseGuards(AdminRoleAuthGuard)
   @UseGuards(AccessTokenAuthGuard.OPTIONAL)
-  @Post(ProductsEndPoint.ORDERS)
-  async createOne(
-    @AuthPayload({ isNullable: true }) authPayload: IAuthPayload | null,
-    @DtosUtil.body(CreateProductOrderDto, CreateProductOrderAsAdminDto)
-    body: CreateProductOrderDto | CreateProductOrderAsAdminDto,
+  @Post(ProductsEndPoint.ORDERS_CUSTOMER)
+  async createOneAsCustomer(
+    @AuthPayload({ isNullable: true }) authPayload: IAuthPayload,
+    @Body() body: CreateProductOrderDto,
   ): Promise<ProductOrderDto> {
-    const { customerRoleId, adminRoleId } = authPayload || {
-      customerRoleId: null,
-      adminRoleId: null,
-    };
+    const { authCustomerRoleId } = authPayload || { authCustomerRoleId: null };
 
+    const { productOrderItems, deliveryType, address, phone, comment } = body;
+
+    const productOrder = await this.service.createOne(
+      authCustomerRoleId,
+      productOrderItems,
+      deliveryType,
+      address,
+      phone,
+      comment,
+    );
+
+    return plainToInstance(ProductOrderDto, productOrder);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AdminRoleAuthGuard)
+  @UseGuards(AccessTokenAuthGuard.REQUIRED)
+  @Post(ProductsEndPoint.ORDERS_ADMIN)
+  async createOneAsAdmin(
+    @Body() body: CreateProductOrderAsAdminDto,
+  ): Promise<ProductOrderDto> {
     const {
       authCustomerRoleId,
       productOrderItems,
@@ -127,25 +143,8 @@ export class ProductOrdersController {
       comment,
     } = body;
 
-    if (body instanceof CreateProductOrderAsAdminDto) {
-      if (!adminRoleId) {
-        throw new Error('Forbidden');
-      }
-
-      const productOrder = await this.service.createOne(
-        authCustomerRoleId,
-        productOrderItems,
-        deliveryType,
-        address,
-        phone,
-        comment,
-      );
-
-      return plainToInstance(ProductOrderDto, productOrder);
-    }
-
     const productOrder = await this.service.createOne(
-      customerRoleId,
+      authCustomerRoleId,
       productOrderItems,
       deliveryType,
       address,
@@ -191,10 +190,10 @@ export class ProductOrdersController {
     @Param('product_order_id', ParseIntPipe) productOrderId: number,
     @Param('product_order_item_id', ParseIntPipe) productOrderItemId: number,
   ): Promise<ProductOrderDto> {
-    const { customerRoleId, adminRoleId } = authPayload;
+    const { authCustomerRoleId, authAdminRoleId } = authPayload;
 
     const productOrder = await this.service.findOnesItem(
-      adminRoleId ? undefined : customerRoleId || undefined,
+      authAdminRoleId ? undefined : authCustomerRoleId || undefined,
       productOrderId,
       productOrderItemId,
       true,
@@ -235,12 +234,12 @@ export class ProductOrdersController {
     @Param('product_order_item_id', ParseIntPipe) productOrderItemId: number,
     @Body() body: CreateProductOrderItemDto,
   ): Promise<ProductOrderDto> {
-    const { customerRoleId, adminRoleId } = authPayload;
+    const { authCustomerRoleId, authAdminRoleId } = authPayload;
 
     const { count, productItem, customPricePerProductItem } = body;
 
     const productOrder = await this.service.updateOnesItem(
-      adminRoleId ? undefined : customerRoleId || undefined,
+      authAdminRoleId ? undefined : authCustomerRoleId || undefined,
       productOrderId,
       productOrderItemId,
       productItem.id,
@@ -261,12 +260,12 @@ export class ProductOrdersController {
     @Param('product_order_item_id', ParseIntPipe) productOrderItemId: number,
     @Body() body: UpdateProductOrderItemDto,
   ): Promise<ProductOrderDto> {
-    const { customerRoleId, adminRoleId } = authPayload;
+    const { authCustomerRoleId, authAdminRoleId } = authPayload;
 
     const { count, productItem, pricePerProductItem } = body;
 
     const productOrder = await this.service.updateOnesItem(
-      adminRoleId ? undefined : customerRoleId || undefined,
+      authAdminRoleId ? undefined : authCustomerRoleId || undefined,
       productOrderId,
       productOrderItemId,
       productItem?.id,
@@ -286,10 +285,10 @@ export class ProductOrdersController {
     @Param('product_order_id', ParseIntPipe) productOrderId: number,
     @Param('product_order_item_id', ParseIntPipe) productOrderItemId: number,
   ): Promise<void> {
-    const { customerRoleId, adminRoleId } = authPayload;
+    const { authCustomerRoleId, authAdminRoleId } = authPayload;
 
     await this.service.destroyOnesItem(
-      adminRoleId ? undefined : customerRoleId || undefined,
+      authAdminRoleId ? undefined : authCustomerRoleId || undefined,
       productOrderId,
       productOrderItemId,
     );

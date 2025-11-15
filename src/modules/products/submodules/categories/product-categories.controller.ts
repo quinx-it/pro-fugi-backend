@@ -33,6 +33,7 @@ export class ProductCategoriesController {
   constructor(private readonly service: ProductCategoriesService) {}
 
   @ApiResponse({ status: HttpStatus.OK, type: PaginatedProductCategoriesDto })
+  @ApiBearerAuth()
   @UseGuards(AccessTokenAuthGuard.OPTIONAL)
   @Get(ProductsEndPoint.CATEGORIES)
   async findMany(

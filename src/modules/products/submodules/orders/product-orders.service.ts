@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
 
 import { productsConfig } from '@/configs/products.config';
-import { AuthPhoneMethodsService } from '@/modules/auth/submodules/methods/submodules/phone/auth-phone-methods.service';
 import { IAuthPhoneMethod } from '@/modules/auth/submodules/methods/submodules/phone/types';
+import { AuthRole } from '@/modules/auth/submodules/roles/constants';
 import { AuthCustomerRolesService } from '@/modules/auth/submodules/roles/submodules/customers/auth-customer-roles.service';
 import { AuthUsersService } from '@/modules/auth/submodules/users/auth-users.service';
 import { IAuthUser } from '@/modules/auth/submodules/users/types';
@@ -22,7 +22,9 @@ import {
   IProductOrdersSearchView,
 } from '@/modules/products/submodules/orders/types';
 import {
+  AppException,
   DbUtil,
+  ERROR_MESSAGES,
   IFilter,
   IPaginated,
   IPagination,
@@ -83,7 +85,11 @@ export class ProductOrdersService {
 
     if (productOrder?.authCustomerRoleId !== customerRoleId) {
       if (throwIfNotFound) {
-        throw new Error('Not found');
+        throw AppException.fromTemplate(
+          ERROR_MESSAGES.NOT_FOUND_TEMPLATE,
+          { value: 'Product order' },
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       return null;
@@ -114,14 +120,22 @@ export class ProductOrdersService {
           true,
         );
 
-        const { isArchived, inStockNumber } = productItem;
+        const { isArchived, inStockNumber, name } = productItem;
 
         if (isArchived) {
-          throw new Error('Cannot order an archived product item');
+          throw AppException.fromTemplate(
+            ERROR_MESSAGES.PRODUCT_ITEM_IS_ARCHIVED,
+            { id: productItemId.toString(), name },
+            HttpStatus.BAD_REQUEST,
+          );
         }
 
         if (count > inStockNumber) {
-          throw new Error('Not enough items in stock');
+          throw AppException.fromTemplate(
+            ERROR_MESSAGES.PRODUCT_ITEM_NOT_ENOUGH_IN_STOCK,
+            { id: productItemId.toString(), name },
+            HttpStatus.BAD_REQUEST,
+          );
         }
 
         return {
@@ -160,11 +174,19 @@ export class ProductOrdersService {
     const phone = nonDefaultPhone || defaultPhone;
 
     if (!address && deliveryType === ProductOrderDeliveryType.SHIPPING) {
-      throw new Error('No address');
+      throw AppException.fromTemplate(
+        ERROR_MESSAGES.NOT_FOUND_TEMPLATE,
+        { value: 'Address to order' },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     if (!phone) {
-      throw new Error('No phone set');
+      throw AppException.fromTemplate(
+        ERROR_MESSAGES.NOT_FOUND_TEMPLATE,
+        { value: 'Phone to order' },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     const { shippingPrice: shippingPriceRate, freeShippingThreshold } =
@@ -187,12 +209,16 @@ export class ProductOrdersService {
       await PromisesUtil.runSequentially(
         productOrderItemsExtended,
         async ({ productItem, count, customPricePerProductItem }) => {
-          const { id: productItemId, price } = productItem;
+          const { id: productItemId, price, name } = productItem;
 
           const orderPrice = customPricePerProductItem || price;
 
           if (!orderPrice) {
-            throw new Error('No price is set');
+            throw AppException.fromTemplate(
+              ERROR_MESSAGES.PRODUCT_ITEM_HAS_NO_RELEVANT_PRICE_TEMPLATE,
+              { id: productItemId.toString(), name },
+              HttpStatus.BAD_REQUEST,
+            );
           }
 
           await this.orderItemsRepo.createOne(
@@ -227,7 +253,11 @@ export class ProductOrdersService {
     correctionPrice?: number,
   ): Promise<IProductOrder> {
     if (customerRoleId) {
-      throw new Error('Forbidden');
+      throw AppException.fromTemplate(
+        ERROR_MESSAGES.AUTH_ROLE_REQUIRED_TEMPLATE,
+        { authRole: AuthRole.ADMIN },
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     let defaultAddress: string | null | undefined =
@@ -264,7 +294,11 @@ export class ProductOrdersService {
       nonDefaultPhone === undefined ? null : nonDefaultPhone || defaultPhone;
 
     if (phone === null) {
-      throw new Error('No phone set');
+      throw AppException.fromTemplate(
+        ERROR_MESSAGES.NOT_FOUND_TEMPLATE,
+        { value: 'Phone' },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     const productOrder = await this.ordersRepo.updateOne(
@@ -313,7 +347,11 @@ export class ProductOrdersService {
 
     if (customerRoleId !== productOrder?.authCustomerRoleId) {
       if (throwIfNotFound) {
-        throw new Error('Not found');
+        throw AppException.fromTemplate(
+          ERROR_MESSAGES.NOT_FOUND_TEMPLATE,
+          { value: 'Product order item' },
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       return null;
@@ -325,7 +363,11 @@ export class ProductOrdersService {
 
     if (productOrderItem?.productOrderId !== productOrderId) {
       if (throwIfNotFound) {
-        throw new Error('Not found');
+        throw AppException.fromTemplate(
+          ERROR_MESSAGES.NOT_FOUND_TEMPLATE,
+          { value: 'Product order item' },
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       return null;
@@ -342,18 +384,26 @@ export class ProductOrdersService {
     customPerItemPrice: number | null,
   ): Promise<IProductOrderItem> {
     if (customerRoleId) {
-      throw new Error('Forbidden');
+      throw AppException.fromTemplate(
+        ERROR_MESSAGES.AUTH_ROLE_REQUIRED_TEMPLATE,
+        { authRole: AuthRole.ADMIN },
+        HttpStatus.FORBIDDEN,
+      );
     }
 
-    const { price } = await this.productItemsService.findOne(
+    const { price, name } = await this.productItemsService.findOne(
       productItemId,
       true,
     );
 
     const orderPrice = customPerItemPrice || price;
 
-    if (!orderPrice) {
-      throw new Error('No order price set');
+    if (orderPrice === null) {
+      throw AppException.fromTemplate(
+        ERROR_MESSAGES.PRODUCT_ITEM_HAS_NO_RELEVANT_PRICE_TEMPLATE,
+        { id: productItemId.toString(), name },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     const orderItem = await this.orderItemsRepo.createOne(
@@ -375,7 +425,11 @@ export class ProductOrdersService {
     customPerItemPrice?: number | null,
   ): Promise<IProductOrderItem> {
     if (customerRoleId) {
-      throw new Error('Forbidden');
+      throw AppException.fromTemplate(
+        ERROR_MESSAGES.AUTH_ROLE_REQUIRED_TEMPLATE,
+        { authRole: AuthRole.ADMIN },
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     const {
@@ -384,9 +438,19 @@ export class ProductOrdersService {
       pricePerProductItem,
     } = await this.orderItemsRepo.findOne(productOrderItemId, true);
 
+    if (productOrderId !== actualOrderId) {
+      throw AppException.fromTemplate(
+        ERROR_MESSAGES.NOT_FOUND_TEMPLATE,
+        {
+          value: 'Product order',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     const newProductItemId = productItemId || currentProductItemId;
 
-    const { price } = await this.productItemsService.findOne(
+    const { price, name } = await this.productItemsService.findOne(
       newProductItemId,
       true,
     );
@@ -394,8 +458,7 @@ export class ProductOrdersService {
     let perItemPrice: number | null;
 
     if (customPerItemPrice === null) {
-      perItemPrice =
-        customPerItemPrice === undefined ? pricePerProductItem : price;
+      perItemPrice = price;
     } else {
       perItemPrice =
         customPerItemPrice === undefined
@@ -404,11 +467,11 @@ export class ProductOrdersService {
     }
 
     if (perItemPrice === null) {
-      throw new Error('No price known');
-    }
-
-    if (productOrderId !== actualOrderId) {
-      throw new Error('Order id mismatch');
+      throw AppException.fromTemplate(
+        ERROR_MESSAGES.PRODUCT_ITEM_HAS_NO_RELEVANT_PRICE_TEMPLATE,
+        { id: newProductItemId.toString(), name },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     const orderItem = await this.orderItemsRepo.updateOne(
@@ -428,7 +491,11 @@ export class ProductOrdersService {
     productOrderItemId: number,
   ): Promise<void> {
     if (customerRoleId) {
-      throw new Error('Forbidden');
+      throw AppException.fromTemplate(
+        ERROR_MESSAGES.AUTH_ROLE_REQUIRED_TEMPLATE,
+        { authRole: AuthRole.ADMIN },
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     const { productOrderId: actualOrderId } = await this.orderItemsRepo.findOne(
@@ -437,7 +504,13 @@ export class ProductOrdersService {
     );
 
     if (productOrderId !== actualOrderId) {
-      throw new Error('Order id mismatch');
+      throw AppException.fromTemplate(
+        ERROR_MESSAGES.NOT_FOUND_TEMPLATE,
+        {
+          value: 'Product order',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     await this.orderItemsRepo.destroyMany([productOrderItemId]);

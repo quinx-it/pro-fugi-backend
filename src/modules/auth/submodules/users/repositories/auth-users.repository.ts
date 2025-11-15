@@ -45,10 +45,12 @@ export class AuthUsersRepository {
   async createOne(
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IAuthUser> {
-    const user = await manager.save(
+    const { id: userId } = await manager.save(
       AuthUserEntity,
       manager.create(AuthUserEntity, {}),
     );
+
+    const user = await this.findOne(userId, true, manager);
 
     return AuthUsersUtil.toPlain(user);
   }

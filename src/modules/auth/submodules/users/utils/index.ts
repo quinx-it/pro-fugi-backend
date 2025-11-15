@@ -23,7 +23,12 @@ export class AuthUsersUtil {
 
     const roles = AuthRolesUtil.getRoles(user);
 
-    return { userId: id, roles, adminRoleId, customerRoleId };
+    return {
+      authUserId: id,
+      authRoles: roles,
+      authAdminRoleId: adminRoleId,
+      authCustomerRoleId: customerRoleId,
+    };
   }
 
   static toPlain(object: IAuthUser): IAuthUser {

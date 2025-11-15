@@ -26,22 +26,28 @@ export interface AuthPayloadOptions {
 }
 
 export interface IAuthPayload {
+  authUserId: number;
+  authCustomerRoleId: number | null;
+  authAdminRoleId: number | null;
+  authRoles: AuthRole[];
+}
+
+export interface IAuthRolePayload {
   userId: number;
-  customerRoleId: number | null;
-  adminRoleId: number | null;
-  roles: AuthRole[];
+  roleId: number;
+  role: AuthRole;
 }
 
 export interface IAuthAdminPayload {
-  userId: number;
-  customerRoleId: number | null;
-  adminRoleId: number;
-  roles: AuthRole[];
+  authUserId: number;
+  authCustomerRoleId: null;
+  authAdminRoleId: number;
+  authRoles: AuthRole[];
 }
 
 export interface IAuthCustomerPayload {
-  userId: number;
-  customerRoleId: number;
-  adminRoleId: number | null;
-  roles: AuthRole[];
+  authUserId: number;
+  authCustomerRoleId: number;
+  authAdminRoleId: null;
+  authRoles: AuthRole[];
 }

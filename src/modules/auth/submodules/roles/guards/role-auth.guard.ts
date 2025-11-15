@@ -24,14 +24,14 @@ export abstract class RoleAuthGuard<TAuthRole extends AuthRole>
       throw new UnauthorizedException();
     }
 
-    const { roles } = user as IAuthPayload;
+    const { authRoles } = user as IAuthPayload;
 
     const { authRole } = this;
 
-    if (!roles.includes(authRole)) {
+    if (!authRoles.includes(authRole)) {
       throw AppException.fromTemplate(
-        ERROR_MESSAGES.AUTH_USERS_ROLE_MISMATCH_TEMPLATE,
-        { expectedRole: authRole, actualRoles: roles.toString() },
+        ERROR_MESSAGES.AUTH_ROLE_REQUIRED_TEMPLATE,
+        { authRole },
         HttpStatus.FORBIDDEN,
       );
     }

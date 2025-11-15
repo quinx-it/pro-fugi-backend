@@ -3,14 +3,17 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
+  IsDefined,
   IsNumber,
   IsString,
   ValidateNested,
 } from 'class-validator';
 
 import { CreateProductImageDto } from '@/modules/products/submodules/items/dtos/create-product-image.dto';
-import { ProductSpecificationAttributeDto } from '@/modules/products/submodules/items/entities';
-import { ICreateProductItem } from '@/modules/products/submodules/items/types';
+import {
+  ICreateProductItem,
+  IProductSpecification,
+} from '@/modules/products/submodules/items/types';
 import { IdentityDto } from '@/shared/dtos/identity.dto';
 
 export class CreateProductItemDto implements ICreateProductItem {
@@ -34,18 +37,16 @@ export class CreateProductItemDto implements ICreateProductItem {
   @IsBoolean()
   isArchived!: boolean;
 
-  @ApiProperty({ type: ProductSpecificationAttributeDto })
-  @IsArray()
-  @Type(() => ProductSpecificationAttributeDto)
-  @ValidateNested({ each: true })
-  specification!: ProductSpecificationAttributeDto[];
+  @ApiProperty({ type: 'object' })
+  @IsDefined()
+  specification!: IProductSpecification;
 
   @ApiProperty({ type: IdentityDto })
   @Type(() => IdentityDto)
   @ValidateNested()
   productCategory!: IdentityDto;
 
-  @ApiProperty({ type: CreateProductImageDto })
+  @ApiProperty({ type: CreateProductImageDto, isArray: true })
   @IsArray()
   @Type(() => CreateProductImageDto)
   @ValidateNested({ each: true })

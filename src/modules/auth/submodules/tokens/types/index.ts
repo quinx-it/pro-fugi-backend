@@ -13,5 +13,5 @@ export interface IPayload<T> {
 
 export type ICreateAuthRefreshTokenByPhone = IAuthPhoneMethodData;
 export interface ICreateAuthAccessTokenByRefresh extends IAuthRefreshData {
-  authRole: AuthRole | null;
+  authRole?: AuthRole;
 }

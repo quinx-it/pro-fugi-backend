@@ -58,10 +58,10 @@ export class ProductOrdersController {
   async findManyAsCustomer(
     @AuthPayload() authPayload: IAuthCustomerPayload,
   ): Promise<ProductOrderDto[]> {
-    const { customerRoleId } = authPayload;
+    const { authCustomerRoleId } = authPayload;
 
     const { items: productOrders } = await this.service.findMany(
-      { authCustomerRoleId: customerRoleId },
+      { authCustomerRoleId },
       { sortBy: 'createdAt', descending: true },
       { page: 0, limit: 5, offset: 0 },
     );

@@ -81,12 +81,12 @@ export class ProductReviewsController {
     @Param('product_item_id', ParseIntPipe) productItemId: number,
     @Body() body: CreateProductReviewDto,
   ): Promise<ProductReviewDto> {
-    const { customerRoleId } = authPayload;
+    const { authCustomerRoleId } = authPayload;
 
     const { text, rating, productReviewImages } = body;
 
     const productReview = await this.service.createOne(
-      customerRoleId,
+      authCustomerRoleId,
       productItemId,
       rating,
       text,
@@ -107,12 +107,12 @@ export class ProductReviewsController {
     @Param('product_review_id', ParseIntPipe) productReviewId: number,
     @Body() body: CreateProductReviewDto,
   ): Promise<ProductReviewDto> {
-    const { customerRoleId } = authPayload;
+    const { authCustomerRoleId } = authPayload;
 
     const { text, rating, productReviewImages } = body;
 
     const productReview = await this.service.updateOne(
-      customerRoleId,
+      authCustomerRoleId,
       productItemId,
       productReviewId,
       rating,
@@ -134,12 +134,12 @@ export class ProductReviewsController {
     @Param('product_review_id', ParseIntPipe) productReviewId: number,
     @Body() body: UpdateProductReviewDto,
   ): Promise<ProductReviewDto> {
-    const { customerRoleId } = authPayload;
+    const { authCustomerRoleId } = authPayload;
 
     const { text, rating } = body;
 
     const productReview = await this.service.updateOne(
-      customerRoleId,
+      authCustomerRoleId,
       productItemId,
       productReviewId,
       rating,
@@ -159,10 +159,10 @@ export class ProductReviewsController {
     @Param('product_item_id', ParseIntPipe) productItemId: number,
     @Param('product_review_id', ParseIntPipe) productReviewId: number,
   ): Promise<void> {
-    const { customerRoleId } = authPayload;
+    const { authCustomerRoleId } = authPayload;
 
     await this.service.destroyOne(
-      customerRoleId,
+      authCustomerRoleId,
       productItemId,
       productReviewId,
     );

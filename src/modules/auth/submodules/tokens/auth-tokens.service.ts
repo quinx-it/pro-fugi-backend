@@ -15,7 +15,11 @@ import { AuthUsersService } from '@/modules/auth/submodules/users/auth-users.ser
 import { AuthPayloadDto } from '@/modules/auth/submodules/users/dtos/auth-payload.dto';
 import { IAuthPayload } from '@/modules/auth/submodules/users/types';
 import { AuthUsersUtil } from '@/modules/auth/submodules/users/utils';
-import { GLOBAL_VALIDATION_PIPE_OPTIONS } from '@/shared';
+import {
+  AppException,
+  ERROR_MESSAGES,
+  GLOBAL_VALIDATION_PIPE_OPTIONS,
+} from '@/shared';
 
 @Injectable()
 export class AuthTokensService {
@@ -29,14 +33,24 @@ export class AuthTokensService {
   async createRefreshOneByPhone(data: IAuthPhoneMethodData): Promise<string> {
     const { phone, password } = data;
 
-    const authMethod = await this.phoneOptionsService.findLatestOne(
+    const phoneAuthMethod = await this.phoneOptionsService.findLatestOneOfPhone(
       phone,
       true,
     );
 
-    await AuthMethodsUtil.isValidPassword(authMethod, password, true);
+    const { authUserId } = phoneAuthMethod;
 
-    const { authUserId } = authMethod;
+    const { phone: activePhone } =
+      await this.phoneOptionsService.findLatestOneOfUser(authUserId, true);
+
+    if (phone !== activePhone) {
+      throw AppException.fromTemplate(
+        ERROR_MESSAGES.AUTH_METHOD_OF_SUBJECT_NO_LONGER_ACTIVE_TEMPLATE,
+        { value: phone },
+      );
+    }
+
+    await AuthMethodsUtil.isValidPassword(phoneAuthMethod, password, true);
 
     const user = await this.usersService.findOne(authUserId, true);
 
@@ -47,10 +61,7 @@ export class AuthTokensService {
     return refresh;
   }
 
-  async createAccessOne(
-    refresh: string,
-    role: AuthRole | null,
-  ): Promise<string> {
+  async createAccessOne(refresh: string, role?: AuthRole): Promise<string> {
     const refreshTokenPayload =
       await this.refreshService.validateOne<IAuthPayload>(refresh, true);
 

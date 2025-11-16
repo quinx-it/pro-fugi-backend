@@ -11,10 +11,8 @@ import {
 
 import { ProductCategoryEntity } from '@/modules/products/submodules/categories/entities/product-category.entity';
 import { ProductImageEntity } from '@/modules/products/submodules/items/entities/product-image.entity';
-import { ProductPriceEntity } from '@/modules/products/submodules/items/entities/product-price.entity';
 import {
   IProductItem,
-  IProductPrice,
   IProductSpecification,
 } from '@/modules/products/submodules/items/types';
 import { ProductOrderItemEntity } from '@/modules/products/submodules/orders/entities/product-order-item.entity';
@@ -38,9 +36,6 @@ export class ProductItemEntity implements IProductItem {
 
   @UpdateDateColumn()
   updatedAt!: Date;
-
-  @OneToMany(() => ProductPriceEntity, (price) => price.productItem)
-  productPrices?: ProductPriceEntity[];
 
   @OneToMany(() => ProductReviewEntity, (review) => review.productItem)
   productReviews?: ProductReviewEntity[];
@@ -70,25 +65,19 @@ export class ProductItemEntity implements IProductItem {
   @Column(DbType.BOOLEAN, { default: false })
   isArchived: boolean = false;
 
+  @Column(DbType.FLOAT)
+  basePrice!: number;
+
+  @Column(DbType.FLOAT, { nullable: true })
+  discountValue!: number | null;
+
+  @Column(DbType.FLOAT, { nullable: true })
+  discountPercentage!: number | null;
+
   get price(): number | null {
-    const productPrices = DbUtil.getRelatedEntityOrThrow<
-      IProductItem,
-      IProductPrice[]
-    >(this, 'productPrices');
+    const { basePrice, discountPercentage, discountValue } = this;
 
-    if (!productPrices.length) {
-      return null;
-    }
-
-    const latestPrice = productPrices.reduce((latest, current) =>
-      current.createdAt > latest.createdAt ? current : latest,
-    );
-
-    if (!latestPrice) {
-      return null;
-    }
-
-    return latestPrice.value;
+    return basePrice * (1 - (discountPercentage || 0)) - (discountValue || 0);
   }
 
   get rating(): number | null {

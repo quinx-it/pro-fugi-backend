@@ -77,6 +77,12 @@ export class ProductOrderEntity implements IProductOrder {
   @Column(DbType.FLOAT)
   configFreeShippingThreshold!: number;
 
+  @Column(DbType.FLOAT)
+  discountValue!: number;
+
+  @Column(DbType.FLOAT)
+  discountPercentage!: number;
+
   get productItemsPrice(): number {
     const productOrderItems = DbUtil.getRelatedEntityOrThrow<
       IProductOrder,
@@ -96,6 +102,8 @@ export class ProductOrderEntity implements IProductOrder {
       productItemsPrice,
       configShippingPrice,
       configFreeShippingThreshold,
+      discountValue,
+      discountPercentage,
     } = this;
 
     const productOrderItems = DbUtil.getRelatedEntityOrThrow<
@@ -103,15 +111,26 @@ export class ProductOrderEntity implements IProductOrder {
       IProductOrderItem[]
     >(this, 'productOrderItems');
 
-    return productItemsPrice >= configFreeShippingThreshold ||
-      !productOrderItems.length
+    return productItemsPrice * (1 - discountPercentage) + discountValue >=
+      configFreeShippingThreshold || !productOrderItems.length
       ? 0
       : configShippingPrice;
   }
 
   get totalPrice(): number {
-    const { productItemsPrice, deliveryPrice, manualPriceAdjustment } = this;
+    const {
+      productItemsPrice,
+      deliveryPrice,
+      manualPriceAdjustment,
+      discountValue,
+      discountPercentage,
+    } = this;
 
-    return productItemsPrice + deliveryPrice + manualPriceAdjustment;
+    return (
+      productItemsPrice * (1 - discountPercentage) +
+      discountValue +
+      deliveryPrice +
+      manualPriceAdjustment
+    );
   }
 }

@@ -5,7 +5,7 @@ import { ICreateProductReview } from '@/modules/products/submodules/reviews/type
 import { DtosUtil } from '@/shared/utils/dtos.util';
 
 export class UpdateProductReviewDto implements Partial<ICreateProductReview> {
-  @ApiProperty()
+  @ApiProperty({ type: 'string', nullable: true })
   @IsOptional()
   @DtosUtil.isNullable()
   @IsString()

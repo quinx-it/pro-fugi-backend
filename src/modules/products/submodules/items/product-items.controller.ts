@@ -83,7 +83,9 @@ export class ProductItemsController {
   async createOne(@Body() body: CreateProductItemDto): Promise<ProductItemDto> {
     const {
       name,
-      price,
+      basePrice,
+      discountValue,
+      discountPercentage,
       description,
       specification,
       productCategory,
@@ -97,7 +99,9 @@ export class ProductItemsController {
       specification,
       productCategory.id,
       productImages,
-      price,
+      basePrice,
+      discountValue,
+      discountPercentage,
       inStockNumber,
     );
 
@@ -115,7 +119,9 @@ export class ProductItemsController {
   ): Promise<ProductItemDto> {
     const {
       name,
-      price,
+      basePrice,
+      discountValue,
+      discountPercentage,
       description,
       specification,
       productCategory,
@@ -130,7 +136,9 @@ export class ProductItemsController {
       specification,
       productCategory.id,
       productImages,
-      price,
+      basePrice,
+      discountValue,
+      discountPercentage,
       inStockNumber,
     );
 

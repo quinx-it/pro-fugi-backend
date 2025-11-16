@@ -54,6 +54,9 @@ export const ERROR_MESSAGES = {
   AUTH_ROLE_REQUIRED_TEMPLATE: new Template<{ authRole: string }>(
     /* language=ejs */ 'An auth of role of <%= authRole %> is required',
   ),
+  AUTH_ROLE_FORBIDDEN_TEMPLATE: new Template<{ authRole: string }>(
+    /* language=ejs */ 'The auth of role of <%= authRole %> is forbidden',
+  ),
   AUTH_METHOD_OF_SUBJECT_NO_LONGER_ACTIVE_TEMPLATE: new Template<{
     value: string;
   }>(/* language=ejs */ 'The auth subject <%= value %> is no longer active'),
@@ -100,6 +103,9 @@ export const ERROR_MESSAGES = {
   PRODUCT_SPECS_SCHEMA_KEY_ABSENT: new Template<{ key: string }>(
     /* language=ejs */ 'Key <%= key %> must be a part of product specification',
   ),
+  PRODUCT_DISCOUNT_POLICY_INVALID_ENTRY_TEMPLATE: new Template<{
+    value: string;
+  }>(/* language=ejs */ 'Invalid discount policy value: <%= value %>'),
 
   // endregion
 

@@ -1,6 +1,7 @@
 import { makeValidator } from 'envalid';
 import ms from 'ms';
 
+import { ProductDiscountsUtil } from '@/modules/products/submodules/orders/utils/product-discounts.util';
 import { AppException, ERROR_MESSAGES } from '@/shared';
 
 const numOrBool = makeValidator((value: string) => {
@@ -28,8 +29,14 @@ const msStringValue = makeValidator((value: string) => {
   return value as ms.StringValue;
 });
 
+const productDiscountPolicy = makeValidator((value: string) => {
+  return ProductDiscountsUtil.toDiscountPolicy(value);
+});
+
 export class EnvUtil {
   static numOrBool = numOrBool;
 
   static msStringValue = msStringValue;
+
+  static productDiscountPolicy = productDiscountPolicy;
 }

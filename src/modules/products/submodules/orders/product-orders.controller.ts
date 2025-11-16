@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
@@ -11,9 +12,15 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiExtraModels, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExtraModels,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 
+import { AuthRole } from '@/modules/auth/submodules/roles/constants';
 import { AdminRoleAuthGuard } from '@/modules/auth/submodules/roles/submodules/admins/guards';
 import { CustomerRoleAuthGuard } from '@/modules/auth/submodules/roles/submodules/customers/guards/customer-role.auth-guard';
 import { AccessTokenAuthGuard } from '@/modules/auth/submodules/tokens/guards/access-token-auth.guard';
@@ -28,14 +35,15 @@ import {
   CreateProductOrderAsAdminDto,
   CreateProductOrderDto,
   CreateProductOrderItemAsAdminDto,
-  CreateProductOrderItemDto,
   FindProductOrdersAsAdminDto,
   PaginatedProductOrdersDto,
+  ProductCustomerDiscountDto,
   ProductOrderDto,
   UpdateProductOrderDto,
   UpdateProductOrderItemDto,
 } from '@/modules/products/submodules/orders/dtos';
 import { ProductOrdersService } from '@/modules/products/submodules/orders/product-orders.service';
+import { AppException, ERROR_MESSAGES } from '@/shared';
 
 @Controller()
 @ApiExtraModels(
@@ -104,14 +112,24 @@ export class ProductOrdersController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(AdminRoleAuthGuard)
   @UseGuards(AccessTokenAuthGuard.OPTIONAL)
   @Post(ProductsEndPoint.ORDERS_CUSTOMER)
   async createOneAsCustomer(
     @AuthPayload({ isNullable: true }) authPayload: IAuthPayload,
     @Body() body: CreateProductOrderDto,
   ): Promise<ProductOrderDto> {
-    const { authCustomerRoleId } = authPayload || { authCustomerRoleId: null };
+    const { authCustomerRoleId, authAdminRoleId } = authPayload || {
+      authCustomerRoleId: null,
+      authAdminRoleId: null,
+    };
+
+    if (authAdminRoleId) {
+      throw AppException.fromTemplate(
+        ERROR_MESSAGES.AUTH_ROLE_FORBIDDEN_TEMPLATE,
+        { authRole: AuthRole.ADMIN },
+        HttpStatus.FORBIDDEN,
+      );
+    }
 
     const { productOrderItems, deliveryType, address, phone, comment } = body;
 
@@ -163,7 +181,8 @@ export class ProductOrdersController {
     @Param('product_order_id', ParseIntPipe) productOrderId: number,
     @Body() body: UpdateProductOrderDto,
   ): Promise<ProductOrderDto> {
-    const { deliveryType, address, status, phone, correctionPrice } = body;
+    const { deliveryType, address, status, phone, manualPriceAdjustment } =
+      body;
 
     const productOrder = await this.service.updateOne(
       undefined,
@@ -172,7 +191,7 @@ export class ProductOrdersController {
       address,
       phone,
       status,
-      correctionPrice,
+      manualPriceAdjustment,
     );
 
     return plainToInstance(ProductOrderDto, productOrder);
@@ -209,7 +228,7 @@ export class ProductOrdersController {
   async createOnesItem(
     @AuthPayload() authPayload: IAuthPayload,
     @Param('product_order_id', ParseIntPipe) productOrderId: number,
-    @Body() body: CreateProductOrderItemDto,
+    @Body() body: CreateProductOrderItemAsAdminDto,
   ): Promise<ProductOrderDto> {
     const { count, productItem, customPricePerProductItem } = body;
 
@@ -232,7 +251,7 @@ export class ProductOrdersController {
     @AuthPayload() authPayload: IAuthPayload,
     @Param('product_order_id', ParseIntPipe) productOrderId: number,
     @Param('product_order_item_id', ParseIntPipe) productOrderItemId: number,
-    @Body() body: CreateProductOrderItemDto,
+    @Body() body: CreateProductOrderItemAsAdminDto,
   ): Promise<ProductOrderDto> {
     const { authCustomerRoleId, authAdminRoleId } = authPayload;
 
@@ -262,7 +281,7 @@ export class ProductOrdersController {
   ): Promise<ProductOrderDto> {
     const { authCustomerRoleId, authAdminRoleId } = authPayload;
 
-    const { count, productItem, pricePerProductItem } = body;
+    const { count, productItem, customPricePerProductItem } = body;
 
     const productOrder = await this.service.updateOnesItem(
       authAdminRoleId ? undefined : authCustomerRoleId || undefined,
@@ -270,7 +289,7 @@ export class ProductOrdersController {
       productOrderItemId,
       productItem?.id,
       count,
-      pricePerProductItem,
+      customPricePerProductItem,
     );
 
     return plainToInstance(ProductOrderDto, productOrder);
@@ -292,6 +311,23 @@ export class ProductOrdersController {
       productOrderId,
       productOrderItemId,
     );
+  }
+
+  @ApiResponse({ type: ProductCustomerDiscountDto, status: HttpStatus.OK })
+  @ApiBearerAuth()
+  @UseGuards(CustomerRoleAuthGuard)
+  @UseGuards(AccessTokenAuthGuard.REQUIRED)
+  @Get(ProductsEndPoint.ORDERS_DISCOUNT)
+  async findOneDiscount(
+    @AuthPayload() authPayload: IAuthCustomerPayload,
+  ): Promise<ProductCustomerDiscountDto> {
+    const { authCustomerRoleId } = authPayload;
+
+    const discount = await this.service.findCustomerDiscount(
+      authCustomerRoleId,
+    );
+
+    return plainToInstance(ProductCustomerDiscountDto, discount);
   }
 
   // endregion

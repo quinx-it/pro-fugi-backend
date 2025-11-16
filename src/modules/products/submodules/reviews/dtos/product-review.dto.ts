@@ -1,6 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Type } from 'class-transformer';
-import { IsInt, IsString, ValidateIf, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsInt,
+  IsString,
+  ValidateIf,
+  ValidateNested,
+} from 'class-validator';
 
 import { AuthCustomerRoleDto } from '@/modules/auth/submodules/roles/submodules/customers/dtos/auth-customer-role.dto';
 import { IProductItem } from '@/modules/products/submodules/items/types';
@@ -12,7 +18,7 @@ export class ProductReviewDto implements IProductReview {
   @IsInt()
   id!: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: 'string', nullable: true })
   @ValidateIf((obj) => obj.text !== null)
   @IsString()
   text!: string | null;
@@ -35,7 +41,8 @@ export class ProductReviewDto implements IProductReview {
   @ValidateNested()
   authCustomerRole!: AuthCustomerRoleDto;
 
-  @ApiProperty()
+  @ApiProperty({ type: ProductReviewImageDto, isArray: true })
+  @IsArray()
   @Type(() => ProductReviewImageDto)
   @ValidateNested({ each: true })
   productReviewImages!: ProductReviewImageDto[];

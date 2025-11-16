@@ -12,3 +12,13 @@ export enum ProductOrderDeliveryType {
 }
 
 export const PRODUCT_ORDERS_SEARCH_VIEW_SQL_NAME = 'product_orders_search_view';
+
+export enum ProductDiscountType {
+  PERCENTAGE = 'percentage',
+  FIXED = 'fixed',
+}
+
+export const ProductDiscountValuePostfix = {
+  [ProductDiscountType.PERCENTAGE]: '%',
+  [ProductDiscountType.FIXED]: 'BYN',
+};

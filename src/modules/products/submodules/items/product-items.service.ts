@@ -3,10 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
 
 import { ProductCategoriesService } from '@/modules/products/submodules/categories/product-categories.service';
-import {
-  ProductImagesRepository,
-  ProductPricesRepository,
-} from '@/modules/products/submodules/items/repositories';
+import { ProductImagesRepository } from '@/modules/products/submodules/items/repositories';
 import { ProductItemsRepository } from '@/modules/products/submodules/items/repositories/product-items.repository';
 import {
   ICreateProductImage,
@@ -30,7 +27,6 @@ export class ProductItemsService {
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly itemsRepo: ProductItemsRepository,
-    private readonly pricesRepo: ProductPricesRepository,
     private readonly imagesRepo: ProductImagesRepository,
     private readonly categoriesService: ProductCategoriesService,
   ) {}
@@ -81,7 +77,9 @@ export class ProductItemsService {
     specification: IProductSpecification,
     categoryId: number,
     images: ICreateProductImage[],
-    priceValue: number,
+    basePrice: number,
+    discountValue: number | null,
+    discountPercentage: number | null,
     inStockNumber: number,
   ): Promise<IProductItem> {
     const result = await this.dataSource.transaction(async (manager) => {
@@ -105,10 +103,12 @@ export class ProductItemsService {
         specification,
         categoryId,
         inStockNumber,
+        basePrice,
+        discountValue,
+        discountPercentage,
         manager,
       );
 
-      await this.pricesRepo.createOne(itemId, priceValue, manager);
       await this.imagesRepo.createMany(itemId, images, manager);
 
       const product = await this.itemsRepo.findOne(itemId, true, manager);
@@ -126,7 +126,9 @@ export class ProductItemsService {
     specification?: IProductSpecification,
     categoryId?: number,
     images?: ICreateProductImage[],
-    priceValue?: number,
+    basePrice?: number,
+    discountValue?: number | null,
+    discountPercentage?: number | null,
     inStockNumber?: number,
   ): Promise<IProductItem> {
     const result = await this.dataSource.transaction(async (manager) => {
@@ -136,7 +138,7 @@ export class ProductItemsService {
         manager,
       );
 
-      const { price, productCategoryId: currentProductCategoryId } =
+      const { productCategoryId: currentProductCategoryId } =
         currentProductItem;
 
       const currentProductImages = DbUtil.getRelatedEntityOrThrow<
@@ -170,10 +172,6 @@ export class ProductItemsService {
         actualSpecification = {};
       }
 
-      if (priceValue !== undefined && priceValue !== price) {
-        await this.pricesRepo.createOne(itemId, priceValue, manager);
-      }
-
       if (images !== undefined) {
         await this.imagesRepo.destroyMany(
           currentProductImages.map((image) => image.id),
@@ -189,6 +187,9 @@ export class ProductItemsService {
         actualSpecification,
         categoryId,
         inStockNumber,
+        basePrice,
+        discountValue,
+        discountPercentage,
         manager,
       );
 

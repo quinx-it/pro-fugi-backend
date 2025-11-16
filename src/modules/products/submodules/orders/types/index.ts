@@ -1,6 +1,7 @@
 import { IAuthCustomerRole } from '@/modules/auth/submodules/roles/submodules/customers/types';
 import { IProductItem } from '@/modules/products/submodules/items/types';
 import {
+  ProductDiscountType,
   ProductOrderDeliveryType,
   ProductOrderStatus,
 } from '@/modules/products/submodules/orders/constants';
@@ -23,7 +24,7 @@ export interface IProductOrderItem {
 }
 
 export interface ICreateProductOrderItem {
-  customPricePerProductItem: number | null;
+  customPricePerProductItem?: number | null;
   productItem: IIdentifiable;
   count: number;
 }
@@ -36,7 +37,7 @@ export interface IUpdateProductOrderItem {
 
 export interface ICreateProductOrder {
   deliveryType: ProductOrderDeliveryType;
-  authCustomerRoleId: number | null;
+  authCustomerRoleId?: number | null;
   comment: string | null;
   address: string | null;
   phone: string | null;
@@ -47,7 +48,7 @@ export interface IUpdateProductOrder {
   status?: ProductOrderStatus;
   address?: string | null;
   deliveryType?: ProductOrderDeliveryType;
-  correctionPrice?: number;
+  manualPriceAdjustment?: number;
 }
 
 export interface IProductOrder {
@@ -70,6 +71,8 @@ export interface IProductOrder {
 
   productItemsPrice: number;
   deliveryPrice: number;
+  discountValue: number;
+  discountPercentage: number;
   manualPriceAdjustment: number;
   totalPrice: number;
 
@@ -93,8 +96,24 @@ export interface IProductOrdersSearchView {
 
   productItemsPrice: number;
   deliveryPrice: number;
+  discountValue: number;
+  discountPercentage: number;
   manualPriceAdjustment: number;
   totalPrice: number;
 
   createdAt: Date;
 }
+
+export type IProductDiscount = {
+  value: number;
+  type: ProductDiscountType;
+};
+
+export type IProductDiscountPolicy = Map<number, IProductDiscount>;
+
+export type IProductCustomerDiscount = {
+  discount: IProductDiscount | null;
+  totalOrdersSum: number;
+  currentThreshold: number | null;
+  nextThreshold: number | null;
+};

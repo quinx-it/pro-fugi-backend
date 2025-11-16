@@ -53,4 +53,10 @@ export class ProductOrdersSearchViewEntity implements IProductOrdersSearchView {
 
   @ViewColumn()
   createdAt!: Date;
+
+  @ViewColumn()
+  discountValue!: number;
+
+  @ViewColumn()
+  discountPercentage!: number;
 }

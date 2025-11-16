@@ -15,6 +15,7 @@ import {
   IProductSpecification,
 } from '@/modules/products/submodules/items/types';
 import { IdentityDto } from '@/shared/dtos/identity.dto';
+import { DtosUtil } from '@/shared/utils/dtos.util';
 
 export class CreateProductItemDto implements ICreateProductItem {
   @ApiProperty()
@@ -27,7 +28,17 @@ export class CreateProductItemDto implements ICreateProductItem {
 
   @ApiProperty()
   @IsNumber()
-  price!: number;
+  basePrice!: number;
+
+  @ApiProperty({ type: 'number', nullable: true, default: null })
+  @DtosUtil.isNullable()
+  @IsNumber()
+  discountValue!: number | null;
+
+  @ApiProperty({ type: 'number', nullable: true, default: null })
+  @DtosUtil.isNullable()
+  @IsNumber()
+  discountPercentage!: number | null;
 
   @ApiProperty()
   @IsNumber()

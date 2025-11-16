@@ -7,23 +7,23 @@ import { IPaginated } from '@/shared';
 export abstract class PaginatedDto<T> implements IPaginated<T> {
   abstract get dtoItemClass(): ClassConstructor<T>;
 
-  @ApiProperty({ example: 0 })
+  @ApiProperty()
   @IsNumber()
   page!: number;
 
-  @ApiProperty({ example: 15 })
+  @ApiProperty()
   @IsNumber()
   limit!: number;
 
-  @ApiProperty({ example: 0 })
+  @ApiProperty()
   @IsNumber()
   offset!: number;
 
-  @ApiProperty({ example: 3 })
+  @ApiProperty()
   @IsNumber()
   totalPagesCount!: number;
 
-  @ApiProperty({ example: 50 })
+  @ApiProperty()
   @IsNumber()
   totalItemsCount!: number;
 

@@ -17,10 +17,13 @@ import { ProductOrderItemsRepository } from '@/modules/products/submodules/order
 import { ProductOrdersRepository } from '@/modules/products/submodules/orders/repositories/product-orders.repository';
 import {
   ICreateProductOrderItem,
+  IProductCustomerDiscount,
+  IProductDiscountPolicy,
   IProductOrder,
   IProductOrderItem,
   IProductOrdersSearchView,
 } from '@/modules/products/submodules/orders/types';
+import { ProductDiscountsUtil } from '@/modules/products/submodules/orders/utils/product-discounts.util';
 import {
   AppException,
   DbUtil,
@@ -35,6 +38,12 @@ import { PromisesUtil } from '@/shared/utils/promises.util';
 
 @Injectable()
 export class ProductOrdersService {
+  private readonly discountPolicy: IProductDiscountPolicy;
+
+  private readonly freeShippingThreshold: number;
+
+  private readonly shippingPrice: number;
+
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly ordersRepo: ProductOrdersRepository,
@@ -42,7 +51,11 @@ export class ProductOrdersService {
     private readonly customerRolesService: AuthCustomerRolesService,
     private readonly productItemsService: ProductItemsService,
     private readonly authUsersService: AuthUsersService,
-  ) {}
+  ) {
+    this.discountPolicy = productsConfig.discountPolicy;
+    this.freeShippingThreshold = productsConfig.freeShippingThreshold;
+    this.shippingPrice = productsConfig.shippingPrice;
+  }
 
   // region Orders
 
@@ -189,14 +202,17 @@ export class ProductOrdersService {
       );
     }
 
-    const { shippingPrice: shippingPriceRate, freeShippingThreshold } =
-      productsConfig;
+    const { discount } = customerRoleId
+      ? await this.findCustomerDiscount(customerRoleId)
+      : { discount: null };
 
     const result = await this.dataSource.transaction(async (manager) => {
       const { id: productOrderId } = await this.ordersRepo.createOne(
         customerRoleId,
-        shippingPriceRate,
-        freeShippingThreshold,
+        this.shippingPrice,
+        this.freeShippingThreshold,
+        ProductDiscountsUtil.getFixedValue(discount) || 0,
+        ProductDiscountsUtil.getPercentage(discount) || 0,
         0,
         deliveryType === ProductOrderDeliveryType.SHIPPING ? address : null,
         phone,
@@ -250,7 +266,7 @@ export class ProductOrdersService {
     nonDefaultAddress?: string | null,
     nonDefaultPhone?: string | null,
     status?: ProductOrderStatus,
-    correctionPrice?: number,
+    manualPriceAdjustment?: number,
   ): Promise<IProductOrder> {
     if (customerRoleId) {
       throw AppException.fromTemplate(
@@ -291,7 +307,9 @@ export class ProductOrdersService {
     }
 
     const phone =
-      nonDefaultPhone === undefined ? null : nonDefaultPhone || defaultPhone;
+      nonDefaultPhone === undefined
+        ? undefined
+        : nonDefaultPhone || defaultPhone;
 
     if (phone === null) {
       throw AppException.fromTemplate(
@@ -304,9 +322,11 @@ export class ProductOrdersService {
     const productOrder = await this.ordersRepo.updateOne(
       productOrderId,
       undefined,
+      this.shippingPrice,
+      this.freeShippingThreshold,
       undefined,
       undefined,
-      correctionPrice,
+      manualPriceAdjustment,
       address,
       phone,
       undefined,
@@ -514,6 +534,33 @@ export class ProductOrdersService {
     }
 
     await this.orderItemsRepo.destroyMany([productOrderItemId]);
+  }
+
+  async findCustomerDiscount(
+    authCustomerRoleId: number,
+  ): Promise<IProductCustomerDiscount> {
+    const totalSum = await this.findCustomerOrdersTotalSum(
+      authCustomerRoleId,
+      true,
+    );
+
+    const discount = ProductDiscountsUtil.getOne(this.discountPolicy, totalSum);
+
+    return discount;
+  }
+
+  async findCustomerOrdersTotalSum(
+    authCustomerRoleId: number,
+    completedOnly: boolean = true,
+  ): Promise<number> {
+    const orders = await this.ordersRepo.findMany(
+      authCustomerRoleId,
+      completedOnly ? ProductOrderStatus.COMPLETED : undefined,
+    );
+
+    const totalSum = orders.reduce((acc, order) => acc + order.totalPrice, 0);
+
+    return totalSum;
   }
 
   // endregion

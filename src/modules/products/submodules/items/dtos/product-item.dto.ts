@@ -13,7 +13,6 @@ import { ProductCategoryWithNoSchemaDto } from '@/modules/products/submodules/ca
 import { ProductImageDto } from '@/modules/products/submodules/items/dtos/product-image.dto';
 import {
   IProductItem,
-  IProductPrice,
   IProductSpecification,
 } from '@/modules/products/submodules/items/types';
 import { ProductOrderItemDto } from '@/modules/products/submodules/orders/dtos/product-order-item.dto';
@@ -34,9 +33,22 @@ export class ProductItemDto implements IProductItem {
   description!: string;
 
   @ApiProperty()
+  @IsNumber()
+  basePrice!: number;
+
+  @ApiProperty()
+  @IsNumber()
+  price!: number;
+
+  @ApiProperty()
   @DtosUtil.isNullable()
   @IsNumber()
-  price!: number | null;
+  discountValue!: number | null;
+
+  @ApiProperty()
+  @DtosUtil.isNullable()
+  @IsNumber()
+  discountPercentage!: number | null;
 
   @ApiProperty()
   @IsNumber()
@@ -46,9 +58,6 @@ export class ProductItemDto implements IProductItem {
   @DtosUtil.isNullable()
   @IsNumber()
   rating!: number | null;
-
-  @Exclude()
-  productPrices?: IProductPrice[];
 
   @Exclude()
   productReviews?: IProductReview[];

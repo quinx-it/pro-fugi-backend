@@ -60,12 +60,7 @@ export class ProductItemsRepository {
 
     const products = await manager.find(ProductItemEntity, {
       where: { id: In(ids) },
-      relations: [
-        'productPrices',
-        'productReviews',
-        'productCategory',
-        'productImages',
-      ],
+      relations: ['productReviews', 'productCategory', 'productImages'],
     });
 
     const productMap = new Map(products.map((p) => [p.id, p]));
@@ -97,12 +92,7 @@ export class ProductItemsRepository {
   ): Promise<IProductItem | null> {
     const product = await manager.findOne(ProductItemEntity, {
       where: { id },
-      relations: [
-        'productPrices',
-        'productReviews',
-        'productCategory',
-        'productImages',
-      ],
+      relations: ['productReviews', 'productCategory', 'productImages'],
     });
 
     if (!product && throwIfNotFound) {
@@ -122,6 +112,9 @@ export class ProductItemsRepository {
     specification: IProductSpecification,
     productCategoryId: number,
     inStockNumber: number,
+    basePrice: number,
+    discountValue: number | null,
+    discountPercentage: number | null,
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IProductItem> {
     const { id } = await manager.save(
@@ -132,6 +125,9 @@ export class ProductItemsRepository {
         specification,
         productCategoryId,
         inStockNumber,
+        basePrice,
+        discountValue,
+        discountPercentage,
       }),
     );
 
@@ -147,13 +143,19 @@ export class ProductItemsRepository {
     specification?: IProductSpecification,
     productCategoryId?: number,
     inStockNumber?: number,
+    basePrice?: number,
+    discountValue?: number | null,
+    discountPercentage?: number | null,
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IProductItem> {
     if (
       name !== undefined ||
       description !== undefined ||
       specification !== undefined ||
-      inStockNumber !== undefined
+      inStockNumber !== undefined ||
+      basePrice !== undefined ||
+      discountValue !== undefined ||
+      discountPercentage !== undefined
     ) {
       await manager.update(ProductItemEntity, id, {
         name,
@@ -161,6 +163,9 @@ export class ProductItemsRepository {
         specification,
         productCategoryId,
         inStockNumber,
+        basePrice,
+        discountValue,
+        discountPercentage,
       });
     }
 

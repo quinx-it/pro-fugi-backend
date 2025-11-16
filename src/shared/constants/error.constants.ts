@@ -5,6 +5,7 @@ export const ERROR_MESSAGES = {
 
   ENV_VALUE_MUST_BE_NUM_OR_BOOL: 'must be number or boolean',
   ENV_VALUE_MUST_BE_MS_STR_VALUE: 'must be an ms string value',
+  ENV_VALUE_MUST_BE_JSON_ARRAY: 'must be a JSON array',
 
   // endregion
 
@@ -106,6 +107,18 @@ export const ERROR_MESSAGES = {
   PRODUCT_DISCOUNT_POLICY_INVALID_ENTRY_TEMPLATE: new Template<{
     value: string;
   }>(/* language=ejs */ 'Invalid discount policy value: <%= value %>'),
+  PRODUCT_CATEGORY_HAS_RELATED_ITEMS_TEMPLATE: new Template<{
+    productCategoryId: string;
+    productCategoryName: string;
+  }>(
+    /* language=ejs */ 'Product category{ "id": <%= productCategoryId %>, "name": <%= productCategoryName %> } has related items and cannot be deleted. Delete the related items first or set \'isArchived\' to true',
+  ),
+  PRODUCT_ITEM_HAS_RELATED_ORDERS_TEMPLATE: new Template<{
+    productItemId: string;
+    productItemName: string;
+  }>(
+    /* language=ejs */ 'Product category{ "id": <%= productItemId %>, "name": <%= productItemName %> } has related items and cannot be deleted. Delete the related items first or set \'isArchived\' to true',
+  ),
 
   // endregion
 
@@ -179,7 +192,7 @@ export const ERROR_MESSAGES = {
 
   // endregion
 
-  // Static
+  // region Static
 
   STATIC_DIRECTORY_MISMATCH_TEMPLATE: new Template<{
     fileName: string;
@@ -188,5 +201,11 @@ export const ERROR_MESSAGES = {
     /* language=ejs */ `The static file <%= fileName %> does not belong to <%= dirName %> catalog`,
   ),
 
-  //
+  // endregion
+
+  // region Cross-origin resource sharing
+
+  ORIGIN_FORBIDDEN: 'Forbidden by CORS-policy',
+
+  // endregion
 };

@@ -227,4 +227,22 @@ export class DbUtil {
 
     return relatedEntity as TRelatedEntity;
   }
+
+  static isNoActionRelated(error: unknown): boolean {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'message' in error &&
+      typeof error.message === 'string'
+    ) {
+      return (
+        error.message.includes('UPDATE') && error.message.includes('CASCADE')
+      );
+    }
+
+    return (
+      JSON.stringify(error).includes('UPDATE') &&
+      JSON.stringify(error).includes('CASCADE')
+    );
+  }
 }

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
@@ -143,6 +144,17 @@ export class ProductItemsController {
     );
 
     return plainToInstance(ProductItemDto, product);
+  }
+
+  @ApiResponse({ status: HttpStatus.NO_CONTENT })
+  @UseGuards(AdminRoleAuthGuard)
+  @UseGuards(AccessTokenAuthGuard.REQUIRED)
+  @ApiBearerAuth()
+  @Delete(ProductsEndPoint.ITEM)
+  async destroyOne(
+    @Param('product_item_id', ParseIntPipe) productItemId: number,
+  ): Promise<void> {
+    await this.service.destroyOne(productItemId);
   }
 
   @ApiResponse({ status: HttpStatus.CREATED, type: FileDto })

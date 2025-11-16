@@ -19,6 +19,7 @@ async function bootstrap(): Promise<void> {
 
   AppConfigUtil.setupGlobalValidationPipe(app);
   AppConfigUtil.setupGlobalInterceptors(app);
+  AppConfigUtil.setupCors(app);
 
   const { trustProxyLevel } = appConfig;
 

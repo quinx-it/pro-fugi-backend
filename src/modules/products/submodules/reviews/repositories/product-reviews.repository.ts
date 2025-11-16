@@ -22,7 +22,7 @@ export class ProductReviewsRepository {
       where: { productItemId: itemId, authCustomerRoleId: customerRoleId },
       take,
       skip,
-      relations: ['images', 'customerRole'],
+      relations: ['productReviewImages', 'authCustomerRole'],
     });
 
     return productReviews;
@@ -59,7 +59,7 @@ export class ProductReviewsRepository {
   ): Promise<IProductReview | null> {
     const productReview = await manager.findOne(ProductReviewEntity, {
       where: { id },
-      relations: ['images', 'customerRole'],
+      relations: ['productReviewImages', 'authCustomerRole'],
     });
 
     if (!productReview && throwIfNotFound) {

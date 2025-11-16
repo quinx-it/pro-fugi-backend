@@ -27,9 +27,6 @@ export class ProductItemSearchViewEntity implements IProductItemSearchView {
   updatedAt!: Date;
 
   @ViewColumn()
-  price!: number | null;
-
-  @ViewColumn()
   rating!: number | null;
 
   @ViewColumn()
@@ -46,4 +43,16 @@ export class ProductItemSearchViewEntity implements IProductItemSearchView {
 
   @ViewColumn()
   productReviewsCount!: number;
+
+  @ViewColumn()
+  basePrice!: number;
+
+  @ViewColumn()
+  discountPercentage!: number | null;
+
+  @ViewColumn()
+  discountValue!: number | null;
+
+  @ViewColumn()
+  price!: number;
 }

@@ -18,7 +18,7 @@ export class CreateProductOrderItemAsAdminDto
   @ValidateNested()
   productItem!: IdentityDto;
 
-  @ApiProperty()
+  @ApiProperty({ type: 'number', nullable: true })
   @DtosUtil.isNullable()
   @IsNumber()
   customPricePerProductItem!: number | null;

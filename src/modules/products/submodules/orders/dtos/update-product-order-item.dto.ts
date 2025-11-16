@@ -17,8 +17,8 @@ export class UpdateProductOrderItemDto implements IUpdateProductOrderItem {
   @ValidateNested()
   productItem?: IdentityDto;
 
-  @ApiProperty()
+  @ApiProperty({ type: 'number', nullable: true })
   @IsOptional()
   @IsNumber()
-  pricePerProductItem?: number;
+  customPricePerProductItem?: number | null;
 }

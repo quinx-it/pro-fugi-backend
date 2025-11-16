@@ -3,7 +3,7 @@ import { HttpStatus } from '@nestjs/common';
 import {
   AuthRole,
   AUTH_ROLE_ENTITY_KEY_MAP,
-  AUTH_ROLES_PRIORITY_ASCENDING,
+  AUTH_ROLES_PRIORITY_DESCENDING,
 } from '@/modules/auth/submodules/roles/constants';
 import { IAuthPayload, IAuthUser } from '@/modules/auth/submodules/users/types';
 import { AppException, ERROR_MESSAGES } from '@/shared';
@@ -34,12 +34,12 @@ export class AuthRolesUtil {
       AuthRolesUtil.getRoles(authUser),
     );
 
-    const authRoles = authRoleOfHighestPriority
-      ? [authRoleOfHighestPriority]
-      : [];
+    const authRoleToAccess = authRole || authRoleOfHighestPriority;
 
-    if (authRole) {
-      const roleKey = AUTH_ROLE_ENTITY_KEY_MAP[authRole];
+    const authRoles = authRoleToAccess ? [authRoleToAccess] : [];
+
+    if (authRoleToAccess) {
+      const roleKey = AUTH_ROLE_ENTITY_KEY_MAP[authRoleToAccess];
       const roleEntity = authUser[roleKey];
 
       const roleId =
@@ -49,17 +49,17 @@ export class AuthRolesUtil {
           ? (roleEntity.id as number)
           : undefined;
 
-      if (!authRoles.includes(authRole) || !roleId) {
+      if (!authRoles.includes(authRoleToAccess) || !roleId) {
         throw AppException.fromTemplate(
           ERROR_MESSAGES.AUTH_ROLE_REQUIRED_TEMPLATE,
-          { authRole },
+          { authRole: authRoleToAccess },
           HttpStatus.BAD_REQUEST,
         );
       }
 
       const BASE: IAuthPayload = {
         authUserId: authUser.id,
-        authRoles: [authRole],
+        authRoles,
         authCustomerRoleId: null,
         authAdminRoleId: null,
       };
@@ -78,7 +78,7 @@ export class AuthRolesUtil {
   private static findOneOfHighestPriority(
     roles: AuthRole[],
   ): AuthRole | undefined {
-    const rolesByPriority = AUTH_ROLES_PRIORITY_ASCENDING.map(
+    const rolesByPriority = AUTH_ROLES_PRIORITY_DESCENDING.map(
       (authRoleOfPriority) =>
         roles.includes(authRoleOfPriority) ? authRoleOfPriority : undefined,
     );

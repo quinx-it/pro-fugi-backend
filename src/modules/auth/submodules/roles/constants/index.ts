@@ -10,7 +10,7 @@ export const AUTH_ROLE_ENTITY_KEY_MAP: Record<AuthRole, keyof IAuthUser> = {
   [AuthRole.CUSTOMER]: 'authCustomerRole',
 };
 
-export const AUTH_ROLES_PRIORITY_ASCENDING = [
-  AuthRole.CUSTOMER,
+export const AUTH_ROLES_PRIORITY_DESCENDING = [
   AuthRole.ADMIN,
+  AuthRole.CUSTOMER,
 ];

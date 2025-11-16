@@ -17,17 +17,17 @@ export class AuthCustomerRoleDto implements IAuthCustomerRole {
   @Exclude()
   createdAt!: Date;
 
-  @ApiProperty()
+  @ApiProperty({ type: 'string', nullable: true })
   @DtosUtil.isNullable()
   @IsString()
   firstName!: string | null;
 
-  @ApiProperty()
+  @ApiProperty({ type: 'string', nullable: true })
   @DtosUtil.isNullable()
   @IsString()
   lastName!: string | null;
 
-  @ApiProperty()
+  @ApiProperty({ type: 'string', nullable: true })
   @DtosUtil.isNullable()
   @IsString()
   address!: string | null;

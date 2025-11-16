@@ -93,4 +93,12 @@ export class ProductOrderDto implements IProductOrder {
   @ApiProperty()
   @IsDate()
   updatedAt!: Date;
+
+  @ApiProperty()
+  @IsNumber()
+  discountValue!: number;
+
+  @ApiProperty()
+  @IsNumber()
+  discountPercentage!: number;
 }

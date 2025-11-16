@@ -21,7 +21,6 @@ import {
 import {
   ProductCategoryEntity,
   ProductItemEntity,
-  ProductPriceEntity,
   ProductReviewEntity,
   ProductItemSearchViewEntity,
 } from '@/modules/products/submodules/reviews/entities';
@@ -42,7 +41,6 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
     AuthCustomerRoleEntity,
     AuthAdminRoleEntity,
     ProductItemEntity,
-    ProductPriceEntity,
     ProductReviewEntity,
     ProductItemSearchViewEntity,
     ProductCategoryEntity,

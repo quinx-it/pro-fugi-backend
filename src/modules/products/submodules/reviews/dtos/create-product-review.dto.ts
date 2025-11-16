@@ -7,7 +7,7 @@ import { ICreateProductReview } from '@/modules/products/submodules/reviews/type
 import { DtosUtil } from '@/shared/utils/dtos.util';
 
 export class CreateProductReviewDto implements ICreateProductReview {
-  @ApiProperty()
+  @ApiProperty({ type: 'string', nullable: true })
   @DtosUtil.isNullable()
   @IsString()
   text!: string | null;
@@ -16,7 +16,7 @@ export class CreateProductReviewDto implements ICreateProductReview {
   @IsInt()
   rating!: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: CreateProductReviewImageDto, isArray: true })
   @IsArray()
   @Type(() => CreateProductReviewImageDto)
   @ValidateNested({ each: true })

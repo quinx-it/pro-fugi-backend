@@ -14,6 +14,4 @@ export class CreateProductOrderItemDto implements ICreateProductOrderItem {
   @Type(() => IdentityDto)
   @ValidateNested()
   productItem!: IdentityDto;
-
-  customPricePerProductItem: number | null = 0;
 }

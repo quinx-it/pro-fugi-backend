@@ -12,15 +12,15 @@ export class UpdateProductOrderDto implements IUpdateProductOrder {
   @ApiProperty()
   @IsOptional()
   @IsNumber()
-  correctionPrice?: number;
+  manualPriceAdjustment?: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: 'string', nullable: true, default: null })
   @IsOptional()
   @DtosUtil.isNullable()
   @IsString()
   address?: string | null;
 
-  @ApiProperty()
+  @ApiProperty({ type: 'string', nullable: true, default: null })
   @IsOptional()
   @DtosUtil.isNullable()
   @IsString()

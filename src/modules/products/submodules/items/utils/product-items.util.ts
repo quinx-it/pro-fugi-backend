@@ -8,6 +8,9 @@ export class ProductItemsUtil {
       description: object.description,
       createdAt: object.createdAt,
       updatedAt: object.updatedAt,
+      basePrice: object.basePrice,
+      discountValue: object.discountValue,
+      discountPercentage: object.discountPercentage,
       price: object.price,
       rating: object.rating,
       inStockNumber: object.inStockNumber,
@@ -15,7 +18,6 @@ export class ProductItemsUtil {
       productCategory: object.productCategory,
       productCategoryId: object.productCategoryId,
       productImages: object.productImages,
-      productPrices: object.productPrices,
       productReviews: object.productReviews,
       isArchived: object.isArchived,
     };

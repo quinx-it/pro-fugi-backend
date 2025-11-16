@@ -7,15 +7,9 @@ import { ProductImageEntity } from '@/modules/products/submodules/items/entities
 import { ProductItemEntity } from '@/modules/products/submodules/items/entities/product-item.entity';
 import { ProductItemsController } from '@/modules/products/submodules/items/product-items.controller';
 import { ProductItemsService } from '@/modules/products/submodules/items/product-items.service';
-import {
-  ProductImagesRepository,
-  ProductPricesRepository,
-} from '@/modules/products/submodules/items/repositories';
+import { ProductImagesRepository } from '@/modules/products/submodules/items/repositories';
 import { ProductItemsRepository } from '@/modules/products/submodules/items/repositories/product-items.repository';
-import {
-  ProductPriceEntity,
-  ProductItemSearchViewEntity,
-} from '@/modules/products/submodules/reviews/entities';
+import { ProductItemSearchViewEntity } from '@/modules/products/submodules/reviews/entities';
 import { SERVE_STATIC_OPTIONS } from '@/shared';
 import { MulterUtil } from '@/shared/utils/multer.util';
 
@@ -25,7 +19,6 @@ const { rootPath } = SERVE_STATIC_OPTIONS;
   imports: [
     TypeOrmModule.forFeature([
       ProductItemEntity,
-      ProductPriceEntity,
       ProductItemSearchViewEntity,
       ProductImageEntity,
     ]),
@@ -36,7 +29,6 @@ const { rootPath } = SERVE_STATIC_OPTIONS;
   providers: [
     ProductItemsRepository,
     ProductItemsService,
-    ProductPricesRepository,
     ProductImagesRepository,
   ],
   controllers: [ProductItemsController],

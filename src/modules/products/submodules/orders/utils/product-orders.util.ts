@@ -26,6 +26,8 @@ export class ProductOrdersUtil {
       configFreeShippingThreshold: object.configFreeShippingThreshold,
       productItemsPrice: object.productItemsPrice,
       deliveryPrice: object.deliveryPrice,
+      discountValue: object.discountValue,
+      discountPercentage: object.discountPercentage,
       manualPriceAdjustment: object.manualPriceAdjustment,
       totalPrice: object.totalPrice,
 

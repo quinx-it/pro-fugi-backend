@@ -15,7 +15,9 @@ export interface ICreateProductImage {
 export interface ICreateProductItem {
   name: string;
   description: string;
-  price: number;
+  basePrice: number;
+  discountValue: number | null;
+  discountPercentage: number | null;
   inStockNumber: number;
   specification: IProductSpecification;
   productCategory: IIdentifiable;
@@ -29,6 +31,9 @@ export interface IProductItem {
   description: string;
   createdAt: Date;
   updatedAt: Date;
+  basePrice: number;
+  discountValue: number | null;
+  discountPercentage: number | null;
   price: number | null;
   rating: number | null;
   inStockNumber: number;
@@ -44,9 +49,6 @@ export interface IProductItem {
   productImages?: IProductImage[];
 
   // eslint-disable-next-line no-use-before-define
-  productPrices?: IProductPrice[];
-
-  // eslint-disable-next-line no-use-before-define
   productReviews?: IProductReview[];
 }
 
@@ -56,22 +58,16 @@ export interface IProductItemSearchView {
   description: string;
   createdAt: Date;
   updatedAt: Date;
-  price: number | null;
+  basePrice: number;
+  discountValue: number | null;
+  discountPercentage: number | null;
+  price: number;
   rating: number | null;
   inStockNumber: number;
   productReviewsCount: number;
   productCategoryId: number;
   specification: IProductSpecification;
   isArchived: boolean;
-}
-
-export interface IProductPrice {
-  id: number;
-  value: number;
-  createdAt: Date;
-
-  productItemId: number;
-  productItem?: IProductItem;
 }
 
 export interface IProductImage {

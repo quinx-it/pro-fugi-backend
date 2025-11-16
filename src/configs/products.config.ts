@@ -1,5 +1,6 @@
 import {
   PRODUCTS_CART_SIZE_LIMIT,
+  PRODUCTS_DISCOUNT_POLICY,
   PRODUCTS_FREE_SHIPPING_THRESHOLD,
   PRODUCTS_SHIPPING_PRICE,
 } from '@/configs/env';
@@ -8,4 +9,5 @@ export const productsConfig = {
   shippingPrice: PRODUCTS_SHIPPING_PRICE,
   freeShippingThreshold: PRODUCTS_FREE_SHIPPING_THRESHOLD,
   cartSizeLimit: PRODUCTS_CART_SIZE_LIMIT,
+  discountPolicy: PRODUCTS_DISCOUNT_POLICY,
 };

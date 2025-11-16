@@ -71,6 +71,25 @@ export class ProductOrdersRepository {
     return { items, totalCount };
   }
 
+  async findMany(
+    authCustomerRoleId: number,
+    status: ProductOrderStatus | undefined,
+    manager: EntityManager = this.dataSource.manager,
+  ): Promise<IProductOrder[]> {
+    const productOrders = await manager.find(ProductOrderEntity, {
+      where: { authCustomerRoleId, status },
+      relations: [
+        'authCustomerRole',
+        'productOrderItems',
+        'productOrderItems.productItem',
+      ],
+    });
+
+    return productOrders.map((productOrder) =>
+      ProductOrdersUtil.toPlain(productOrder),
+    );
+  }
+
   async findOne(
     id: number,
     throwIfNotFound: true,
@@ -115,10 +134,12 @@ export class ProductOrdersRepository {
   }
 
   async createOne(
-    customerRoleId: number | null,
-    shippingPriceRate: number,
-    freeShippingThreshold: number,
-    correctionPrice: number,
+    authCustomerRoleId: number | null,
+    configShippingPrice: number,
+    configFreeShippingThreshold: number,
+    discountValue: number,
+    discountPercentage: number,
+    manualPriceAdjustment: number,
     address: string | null,
     phone: string,
     comment: string | null,
@@ -127,13 +148,15 @@ export class ProductOrdersRepository {
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IProductOrder> {
     const { id } = await manager.save(ProductOrderEntity, {
-      authCustomerRoleId: customerRoleId,
+      authCustomerRoleId,
       address,
       phone,
       comment,
-      configShippingPrice: shippingPriceRate,
-      configFreeShippingThreshold: freeShippingThreshold,
-      manualPriceAdjustment: correctionPrice,
+      configShippingPrice,
+      configFreeShippingThreshold,
+      discountValue,
+      discountPercentage,
+      manualPriceAdjustment,
       status,
       deliveryType,
     });
@@ -145,10 +168,12 @@ export class ProductOrdersRepository {
 
   async updateOne(
     id: number,
-    customerRoleId?: number | null,
-    shippingPriceRate?: number,
-    freeShippingThreshold?: number,
-    correctionPrice?: number,
+    authCustomerRoleId?: number | null,
+    configShippingPrice?: number,
+    configFreeShippingThreshold?: number,
+    discountValue?: number,
+    discountPercentage?: number,
+    manualPriceAdjustment?: number,
     address?: string | null,
     phone?: string,
     comment?: string | null,
@@ -157,26 +182,30 @@ export class ProductOrdersRepository {
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IProductOrder> {
     if (
-      customerRoleId !== undefined ||
-      correctionPrice !== undefined ||
+      authCustomerRoleId !== undefined ||
+      manualPriceAdjustment !== undefined ||
       address !== undefined ||
       phone !== undefined ||
       comment !== undefined ||
       status !== undefined ||
       deliveryType !== undefined ||
-      shippingPriceRate !== undefined ||
-      freeShippingThreshold !== undefined
+      configShippingPrice !== undefined ||
+      configFreeShippingThreshold !== undefined ||
+      discountValue !== undefined ||
+      discountPercentage !== undefined
     ) {
       await manager.update(ProductOrderEntity, id, {
-        authCustomerRoleId: customerRoleId,
+        authCustomerRoleId,
         address,
         phone,
         comment,
-        manualPriceAdjustment: correctionPrice,
+        configShippingPrice,
+        configFreeShippingThreshold,
+        discountValue,
+        discountPercentage,
+        manualPriceAdjustment,
         status,
         deliveryType,
-        configShippingPrice: shippingPriceRate,
-        configFreeShippingThreshold: freeShippingThreshold,
       });
     }
 

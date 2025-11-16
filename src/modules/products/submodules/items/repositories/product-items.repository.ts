@@ -173,4 +173,11 @@ export class ProductItemsRepository {
 
     return ProductItemsUtil.toPlain(product);
   }
+
+  async destroyOne(
+    productItemId: number,
+    manager: EntityManager = this.dataSource.manager,
+  ): Promise<void> {
+    await manager.delete(ProductItemEntity, productItemId);
+  }
 }

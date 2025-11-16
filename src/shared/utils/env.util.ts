@@ -29,6 +29,19 @@ const msStringValue = makeValidator((value: string) => {
   return value as ms.StringValue;
 });
 
+export const strArray = makeValidator((value) => {
+  const parsed = JSON.parse(value);
+
+  if (
+    !Array.isArray(parsed) ||
+    !parsed.every((item) => typeof item === 'string')
+  ) {
+    throw new Error(ERROR_MESSAGES.ENV_VALUE_MUST_BE_JSON_ARRAY);
+  }
+
+  return parsed as string[];
+});
+
 const productDiscountPolicy = makeValidator((value: string) => {
   return ProductDiscountsUtil.toDiscountPolicy(value);
 });
@@ -39,4 +52,6 @@ export class EnvUtil {
   static msStringValue = msStringValue;
 
   static productDiscountPolicy = productDiscountPolicy;
+
+  static strArray = strArray;
 }

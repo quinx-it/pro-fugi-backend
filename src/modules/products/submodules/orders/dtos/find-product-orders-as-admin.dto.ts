@@ -26,15 +26,6 @@ export class FindProductOrdersAsAdminDto
     IPagination
 {
   @ApiProperty({
-    name: 'as_admin',
-  })
-  @ApiProperty()
-  @Transform(({ value }) => JSON.parse(value) === true)
-  @IsBoolean()
-  @Expose({ name: 'as_admin' })
-  asAdmin!: boolean;
-
-  @ApiProperty({
     name: 'auth_customer_role_id_in',
     required: false,
     type: String,

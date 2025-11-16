@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
 
@@ -14,7 +14,9 @@ import {
 } from '@/modules/products/submodules/items/types';
 import ProductSpecificationUtil from '@/modules/products/submodules/items/utils/product-specification.util';
 import {
+  AppException,
   DbUtil,
+  ERROR_MESSAGES,
   IFilter,
   IPaginated,
   IPagination,
@@ -197,5 +199,32 @@ export class ProductItemsService {
     });
 
     return result;
+  }
+
+  async destroyOne(
+    productItemId: number,
+    manager: EntityManager = this.dataSource.manager,
+  ): Promise<void> {
+    try {
+      await this.itemsRepo.destroyOne(productItemId, manager);
+    } catch (error) {
+      if (DbUtil.isNoActionRelated(error)) {
+        const { name: productItemName } = await this.itemsRepo.findOne(
+          productItemId,
+          true,
+        );
+
+        throw AppException.fromTemplate(
+          ERROR_MESSAGES.PRODUCT_ITEM_HAS_RELATED_ORDERS_TEMPLATE,
+          {
+            productItemName,
+            productItemId: productItemId.toString(),
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      throw error;
+    }
   }
 }

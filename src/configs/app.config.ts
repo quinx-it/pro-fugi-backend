@@ -3,9 +3,11 @@ import path from 'path';
 
 import {
   ClassSerializerInterceptor,
+  HttpStatus,
   type INestApplication,
   ValidationPipe,
 } from '@nestjs/common';
+import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 
 import {
   APP_ENV,
@@ -14,8 +16,15 @@ import {
   APP_CONTAINER_PORT,
   APP_USE_SSL,
   APP_TRUST_PROXY_LEVEL,
+  APP_ALLOWED_ORIGINS,
 } from '@/configs/env';
-import { GLOBAL_VALIDATION_PIPE_OPTIONS } from '@/shared';
+import {
+  AppException,
+  ERROR_MESSAGES,
+  GLOBAL_VALIDATION_PIPE_OPTIONS,
+  HTTP_ALLOWED_HEADERS,
+  HTTP_ALLOWED_METHODS,
+} from '@/shared';
 
 import type { HttpsOptions } from '@nestjs/common/interfaces/external/https-options.interface';
 
@@ -52,5 +61,29 @@ export class AppConfigUtil {
 
   static setupGlobalValidationPipe(app: INestApplication): void {
     app.useGlobalPipes(new ValidationPipe(GLOBAL_VALIDATION_PIPE_OPTIONS));
+  }
+
+  static setupCors(app: INestApplication): void {
+    app.enableCors({
+      origin: (origin, callback) => {
+        if (APP_ALLOWED_ORIGINS.includes('*')) {
+          return callback(null, true);
+        }
+
+        if (!origin || APP_ALLOWED_ORIGINS.includes(origin)) {
+          return callback(null, true);
+        }
+
+        return callback(
+          new AppException(
+            ERROR_MESSAGES.ORIGIN_FORBIDDEN,
+            HttpStatus.FORBIDDEN,
+          ),
+        );
+      },
+      allowedHeaders: HTTP_ALLOWED_HEADERS,
+      methods: HTTP_ALLOWED_METHODS,
+      credentials: true,
+    } as CorsOptions);
   }
 }

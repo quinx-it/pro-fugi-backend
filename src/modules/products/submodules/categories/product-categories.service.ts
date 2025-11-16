@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
 
@@ -7,7 +7,14 @@ import {
   IProductCategory,
   IProductSpecificationSchema,
 } from '@/modules/products/submodules/categories/types';
-import { IPaginated, IPagination, PaginationUtil } from '@/shared';
+import {
+  AppException,
+  DbUtil,
+  ERROR_MESSAGES,
+  IPaginated,
+  IPagination,
+  PaginationUtil,
+} from '@/shared';
 
 @Injectable()
 export class ProductCategoriesService {
@@ -90,5 +97,32 @@ export class ProductCategoriesService {
     );
 
     return productCategory;
+  }
+
+  async destroyOne(
+    productCategoryId: number,
+    manager: EntityManager = this.dataSource.manager,
+  ): Promise<void> {
+    try {
+      await this.repo.destroyOne(productCategoryId, manager);
+    } catch (error) {
+      if (DbUtil.isNoActionRelated(error)) {
+        const { name: productCategoryName } = await this.repo.findOne(
+          productCategoryId,
+          true,
+        );
+
+        throw AppException.fromTemplate(
+          ERROR_MESSAGES.PRODUCT_CATEGORY_HAS_RELATED_ITEMS_TEMPLATE,
+          {
+            productCategoryName,
+            productCategoryId: productCategoryId.toString(),
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      throw error;
+    }
   }
 }

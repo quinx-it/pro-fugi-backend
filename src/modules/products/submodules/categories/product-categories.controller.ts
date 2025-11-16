@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
@@ -14,9 +15,10 @@ import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 
 import { AuthRole } from '@/modules/auth/submodules/roles/constants';
-import { AuthRoles } from '@/modules/auth/submodules/roles/decorators';
 import { AdminRoleAuthGuard } from '@/modules/auth/submodules/roles/submodules/admins/guards';
 import { AccessTokenAuthGuard } from '@/modules/auth/submodules/tokens/guards/access-token-auth.guard';
+import { AuthPayload } from '@/modules/auth/submodules/users/decorators';
+import { IAuthPayload } from '@/modules/auth/submodules/users/types';
 import { ProductsEndPoint } from '@/modules/products/constants';
 import {
   CreateProductCategoryDto,
@@ -37,9 +39,11 @@ export class ProductCategoriesController {
   @UseGuards(AccessTokenAuthGuard.OPTIONAL)
   @Get(ProductsEndPoint.CATEGORIES)
   async findMany(
-    @AuthRoles() authRoles: AuthRole[],
+    @AuthPayload({ isNullable: true }) authPayload: IAuthPayload | null,
     @Query() query: PaginationDto,
   ): Promise<PaginatedProductCategoriesDto> {
+    const { authRoles } = authPayload || { authRoles: [] as AuthRole[] };
+
     const isArchived = authRoles.includes(AuthRole.ADMIN) ? false : undefined;
 
     const productCategories = await this.service.findMany(query, isArchived);
@@ -103,5 +107,18 @@ export class ProductCategoriesController {
     );
 
     return plainToInstance(ProductCategoryDto, productCategory);
+  }
+
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+  })
+  @ApiBearerAuth()
+  @UseGuards(AdminRoleAuthGuard)
+  @UseGuards(AccessTokenAuthGuard.REQUIRED)
+  @Delete(ProductsEndPoint.CATEGORY)
+  async destroyOne(
+    @Param('product_category_id', ParseIntPipe) productCategoryId: number,
+  ): Promise<void> {
+    await this.service.destroyOne(productCategoryId);
   }
 }

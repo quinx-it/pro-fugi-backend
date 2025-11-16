@@ -13,6 +13,7 @@ export const env = cleanEnv(process.env, {
   APP_CONTAINER_PORT: port({ default: undefined }),
   APP_USE_SSL: bool(),
   APP_TRUST_PROXY_LEVEL: EnvUtil.numOrBool(),
+  APP_ALLOWED_ORIGINS: EnvUtil.strArray(),
 
   DB_HOST_NAME: host(),
   DB_NAME: str(),
@@ -39,7 +40,6 @@ export const env = cleanEnv(process.env, {
 
   PRODUCTS_SHIPPING_PRICE: num(),
   PRODUCTS_FREE_SHIPPING_THRESHOLD: num(),
-  PRODUCTS_CART_SIZE_LIMIT: num(),
   PRODUCTS_DISCOUNT_POLICY: EnvUtil.productDiscountPolicy(),
 });
 
@@ -51,6 +51,7 @@ export const {
   APP_HOST_PORT,
   APP_USE_SSL,
   APP_TRUST_PROXY_LEVEL,
+  APP_ALLOWED_ORIGINS,
   DB_HOST_NAME,
   DB_NAME,
   DB_PASSWORD,
@@ -71,6 +72,5 @@ export const {
   AUTH_PHONE_CONFIRMATION_CODE_EXPIRES_IN,
   PRODUCTS_FREE_SHIPPING_THRESHOLD,
   PRODUCTS_SHIPPING_PRICE,
-  PRODUCTS_CART_SIZE_LIMIT,
   PRODUCTS_DISCOUNT_POLICY,
 } = env;

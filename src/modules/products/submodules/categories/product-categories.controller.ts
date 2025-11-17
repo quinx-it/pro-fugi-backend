@@ -22,11 +22,11 @@ import { IAuthPayload } from '@/modules/auth/submodules/users/types';
 import { ProductsEndPoint } from '@/modules/products/constants';
 import {
   CreateProductCategoryDto,
-  PaginatedProductCategoriesDto,
   ProductCategoryDto,
   ReplaceProductCategoryDto,
 } from '@/modules/products/submodules/categories/dtos';
 import { ProductCategoriesService } from '@/modules/products/submodules/categories/product-categories.service';
+import { PaginatedDto } from '@/shared/dtos/paginated.dto';
 import { PaginationDto } from '@/shared/dtos/pagination.dto';
 
 @Controller()
@@ -34,21 +34,27 @@ import { PaginationDto } from '@/shared/dtos/pagination.dto';
 export class ProductCategoriesController {
   constructor(private readonly service: ProductCategoriesService) {}
 
-  @ApiResponse({ status: HttpStatus.OK, type: PaginatedProductCategoriesDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: PaginatedDto.of(ProductCategoryDto),
+  })
   @ApiBearerAuth()
   @UseGuards(AccessTokenAuthGuard.OPTIONAL)
   @Get(ProductsEndPoint.CATEGORIES)
   async findMany(
     @AuthPayload({ isNullable: true }) authPayload: IAuthPayload | null,
     @Query() query: PaginationDto,
-  ): Promise<PaginatedProductCategoriesDto> {
+  ): Promise<PaginatedDto<ProductCategoryDto>> {
     const { authRoles } = authPayload || { authRoles: [] as AuthRole[] };
 
     const isArchived = authRoles.includes(AuthRole.ADMIN) ? false : undefined;
 
     const productCategories = await this.service.findMany(query, isArchived);
 
-    return plainToInstance(PaginatedProductCategoriesDto, productCategories);
+    return plainToInstance(
+      PaginatedDto.of(ProductCategoryDto),
+      productCategories,
+    );
   }
 
   @ApiResponse({

@@ -1,11 +1,12 @@
+/* eslint-disable max-classes-per-file */
+import { Type } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { ClassConstructor, Type } from 'class-transformer';
-import { IsBoolean, IsNumber, ValidateNested } from 'class-validator';
+import { IsBoolean, IsNumber } from 'class-validator';
 
 import { IPaginated } from '@/shared';
 
 export abstract class PaginatedDto<T> implements IPaginated<T> {
-  abstract get dtoItemClass(): ClassConstructor<T>;
+  abstract get dtoItemClass(): Type<T>;
 
   @ApiProperty()
   @IsNumber()
@@ -36,13 +37,20 @@ export abstract class PaginatedDto<T> implements IPaginated<T> {
   hasNext!: boolean;
 
   @ApiProperty()
-  @Type((options) => {
-    const { object } = options!;
-
-    const { dtoItemClass } = object as PaginatedDto<T>;
-
-    return dtoItemClass;
-  })
-  @ValidateNested({ each: true })
   items!: T[];
+
+  static of<TModel extends Type<unknown>>(
+    model: TModel,
+  ): Type<PaginatedDto<InstanceType<TModel>>> {
+    class PaginatedDtoInheritor extends PaginatedDto<InstanceType<TModel>> {
+      get dtoItemClass(): Type {
+        return model;
+      }
+
+      @ApiProperty({ type: model, isArray: true })
+      override items!: InstanceType<TModel>[];
+    }
+
+    return PaginatedDtoInheritor;
+  }
 }

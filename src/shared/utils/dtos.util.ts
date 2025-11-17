@@ -3,13 +3,18 @@ import {
   BadRequestException,
   createParamDecorator,
   ExecutionContext,
+  HttpStatus,
   ValidationError,
 } from '@nestjs/common';
 import { ApiBody, ApiQuery, getSchemaPath } from '@nestjs/swagger';
 import { ClassConstructor, plainToInstance } from 'class-transformer';
 import { validate, ValidateIf } from 'class-validator';
 
-import { GLOBAL_VALIDATION_PIPE_OPTIONS } from '@/shared';
+import {
+  AppException,
+  ERROR_MESSAGES,
+  GLOBAL_VALIDATION_PIPE_OPTIONS,
+} from '@/shared';
 
 export class DtosUtil {
   static transformCommaSeparatedStringArray({
@@ -177,6 +182,22 @@ export class DtosUtil {
           oneOf: dtoClasses.map((dto) => ({ $ref: getSchemaPath(dto) })),
         },
       }),
+    );
+  }
+
+  static parseBooleanValue(value: unknown): boolean | undefined {
+    if (value === undefined) {
+      return undefined;
+    }
+
+    if (value === JSON.stringify(true)) return true;
+
+    if (value === JSON.stringify(false)) return false;
+
+    throw AppException.fromTemplate(
+      ERROR_MESSAGES.CANNOT_PARSE_BOOLEAN_VALUE_TEMPLATE,
+      { value: JSON.stringify(value) },
+      HttpStatus.BAD_REQUEST,
     );
   }
 }

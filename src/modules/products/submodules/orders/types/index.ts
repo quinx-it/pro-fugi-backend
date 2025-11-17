@@ -24,29 +24,37 @@ export interface IProductOrderItem {
 }
 
 export interface ICreateProductOrderItem {
-  customPricePerProductItem?: number | null;
   productItem: IIdentifiable;
   count: number;
 }
 
-export interface IUpdateProductOrderItem {
-  customPricePerProductItem?: number | null;
+export interface ICreateProductOrderItemAsAdmin
+  extends ICreateProductOrderItem {
+  pricePerProductItemIfNotDefault: number | null;
+}
+
+export interface IUpdateProductOrderItemAsAdmin {
+  pricePerProductItemIfNotDefault?: number | null;
   productItem?: IIdentifiable;
   count?: number;
 }
 
 export interface ICreateProductOrder {
   deliveryType: ProductOrderDeliveryType;
-  authCustomerRoleId?: number | null;
   comment: string | null;
-  address: string | null;
-  phone: string | null;
+  addressIfNotDefault: string | null;
+  phoneIfNotDefault: string | null;
   productOrderItems: ICreateProductOrderItem[];
 }
 
-export interface IUpdateProductOrder {
+export interface ICreateProductOrderAsAdmin extends ICreateProductOrder {
+  authCustomerRoleId: number;
+  productOrderItems: ICreateProductOrderItemAsAdmin[];
+}
+
+export interface IUpdateProductOrderAsAdmin {
   status?: ProductOrderStatus;
-  address?: string | null;
+  addressIfNotDefault?: string | null;
   deliveryType?: ProductOrderDeliveryType;
   manualPriceAdjustment?: number;
 }

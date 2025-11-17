@@ -5,10 +5,10 @@ import {
   ProductOrderDeliveryType,
   ProductOrderStatus,
 } from '@/modules/products/submodules/orders/constants';
-import { IUpdateProductOrder } from '@/modules/products/submodules/orders/types';
+import { IUpdateProductOrderAsAdmin } from '@/modules/products/submodules/orders/types';
 import { DtosUtil } from '@/shared/utils/dtos.util';
 
-export class UpdateProductOrderDto implements IUpdateProductOrder {
+export class UpdateProductOrderDto implements IUpdateProductOrderAsAdmin {
   @ApiProperty()
   @IsOptional()
   @IsNumber()
@@ -18,7 +18,7 @@ export class UpdateProductOrderDto implements IUpdateProductOrder {
   @IsOptional()
   @DtosUtil.isNullable()
   @IsString()
-  address?: string | null;
+  addressIfNotDefault?: string | null;
 
   @ApiProperty({ type: 'string', nullable: true, default: null })
   @IsOptional()

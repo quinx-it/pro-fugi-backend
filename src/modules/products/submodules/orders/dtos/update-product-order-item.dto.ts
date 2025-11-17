@@ -2,10 +2,12 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsNumber, IsOptional, ValidateNested } from 'class-validator';
 
-import { IUpdateProductOrderItem } from '@/modules/products/submodules/orders/types';
+import { IUpdateProductOrderItemAsAdmin } from '@/modules/products/submodules/orders/types';
 import { IdentityDto } from '@/shared/dtos/identity.dto';
 
-export class UpdateProductOrderItemDto implements IUpdateProductOrderItem {
+export class UpdateProductOrderItemDto
+  implements IUpdateProductOrderItemAsAdmin
+{
   @ApiProperty()
   @IsOptional()
   @IsInt()
@@ -20,5 +22,5 @@ export class UpdateProductOrderItemDto implements IUpdateProductOrderItem {
   @ApiProperty({ type: 'number', nullable: true })
   @IsOptional()
   @IsNumber()
-  customPricePerProductItem?: number | null;
+  pricePerProductItemIfNotDefault?: number | null;
 }

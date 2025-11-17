@@ -15,19 +15,21 @@ export class MulterUtil {
     return {
       storage: diskStorage({
         destination,
-        filename: (
-          _req: Express.Request,
-          file: Express.Multer.File,
-          callback: (error: Error | null, filename: string) => void,
-        ): void => {
-          const uniqueSuffix: string = `${Date.now()}-${Math.round(
-            Math.random() * 1e9,
-          )}`;
-          const fileExt: string = extname(file.originalname);
-          callback(null, `${uniqueSuffix}${fileExt}`);
-        },
+        filename: MulterUtil.fileNameCallback,
       }),
     };
+  }
+
+  static fileNameCallback(
+    _req: Express.Request,
+    file: Express.Multer.File,
+    callback: (error: Error | null, filename: string) => void,
+  ): void {
+    const uniqueSuffix: string = `${Date.now()}${Math.round(
+      Math.random() * 1e4,
+    )}`;
+    const fileExt: string = extname(file.originalname);
+    callback(null, `${uniqueSuffix}${fileExt}`);
   }
 
   static getModule(rootDir: string, internalDir: string): DynamicModule {

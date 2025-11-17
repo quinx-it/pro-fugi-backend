@@ -17,6 +17,7 @@ import { ProductOrderItemsRepository } from '@/modules/products/submodules/order
 import { ProductOrdersRepository } from '@/modules/products/submodules/orders/repositories/product-orders.repository';
 import {
   ICreateProductOrderItem,
+  ICreateProductOrderItemAsAdmin,
   IProductCustomerDiscount,
   IProductDiscountPolicy,
   IProductOrder,
@@ -113,7 +114,9 @@ export class ProductOrdersService {
 
   async createOne(
     customerRoleId: number | null,
-    productOrderItems: ICreateProductOrderItem[],
+    productOrderItems:
+      | ICreateProductOrderItem[]
+      | ICreateProductOrderItemAsAdmin[],
     deliveryType: ProductOrderDeliveryType,
     nonDefaultAddress: string | null,
     nonDefaultPhone: string | null,
@@ -125,8 +128,13 @@ export class ProductOrdersService {
         const {
           productItem: { id: productItemId },
           count,
-          customPricePerProductItem,
         } = productOrderItem;
+
+        const customPricePerProductItem =
+          'customPricePerProductItem' in productOrderItem &&
+          typeof productOrderItem.customPricePerProductItem === 'number'
+            ? productOrderItem.customPricePerProductItem
+            : null;
 
         const productItem = await this.productItemsService.findOne(
           productItemId,

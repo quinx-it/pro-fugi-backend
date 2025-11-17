@@ -32,12 +32,12 @@ import { ProductsEndPoint } from '@/modules/products/constants';
 import { PRODUCT_REVIEW_IMAGES_PATH } from '@/modules/products/submodules/reviews/constants';
 import {
   CreateProductReviewDto,
-  PaginatedProductReviewsDto,
   ProductReviewDto,
   UpdateProductReviewDto,
 } from '@/modules/products/submodules/reviews/dtos';
 import { ProductReviewsService } from '@/modules/products/submodules/reviews/product-reviews.service';
 import { FileDto } from '@/shared/dtos/file.dto';
+import { PaginatedDto } from '@/shared/dtos/paginated.dto';
 import { PaginationDto } from '@/shared/dtos/pagination.dto';
 
 @Controller()
@@ -45,15 +45,18 @@ import { PaginationDto } from '@/shared/dtos/pagination.dto';
 export class ProductReviewsController {
   constructor(private readonly service: ProductReviewsService) {}
 
-  @ApiResponse({ status: HttpStatus.OK, type: PaginatedProductReviewsDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: PaginatedDto.of(ProductReviewDto),
+  })
   @Get(ProductsEndPoint.REVIEWS)
   async findMany(
     @Param('product_item_id', ParseIntPipe) productItemId: number,
     @Query() query: PaginationDto,
-  ): Promise<PaginatedProductReviewsDto> {
+  ): Promise<PaginatedDto<ProductReviewDto>> {
     const productReviews = await this.service.findMany(productItemId, query);
 
-    return plainToInstance(PaginatedProductReviewsDto, productReviews);
+    return plainToInstance(PaginatedDto.of(ProductReviewDto), productReviews);
   }
 
   @ApiResponse({ status: HttpStatus.OK, type: ProductReviewDto })

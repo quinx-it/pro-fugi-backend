@@ -40,14 +40,15 @@ import {
   CreateProductOrderDto,
   CreateProductOrderItemAsAdminDto,
   FindProductOrdersDto,
-  PaginatedProductOrdersDto,
   ProductCustomerDiscountDto,
   ProductOrderDto,
+  ProductOrderItemDto,
   UpdateProductOrderDto,
   UpdateProductOrderItemDto,
 } from '@/modules/products/submodules/orders/dtos';
 import { ProductOrdersService } from '@/modules/products/submodules/orders/product-orders.service';
 import { AppException, ERROR_MESSAGES } from '@/shared';
+import { PaginatedDto } from '@/shared/dtos/paginated.dto';
 import { DtosUtil } from '@/shared/utils/dtos.util';
 
 @Controller()
@@ -64,13 +65,17 @@ export class ProductOrdersController {
 
   // region Orders
 
+  @ApiResponse({
+    type: PaginatedDto.of(ProductOrderDto),
+    status: HttpStatus.OK,
+  })
   @UseGuards(AccessTokenAuthGuard.REQUIRED)
   @ApiBearerAuth()
   @Get(ProductsEndPoint.ORDERS)
   async findMany(
     @AuthPayload() authPayload: IAuthCustomerPayload,
     @Query() query: FindProductOrdersDto,
-  ): Promise<PaginatedProductOrdersDto> {
+  ): Promise<PaginatedDto<ProductOrderDto>> {
     const { authCustomerRoleId, authAdminRoleId } = authPayload || {
       authCustomerRoleId: null,
       authAdminRoleId: null,
@@ -94,7 +99,7 @@ export class ProductOrdersController {
         PRODUCT_ORDERS_CUSTOMER_QUERY_PAGINATION,
       );
 
-      return plainToInstance(PaginatedProductOrdersDto, productOrders);
+      return plainToInstance(PaginatedDto.of(ProductOrderDto), productOrders);
     }
 
     if (authAdminRoleId) {
@@ -113,12 +118,16 @@ export class ProductOrdersController {
         pagination,
       );
 
-      return plainToInstance(PaginatedProductOrdersDto, productOrders);
+      return plainToInstance(PaginatedDto.of(ProductOrderDto), productOrders);
     }
 
     throw new AppException(ERROR_MESSAGES.HTTP_INTERNAL_SERVER_ERROR);
   }
 
+  @ApiResponse({
+    type: ProductOrderDto,
+    status: HttpStatus.OK,
+  })
   @UseGuards(AccessTokenAuthGuard.REQUIRED)
   @ApiBearerAuth()
   @Get(ProductsEndPoint.ORDER)
@@ -137,6 +146,10 @@ export class ProductOrdersController {
     return plainToInstance(ProductOrderDto, productOrder);
   }
 
+  @ApiResponse({
+    type: ProductOrderDto,
+    status: HttpStatus.CREATED,
+  })
   @ApiBearerAuth()
   @DtosUtil.apiBody(CreateProductOrderDto, CreateProductOrderAsAdminDto)
   @UseGuards(AccessTokenAuthGuard.OPTIONAL)
@@ -209,6 +222,10 @@ export class ProductOrdersController {
     return plainToInstance(ProductOrderDto, productOrder);
   }
 
+  @ApiResponse({
+    type: ProductOrderDto,
+    status: HttpStatus.OK,
+  })
   @ApiBearerAuth()
   @UseGuards(AdminRoleAuthGuard)
   @UseGuards(AccessTokenAuthGuard.REQUIRED)
@@ -242,6 +259,10 @@ export class ProductOrdersController {
 
   // region Order items
 
+  @ApiResponse({
+    type: ProductOrderItemDto,
+    status: HttpStatus.OK,
+  })
   @UseGuards(AccessTokenAuthGuard.REQUIRED)
   @ApiBearerAuth()
   @Get(ProductsEndPoint.ORDER_ITEM)
@@ -249,31 +270,34 @@ export class ProductOrdersController {
     @AuthPayload() authPayload: IAuthPayload,
     @Param('product_order_id', ParseIntPipe) productOrderId: number,
     @Param('product_order_item_id', ParseIntPipe) productOrderItemId: number,
-  ): Promise<ProductOrderDto> {
+  ): Promise<ProductOrderItemDto> {
     const { authCustomerRoleId, authAdminRoleId } = authPayload;
 
-    const productOrder = await this.service.findOnesItem(
+    const productOrderItem = await this.service.findOnesItem(
       authAdminRoleId ? undefined : authCustomerRoleId || undefined,
       productOrderId,
       productOrderItemId,
       true,
     );
 
-    return plainToInstance(ProductOrderDto, productOrder);
+    return plainToInstance(ProductOrderItemDto, productOrderItem);
   }
 
+  @ApiResponse({
+    type: ProductOrderItemDto,
+    status: HttpStatus.CREATED,
+  })
   @ApiBearerAuth()
   @UseGuards(AdminRoleAuthGuard)
   @UseGuards(AccessTokenAuthGuard.REQUIRED)
   @Post(ProductsEndPoint.ORDER_ITEMS)
   async createOnesItem(
-    @AuthPayload() authPayload: IAuthPayload,
     @Param('product_order_id', ParseIntPipe) productOrderId: number,
     @Body() body: CreateProductOrderItemAsAdminDto,
-  ): Promise<ProductOrderDto> {
+  ): Promise<ProductOrderItemDto> {
     const { count, productItem, pricePerProductItemIfNotDefault } = body;
 
-    const productOrder = await this.service.createOnesItem(
+    const productOrderItem = await this.service.createOnesItem(
       undefined,
       productOrderId,
       productItem.id,
@@ -281,9 +305,13 @@ export class ProductOrdersController {
       pricePerProductItemIfNotDefault,
     );
 
-    return plainToInstance(ProductOrderDto, productOrder);
+    return plainToInstance(ProductOrderItemDto, productOrderItem);
   }
 
+  @ApiResponse({
+    type: ProductOrderItemDto,
+    status: HttpStatus.OK,
+  })
   @ApiBearerAuth()
   @UseGuards(AdminRoleAuthGuard)
   @UseGuards(AccessTokenAuthGuard.REQUIRED)
@@ -310,6 +338,10 @@ export class ProductOrdersController {
     return plainToInstance(ProductOrderDto, productOrder);
   }
 
+  @ApiResponse({
+    type: ProductOrderItemDto,
+    status: HttpStatus.OK,
+  })
   @ApiBearerAuth()
   @UseGuards(AdminRoleAuthGuard)
   @UseGuards(AccessTokenAuthGuard.REQUIRED)
@@ -336,6 +368,9 @@ export class ProductOrdersController {
     return plainToInstance(ProductOrderDto, productOrder);
   }
 
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+  })
   @ApiBearerAuth()
   @UseGuards(AdminRoleAuthGuard)
   @UseGuards(AccessTokenAuthGuard.REQUIRED)

@@ -33,26 +33,29 @@ import {
   CreateNewsArticleDto,
   FindNewsArticlesDto,
   NewsArticleDto,
-  PaginatedNewsArticlesDto,
   UpdateNewsArticleDto,
 } from '@/modules/news/dtos';
 import { NewsService } from '@/modules/news/news.service';
 import { PRODUCT_REVIEW_IMAGES_PATH } from '@/modules/products/submodules/reviews/constants';
 import { FileDto } from '@/shared/dtos/file.dto';
+import { PaginatedDto } from '@/shared/dtos/paginated.dto';
 
 @Controller()
 @ApiTags(NewsEndPoint.API_TAG)
 export class NewsController {
   constructor(private readonly service: NewsService) {}
 
-  @ApiResponse({ type: PaginatedNewsArticlesDto, status: HttpStatus.OK })
+  @ApiResponse({
+    type: PaginatedDto.of(NewsArticleDto),
+    status: HttpStatus.OK,
+  })
   @ApiBearerAuth()
   @UseGuards(AccessTokenAuthGuard.OPTIONAL)
   @Get(NewsEndPoint.ARTICLES)
   async findMany(
     @AuthPayload({ isNullable: true }) authPayload: IAuthPayload | null,
     @Query() query: FindNewsArticlesDto,
-  ): Promise<PaginatedNewsArticlesDto> {
+  ): Promise<PaginatedDto<NewsArticleDto>> {
     const { filter, pagination, sort } = query;
 
     const { authAdminRoleId } = authPayload || { authAdminRoleId: null };
@@ -64,7 +67,7 @@ export class NewsController {
       pagination,
     );
 
-    return plainToInstance(PaginatedNewsArticlesDto, articles);
+    return plainToInstance(PaginatedDto.of(NewsArticleDto), articles);
   }
 
   @ApiResponse({ type: NewsArticleDto, status: HttpStatus.OK })

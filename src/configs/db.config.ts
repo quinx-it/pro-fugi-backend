@@ -12,6 +12,7 @@ import { AuthPhoneMethodEntity } from '@/modules/auth/submodules/methods/submodu
 import { AuthAdminRoleEntity } from '@/modules/auth/submodules/roles/submodules/admins/entities/auth-admin-role.entity';
 import { AuthCustomerRoleEntity } from '@/modules/auth/submodules/roles/submodules/customers/entities/auth-customer-role.entity';
 import { AuthUserEntity } from '@/modules/auth/submodules/users/entities';
+import { NewsArticleEntity } from '@/modules/news/entities';
 import { ProductImageEntity } from '@/modules/products/submodules/items/entities/product-image.entity';
 import {
   ProductOrderEntity,
@@ -49,6 +50,7 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
     ProductOrderEntity,
     ProductOrderItemEntity,
     ProductOrdersSearchViewEntity,
+    NewsArticleEntity,
   ],
   migrations: [MIGRATIONS_PATH],
   synchronize: false,

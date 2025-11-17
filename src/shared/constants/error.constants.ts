@@ -136,6 +136,12 @@ export const ERROR_MESSAGES = {
 
   // endregion
 
+  // region News
+
+  NEWS_ARTICLE_NOT_PUBLISHED: 'The requested article is not published yet',
+
+  // endregion
+
   // region Common
 
   NOT_FOUND_TEMPLATE: new Template<{ value: string }>(

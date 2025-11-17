@@ -36,7 +36,7 @@ export const strArray = makeValidator((value) => {
     !Array.isArray(parsed) ||
     !parsed.every((item) => typeof item === 'string')
   ) {
-    throw new Error(ERROR_MESSAGES.ENV_VALUE_MUST_BE_JSON_ARRAY);
+    throw new AppException(ERROR_MESSAGES.ENV_VALUE_MUST_BE_JSON_ARRAY);
   }
 
   return parsed as string[];

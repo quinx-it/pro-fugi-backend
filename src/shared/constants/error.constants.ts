@@ -119,6 +119,10 @@ export const ERROR_MESSAGES = {
   }>(
     /* language=ejs */ 'Product category{ "id": <%= productItemId %>, "name": <%= productItemName %> } has related items and cannot be deleted. Delete the related items first or set \'isArchived\' to true',
   ),
+  PRODUCT_ORDERS_ADMIN_QUERY_MUST_PROVIDE_PARAMS:
+    'Must provide at least pagination (page, limit, offset) and sort (sort_by, descending) params when querying this resource with admin auth role',
+  PRODUCT_ORDERS_CUSTOMER_QUERY_MUST_NOT_PROVIDE_PARAMS:
+    'Must not provide any params when querying this resource with customer auth role',
 
   // endregion
 
@@ -189,6 +193,9 @@ export const ERROR_MESSAGES = {
   MUST_BE_IN_TEMPLATE: new Template<{ value: string; list: string }>(
     /* language=ejs */ `<%= value %> must be in <%= list %>`,
   ),
+  CANNOT_PARSE_BOOLEAN_VALUE_TEMPLATE: new Template<{
+    value: string;
+  }>(/* language=ejs */ `Cannot parse boolean value: <%= value %>`),
 
   // endregion
 

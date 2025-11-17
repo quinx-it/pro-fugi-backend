@@ -19,11 +19,11 @@ import { IProductOrdersSearchView } from '@/modules/products/submodules/orders/t
 import { IFilter, IPagination, ISort } from '@/shared';
 import { DtosUtil } from '@/shared/utils/dtos.util';
 
-export class FindProductOrdersAsAdminDto
+export class FindProductOrdersDto
   implements
     IFilter<IProductOrdersSearchView>,
-    ISort<IProductOrdersSearchView>,
-    IPagination
+    Partial<ISort<IProductOrdersSearchView>>,
+    Partial<IPagination>
 {
   @ApiProperty({
     name: 'auth_customer_role_id_in',
@@ -177,23 +177,26 @@ export class FindProductOrdersAsAdminDto
 
   // region Pagination
 
-  @ApiProperty({ name: 'page', example: 0 })
+  @ApiProperty({ name: 'page', required: false })
+  @IsOptional()
   @Type(() => Number)
   @IsDefined()
   @Expose({ name: 'page' })
-  page!: number;
+  page?: number;
 
-  @ApiProperty({ name: 'limit', example: 15 })
+  @ApiProperty({ name: 'limit', required: false })
+  @IsOptional()
   @Type(() => Number)
   @IsDefined()
   @Expose({ name: 'limit' })
-  limit!: number;
+  limit?: number;
 
-  @ApiProperty({ name: 'offset', example: 0 })
+  @ApiProperty({ name: 'offset', required: false })
+  @IsOptional()
   @Type(() => Number)
   @IsDefined()
   @Expose({ name: 'offset' })
-  offset!: number;
+  offset?: number;
 
   // endregion
 
@@ -203,27 +206,35 @@ export class FindProductOrdersAsAdminDto
   @IsOptional()
   @IsString()
   @Expose({ name: 'sort_by' })
-  sortBy: keyof IProductOrdersSearchView = 'id';
+  sortBy?: keyof IProductOrdersSearchView;
 
   @ApiProperty({ name: 'descending', required: false })
   @IsOptional()
-  @Transform(({ value }) => value === JSON.stringify(true))
+  @Transform(({ value }) => DtosUtil.parseBooleanValue(value))
   @Expose({ name: 'descending' })
   @IsBoolean()
-  descending: boolean = false;
+  descending?: boolean;
 
   // endregion
 
-  get pagination(): IPagination {
+  get pagination(): IPagination | undefined {
     const { page, limit, offset } = this;
 
-    return { page, limit, offset };
+    if (page !== undefined && limit !== undefined && offset !== undefined) {
+      return { page, limit, offset };
+    }
+
+    return undefined;
   }
 
-  get sort(): ISort<IProductOrdersSearchView> {
+  get sort(): ISort<IProductOrdersSearchView> | undefined {
     const { sortBy, descending } = this;
 
-    return { sortBy, descending };
+    if (sortBy !== undefined && descending !== undefined) {
+      return { sortBy, descending };
+    }
+
+    return undefined;
   }
 
   get filter(): IFilter<IProductOrdersSearchView> {

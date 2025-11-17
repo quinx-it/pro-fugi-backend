@@ -1,3 +1,5 @@
+import { IProductOrdersSearchView } from '@/modules/products/submodules/orders/types';
+
 export enum ProductOrderStatus {
   PROCESSING = 'processing',
   READY_FOR_SHIPPING = 'readyForShipment',
@@ -21,4 +23,15 @@ export enum ProductDiscountType {
 export const ProductDiscountValuePostfix = {
   [ProductDiscountType.PERCENTAGE]: '%',
   [ProductDiscountType.FIXED]: 'BYN',
+};
+
+export const PRODUCT_ORDERS_CUSTOMER_QUERY_SORT = {
+  sortBy: 'createdAt' as keyof IProductOrdersSearchView,
+  descending: true,
+};
+
+export const PRODUCT_ORDERS_CUSTOMER_QUERY_PAGINATION = {
+  page: 0,
+  limit: 5,
+  offset: 0,
 };

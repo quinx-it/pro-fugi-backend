@@ -7,9 +7,7 @@ import { CreateProductOrderItemDto } from '@/modules/products/submodules/orders/
 import { ICreateProductOrder } from '@/modules/products/submodules/orders/types';
 import { DtosUtil } from '@/shared/utils/dtos.util';
 
-export class CreateProductOrderDto
-  implements Omit<ICreateProductOrder, 'authCustomerRoleId'>
-{
+export class CreateProductOrderDto implements ICreateProductOrder {
   @ApiProperty({ type: 'string', nullable: true })
   @DtosUtil.isNullable()
   @IsString()
@@ -18,12 +16,12 @@ export class CreateProductOrderDto
   @ApiProperty({ type: 'string', nullable: true })
   @DtosUtil.isNullable()
   @IsString()
-  phone!: string | null;
+  phoneIfNotDefault!: string | null;
 
   @ApiProperty({ type: 'string', nullable: true })
   @DtosUtil.isNullable()
   @IsString()
-  address!: string | null;
+  addressIfNotDefault!: string | null;
 
   @ApiProperty({ enum: ProductOrderDeliveryType })
   @IsIn(Object.values(ProductOrderDeliveryType))

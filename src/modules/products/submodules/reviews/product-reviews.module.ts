@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from '@/modules/auth/auth.module';
+import { PRODUCT_REVIEW_IMAGES_PATH } from '@/modules/products/submodules/reviews/constants';
 import { ProductReviewEntity } from '@/modules/products/submodules/reviews/entities';
 import { ProductReviewImageEntity } from '@/modules/products/submodules/reviews/entities/product-review-image.entity';
 import { ProductReviewsController } from '@/modules/products/submodules/reviews/product-reviews.controller';
@@ -17,7 +18,7 @@ const { rootPath } = SERVE_STATIC_OPTIONS;
   imports: [
     AuthModule,
     TypeOrmModule.forFeature([ProductReviewEntity, ProductReviewImageEntity]),
-    MulterUtil.getModule(rootPath, 'images/products/reviews'),
+    MulterUtil.getModule(rootPath, PRODUCT_REVIEW_IMAGES_PATH),
   ],
   providers: [
     ProductReviewsService,

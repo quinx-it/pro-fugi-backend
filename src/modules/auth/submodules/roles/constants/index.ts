@@ -5,6 +5,8 @@ export enum AuthRole {
   CUSTOMER = 'customer',
 }
 
+export const UNAUTHORIZED_AUTH_ROLE = 'unauthorized';
+
 export const AUTH_ROLE_ENTITY_KEY_MAP: Record<AuthRole, keyof IAuthUser> = {
   [AuthRole.ADMIN]: 'authAdminRole',
   [AuthRole.CUSTOMER]: 'authCustomerRole',

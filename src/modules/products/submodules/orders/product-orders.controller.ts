@@ -43,12 +43,12 @@ import {
   ProductCustomerDiscountDto,
   ProductOrderDto,
   ProductOrderItemDto,
+  ProductOrdersPaginatedDto,
   UpdateProductOrderDto,
   UpdateProductOrderItemDto,
 } from '@/modules/products/submodules/orders/dtos';
 import { ProductOrdersService } from '@/modules/products/submodules/orders/product-orders.service';
 import { AppException, ERROR_MESSAGES } from '@/shared';
-import { PaginatedDto } from '@/shared/dtos/paginated.dto';
 import { DtosUtil } from '@/shared/utils/dtos.util';
 
 @Controller()
@@ -66,7 +66,7 @@ export class ProductOrdersController {
   // region Orders
 
   @ApiResponse({
-    type: PaginatedDto.of(ProductOrderDto),
+    type: ProductOrdersPaginatedDto,
     status: HttpStatus.OK,
   })
   @UseGuards(AccessTokenAuthGuard.REQUIRED)
@@ -75,7 +75,7 @@ export class ProductOrdersController {
   async findMany(
     @AuthPayload() authPayload: IAuthCustomerPayload,
     @Query() query: FindProductOrdersDto,
-  ): Promise<PaginatedDto<ProductOrderDto>> {
+  ): Promise<ProductOrdersPaginatedDto> {
     const { authCustomerRoleId, authAdminRoleId } = authPayload || {
       authCustomerRoleId: null,
       authAdminRoleId: null,
@@ -99,7 +99,7 @@ export class ProductOrdersController {
         PRODUCT_ORDERS_CUSTOMER_QUERY_PAGINATION,
       );
 
-      return plainToInstance(PaginatedDto.of(ProductOrderDto), productOrders);
+      return plainToInstance(ProductOrdersPaginatedDto, productOrders);
     }
 
     if (authAdminRoleId) {
@@ -118,7 +118,7 @@ export class ProductOrdersController {
         pagination,
       );
 
-      return plainToInstance(PaginatedDto.of(ProductOrderDto), productOrders);
+      return plainToInstance(ProductOrdersPaginatedDto, productOrders);
     }
 
     throw new AppException(ERROR_MESSAGES.HTTP_INTERNAL_SERVER_ERROR);

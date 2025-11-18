@@ -30,12 +30,14 @@ import { AuthPayload } from '@/modules/auth/submodules/users/decorators';
 import { IAuthPayload } from '@/modules/auth/submodules/users/types';
 import { ProductsEndPoint } from '@/modules/products/constants';
 import { PRODUCT_ITEMS_IMAGES_PATH } from '@/modules/products/submodules/items/constants';
-import { CreateProductItemDto } from '@/modules/products/submodules/items/dtos';
+import {
+  CreateProductItemDto,
+  ProductItemsPaginatedDto,
+} from '@/modules/products/submodules/items/dtos';
 import { FindProductItemsDto } from '@/modules/products/submodules/items/dtos/find-product-items.dto';
 import { ProductItemDto } from '@/modules/products/submodules/items/dtos/product-item.dto';
 import { ProductItemsService } from '@/modules/products/submodules/items/product-items.service';
 import { FileDto } from '@/shared/dtos/file.dto';
-import { PaginatedDto } from '@/shared/dtos/paginated.dto';
 
 @Controller()
 @ApiTags(ProductsEndPoint.ITEMS)
@@ -53,13 +55,13 @@ export class ProductItemsController {
   }
 
   @UseGuards(AccessTokenAuthGuard.OPTIONAL)
-  @ApiResponse({ type: PaginatedDto.of(ProductItemDto), status: HttpStatus.OK })
+  @ApiResponse({ type: ProductItemsPaginatedDto, status: HttpStatus.OK })
   @Get(ProductsEndPoint.ITEMS)
   async findMany(
     @AuthPayload({ isNullable: true }) authPayload: IAuthPayload | null,
     @Query()
     query: FindProductItemsDto,
-  ): Promise<PaginatedDto<ProductItemDto>> {
+  ): Promise<ProductItemsPaginatedDto> {
     const { authRoles } = authPayload || { authRoles: [] as AuthRole[] };
 
     const isArchived = authRoles.includes(AuthRole.ADMIN) ? false : undefined;
@@ -73,7 +75,7 @@ export class ProductItemsController {
       pagination,
     );
 
-    return plainToInstance(PaginatedDto.of(ProductItemDto), products);
+    return plainToInstance(ProductItemsPaginatedDto, products);
   }
 
   @ApiResponse({ type: ProductItemDto, status: HttpStatus.CREATED })

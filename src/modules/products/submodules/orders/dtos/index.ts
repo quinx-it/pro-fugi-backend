@@ -9,3 +9,4 @@ export * from '@/modules/products/submodules/orders/dtos/find-product-orders.dto
 export * from '@/modules/products/submodules/orders/dtos/update-product-order-item.dto';
 export * from '@/modules/products/submodules/orders/dtos/product-customer-discount.dto';
 export * from '@/modules/products/submodules/orders/dtos/product-discount.dto';
+export * from '@/modules/products/submodules/orders/dtos/product-orders-paginated.dto';

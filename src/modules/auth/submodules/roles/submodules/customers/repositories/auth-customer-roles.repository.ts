@@ -27,11 +27,12 @@ export class AuthCustomerRolesRepository {
     throwIfNotFound: boolean,
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IAuthCustomerRole | null> {
-    const providerEntity = await manager.findOne(AuthCustomerRoleEntity, {
+    const authCustomerRole = await manager.findOne(AuthCustomerRoleEntity, {
       where: { id },
+      relations: ['address'],
     });
 
-    if (!providerEntity) {
+    if (!authCustomerRole) {
       if (throwIfNotFound) {
         throw AppException.fromTemplate(
           ERROR_MESSAGES.NOT_FOUND_TEMPLATE,
@@ -45,7 +46,7 @@ export class AuthCustomerRolesRepository {
       return null;
     }
 
-    return providerEntity;
+    return authCustomerRole;
   }
 
   async findOneByUserId(
@@ -65,11 +66,11 @@ export class AuthCustomerRolesRepository {
     throwIfNotFound: boolean,
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IAuthCustomerRole | null> {
-    const providerEntity = await manager.findOne(AuthCustomerRoleEntity, {
+    const authCustomerRole = await manager.findOne(AuthCustomerRoleEntity, {
       where: { authUserId },
     });
 
-    if (!providerEntity) {
+    if (!authCustomerRole) {
       if (throwIfNotFound) {
         throw AppException.fromTemplate(
           ERROR_MESSAGES.NOT_FOUND_TEMPLATE,
@@ -83,21 +84,19 @@ export class AuthCustomerRolesRepository {
       return null;
     }
 
-    return providerEntity;
+    return authCustomerRole;
   }
 
   async createOne(
     userId: number,
     firstName: string | null,
     lastName: string | null,
-    address: string | null,
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IAuthCustomerRole> {
     const { id } = await manager.save(AuthCustomerRoleEntity, {
       authUserId: userId,
       firstName,
       lastName,
-      address,
     });
 
     const customerRole = await this.findOne(id, true, manager);
@@ -109,18 +108,12 @@ export class AuthCustomerRolesRepository {
     id: number,
     firstName?: string | null,
     lastName?: string | null,
-    address?: string | null,
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IAuthCustomerRole> {
-    if (
-      firstName !== undefined ||
-      lastName !== undefined ||
-      address !== undefined
-    )
+    if (firstName !== undefined || lastName !== undefined)
       await manager.update(AuthCustomerRoleEntity, id, {
         firstName,
         lastName,
-        address,
       });
 
     const customerRole = await this.findOne(id, true, manager);

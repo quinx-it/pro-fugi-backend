@@ -30,7 +30,12 @@ export class AuthUsersRepository {
   ): Promise<IAuthUser | null> {
     const user = await manager.findOne(AuthUserEntity, {
       where: { id },
-      relations: ['authAdminRole', 'authCustomerRole', 'authPhoneMethods'],
+      relations: [
+        'authAdminRole',
+        'authCustomerRole',
+        'authCustomerRole.address',
+        'authPhoneMethods',
+      ],
     });
 
     if (!user && throwIfNotFound) {

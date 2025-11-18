@@ -6,6 +6,10 @@ import { productsConfig } from '@/configs/products.config';
 import { IAuthPhoneMethod } from '@/modules/auth/submodules/methods/submodules/phone/types';
 import { AuthRole } from '@/modules/auth/submodules/roles/constants';
 import { AuthCustomerRolesService } from '@/modules/auth/submodules/roles/submodules/customers/auth-customer-roles.service';
+import {
+  IAuthCustomerRole,
+  IAuthCustomerRoleAddress,
+} from '@/modules/auth/submodules/roles/submodules/customers/types';
 import { AuthUsersService } from '@/modules/auth/submodules/users/auth-users.service';
 import { IAuthUser } from '@/modules/auth/submodules/users/types';
 import { ProductItemsService } from '@/modules/products/submodules/items/product-items.service';
@@ -13,6 +17,7 @@ import {
   ProductOrderDeliveryType,
   ProductOrderStatus,
 } from '@/modules/products/submodules/orders/constants';
+import { ProductOrderAddressesRepository } from '@/modules/products/submodules/orders/repositories/product-order-addresses.repository';
 import { ProductOrderItemsRepository } from '@/modules/products/submodules/orders/repositories/product-order-items.repository';
 import { ProductOrdersRepository } from '@/modules/products/submodules/orders/repositories/product-orders.repository';
 import {
@@ -21,6 +26,7 @@ import {
   IProductCustomerDiscount,
   IProductDiscountPolicy,
   IProductOrder,
+  IProductOrderAddress,
   IProductOrderItem,
   IProductOrdersSearchView,
 } from '@/modules/products/submodules/orders/types';
@@ -29,6 +35,7 @@ import {
   AppException,
   DbUtil,
   ERROR_MESSAGES,
+  IAddress,
   IFilter,
   IPaginated,
   IPagination,
@@ -49,6 +56,7 @@ export class ProductOrdersService {
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly ordersRepo: ProductOrdersRepository,
     private readonly orderItemsRepo: ProductOrderItemsRepository,
+    private readonly orderAddressesRepo: ProductOrderAddressesRepository,
     private readonly customerRolesService: AuthCustomerRolesService,
     private readonly productItemsService: ProductItemsService,
     private readonly authUsersService: AuthUsersService,
@@ -118,7 +126,7 @@ export class ProductOrdersService {
       | ICreateProductOrderItem[]
       | ICreateProductOrderItemAsAdmin[],
     deliveryType: ProductOrderDeliveryType,
-    nonDefaultAddress: string | null,
+    nonDefaultAddress: IAddress | null,
     nonDefaultPhone: string | null,
     comment: string | null,
   ): Promise<IProductOrder> {
@@ -167,14 +175,21 @@ export class ProductOrdersService {
       },
     );
 
-    let defaultAddress: string | null = null;
+    let defaultAddress: IAddress | null = null;
     let defaultPhone: string | null = null;
 
     if (customerRoleId) {
-      const { address: customerRoleAddress, authUserId } =
-        await this.customerRolesService.findOne(customerRoleId, true);
+      const authCustomerRole = await this.customerRolesService.findOne(
+        customerRoleId,
+        true,
+      );
 
-      defaultAddress = customerRoleAddress;
+      const { authUserId } = authCustomerRole;
+
+      defaultAddress = DbUtil.getRelatedEntityOrThrow<
+        IAuthCustomerRole,
+        IAuthCustomerRoleAddress
+      >(authCustomerRole, 'address');
 
       const authUser = await this.authUsersService.findOne(authUserId, true);
 
@@ -222,13 +237,26 @@ export class ProductOrdersService {
         ProductDiscountsUtil.getFixedValue(discount) || 0,
         ProductDiscountsUtil.getPercentage(discount) || 0,
         0,
-        deliveryType === ProductOrderDeliveryType.SHIPPING ? address : null,
         phone,
         comment,
         ProductOrderStatus.PROCESSING,
         deliveryType,
         manager,
       );
+
+      if (address && deliveryType === ProductOrderDeliveryType.SHIPPING) {
+        const { city, street, building, block, apartment } = address;
+
+        await this.orderAddressesRepo.createOne(
+          productOrderId,
+          city,
+          street,
+          building,
+          block,
+          apartment,
+          manager,
+        );
+      }
 
       await PromisesUtil.runSequentially(
         productOrderItemsExtended,
@@ -271,7 +299,7 @@ export class ProductOrdersService {
     customerRoleId: number | undefined,
     productOrderId: number,
     deliveryType?: ProductOrderDeliveryType,
-    nonDefaultAddress?: string | null,
+    nonDefaultAddress?: IAddress | null,
     nonDefaultPhone?: string | null,
     status?: ProductOrderStatus,
     manualPriceAdjustment?: number,
@@ -284,15 +312,25 @@ export class ProductOrdersService {
       );
     }
 
-    let defaultAddress: string | null | undefined =
+    let defaultAddress: IAddress | null | undefined =
       nonDefaultAddress === undefined ? undefined : null;
     const defaultPhone: string | null | undefined =
       nonDefaultPhone === undefined ? undefined : null;
 
+    const currentProductOrder = await this.ordersRepo.findOne(
+      productOrderId,
+      true,
+    );
+
     const {
       authCustomerRoleId: orderCustomerRoleId,
       deliveryType: orderDeliveryType,
-    } = await this.ordersRepo.findOne(productOrderId, true);
+    } = currentProductOrder;
+
+    const currentOrderAddress = DbUtil.getRelatedEntityOrThrow<
+      IProductOrder,
+      IProductOrderAddress
+    >(currentProductOrder, 'address');
 
     if (orderCustomerRoleId) {
       const customerRole = await this.customerRolesService.findOne(
@@ -300,7 +338,10 @@ export class ProductOrdersService {
         true,
       );
 
-      defaultAddress = customerRole.address;
+      defaultAddress = DbUtil.getRelatedEntityOrThrow<
+        IAuthCustomerRole,
+        IAuthCustomerRoleAddress
+      >(customerRole, 'address');
     }
 
     let address =
@@ -327,22 +368,49 @@ export class ProductOrdersService {
       );
     }
 
-    const productOrder = await this.ordersRepo.updateOne(
-      productOrderId,
-      undefined,
-      this.shippingPrice,
-      this.freeShippingThreshold,
-      undefined,
-      undefined,
-      manualPriceAdjustment,
-      address,
-      phone,
-      undefined,
-      status,
-      deliveryType,
-    );
+    const result = await this.dataSource.transaction(async (manager) => {
+      if (address !== undefined) {
+        if (currentOrderAddress) {
+          await this.orderAddressesRepo.destroyOne(
+            currentOrderAddress.id,
+            manager,
+          );
+        }
 
-    return productOrder;
+        if (address !== null) {
+          const { city, street, building, block, apartment } = address;
+
+          await this.orderAddressesRepo.createOne(
+            productOrderId,
+            city,
+            street,
+            building,
+            block,
+            apartment,
+            manager,
+          );
+        }
+      }
+
+      const productOrder = await this.ordersRepo.updateOne(
+        productOrderId,
+        undefined,
+        this.shippingPrice,
+        this.freeShippingThreshold,
+        undefined,
+        undefined,
+        manualPriceAdjustment,
+        phone,
+        undefined,
+        status,
+        deliveryType,
+        manager,
+      );
+
+      return productOrder;
+    });
+
+    return result;
   }
 
   // endregion

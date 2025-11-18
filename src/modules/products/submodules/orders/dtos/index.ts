@@ -10,3 +10,4 @@ export * from '@/modules/products/submodules/orders/dtos/update-product-order-it
 export * from '@/modules/products/submodules/orders/dtos/product-customer-discount.dto';
 export * from '@/modules/products/submodules/orders/dtos/product-discount.dto';
 export * from '@/modules/products/submodules/orders/dtos/product-orders-paginated.dto';
+export * from '@/modules/products/submodules/orders/dtos/product-order-address.dto';

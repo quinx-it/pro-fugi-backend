@@ -17,13 +17,13 @@ export class AuthUserDto implements IAuthUser {
   @IsDate()
   createdAt!: Date;
 
-  @ApiProperty()
+  @ApiProperty({ type: AuthAdminRoleDto, nullable: true })
   @DtosUtil.isNullable()
   @Type(() => AuthAdminRoleDto)
   @ValidateNested()
   authAdminRole?: AuthAdminRoleDto | null;
 
-  @ApiProperty()
+  @ApiProperty({ type: AuthCustomerRoleDto, nullable: true })
   @DtosUtil.isNullable()
   @Type(() => AuthCustomerRoleDto)
   @ValidateNested()

@@ -5,6 +5,7 @@ import { IsArray, IsIn, IsString, ValidateNested } from 'class-validator';
 import { ProductOrderDeliveryType } from '@/modules/products/submodules/orders/constants';
 import { CreateProductOrderItemDto } from '@/modules/products/submodules/orders/dtos/create-product-order-item.dto';
 import { ICreateProductOrder } from '@/modules/products/submodules/orders/types';
+import { AddressDto } from '@/shared/dtos/address.dto';
 import { DtosUtil } from '@/shared/utils/dtos.util';
 
 export class CreateProductOrderDto implements ICreateProductOrder {
@@ -18,10 +19,11 @@ export class CreateProductOrderDto implements ICreateProductOrder {
   @IsString()
   phoneIfNotDefault!: string | null;
 
-  @ApiProperty({ type: 'string', nullable: true })
+  @ApiProperty({ type: AddressDto, nullable: true })
   @DtosUtil.isNullable()
-  @IsString()
-  addressIfNotDefault!: string | null;
+  @Type(() => AddressDto)
+  @ValidateNested()
+  addressIfNotDefault!: AddressDto | null;
 
   @ApiProperty({ enum: ProductOrderDeliveryType })
   @IsIn(Object.values(ProductOrderDeliveryType))

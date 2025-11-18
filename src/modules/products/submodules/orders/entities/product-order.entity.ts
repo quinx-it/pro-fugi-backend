@@ -5,6 +5,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -14,6 +15,7 @@ import {
   ProductOrderDeliveryType,
   ProductOrderStatus,
 } from '@/modules/products/submodules/orders/constants';
+import { ProductOrderAddressEntity } from '@/modules/products/submodules/orders/entities/product-order-address.entity';
 import { ProductOrderItemEntity } from '@/modules/products/submodules/orders/entities/product-order-item.entity';
 import {
   IProductOrder,
@@ -32,7 +34,7 @@ export class ProductOrderEntity implements IProductOrder {
     { nullable: true },
   )
   @JoinColumn()
-  authCustomerRole!: AuthCustomerRoleEntity | null;
+  authCustomerRole?: AuthCustomerRoleEntity | null;
 
   @Column(DbType.INTEGER, { nullable: true })
   authCustomerRoleId!: number | null;
@@ -65,9 +67,6 @@ export class ProductOrderEntity implements IProductOrder {
   @Column(DbType.FLOAT)
   manualPriceAdjustment!: number;
 
-  @Column(DbType.VARCHAR, { nullable: true })
-  address!: string | null;
-
   @Column(DbType.VARCHAR)
   phone!: string;
 
@@ -82,6 +81,13 @@ export class ProductOrderEntity implements IProductOrder {
 
   @Column(DbType.FLOAT)
   discountPercentage!: number;
+
+  @OneToOne(
+    () => ProductOrderAddressEntity,
+    (address) => address.productOrder,
+    { nullable: true },
+  )
+  address?: ProductOrderAddressEntity | null;
 
   get productItemsPrice(): number {
     const productOrderItems = DbUtil.getRelatedEntityOrThrow<

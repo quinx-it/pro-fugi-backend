@@ -33,11 +33,11 @@ import { PRODUCT_REVIEW_IMAGES_PATH } from '@/modules/products/submodules/review
 import {
   CreateProductReviewDto,
   ProductReviewDto,
+  ProductReviewsPaginatedDto,
   UpdateProductReviewDto,
 } from '@/modules/products/submodules/reviews/dtos';
 import { ProductReviewsService } from '@/modules/products/submodules/reviews/product-reviews.service';
 import { FileDto } from '@/shared/dtos/file.dto';
-import { PaginatedDto } from '@/shared/dtos/paginated.dto';
 import { PaginationDto } from '@/shared/dtos/pagination.dto';
 
 @Controller()
@@ -47,16 +47,16 @@ export class ProductReviewsController {
 
   @ApiResponse({
     status: HttpStatus.OK,
-    type: PaginatedDto.of(ProductReviewDto),
+    type: ProductReviewsPaginatedDto,
   })
   @Get(ProductsEndPoint.REVIEWS)
   async findMany(
     @Param('product_item_id', ParseIntPipe) productItemId: number,
     @Query() query: PaginationDto,
-  ): Promise<PaginatedDto<ProductReviewDto>> {
+  ): Promise<ProductReviewsPaginatedDto> {
     const productReviews = await this.service.findMany(productItemId, query);
 
-    return plainToInstance(PaginatedDto.of(ProductReviewDto), productReviews);
+    return plainToInstance(ProductReviewsPaginatedDto, productReviews);
   }
 
   @ApiResponse({ status: HttpStatus.OK, type: ProductReviewDto })

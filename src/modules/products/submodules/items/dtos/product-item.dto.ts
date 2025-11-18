@@ -40,12 +40,12 @@ export class ProductItemDto implements IProductItem {
   @IsNumber()
   price!: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: 'number', nullable: true })
   @DtosUtil.isNullable()
   @IsNumber()
   discountValue!: number | null;
 
-  @ApiProperty()
+  @ApiProperty({ type: 'number', nullable: true })
   @DtosUtil.isNullable()
   @IsNumber()
   discountPercentage!: number | null;
@@ -54,7 +54,7 @@ export class ProductItemDto implements IProductItem {
   @IsNumber()
   inStockNumber!: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: 'number', nullable: true })
   @DtosUtil.isNullable()
   @IsNumber()
   rating!: number | null;
@@ -68,10 +68,7 @@ export class ProductItemDto implements IProductItem {
   @ValidateNested({ each: true })
   productImages?: ProductImageDto[];
 
-  @ApiProperty({ type: () => ProductOrderItemDto, isArray: true })
-  @IsArray()
-  @Type(() => ProductOrderItemDto)
-  @ValidateNested({ each: true })
+  @Exclude()
   productOrders?: ProductOrderItemDto[];
 
   @ApiProperty({ type: () => ProductCategoryWithNoSchemaDto })

@@ -14,6 +14,7 @@ import { AuthCustomerRoleAddressEntity } from '@/modules/auth/submodules/roles/s
 import { AuthCustomerRoleEntity } from '@/modules/auth/submodules/roles/submodules/customers/entities/auth-customer-role.entity';
 import { AuthUserEntity } from '@/modules/auth/submodules/users/entities';
 import { NewsArticleEntity } from '@/modules/news/entities';
+import { PartnershipLetterEntity } from '@/modules/partnership/entities';
 import { ProductImageEntity } from '@/modules/products/submodules/items/entities/product-image.entity';
 import {
   ProductOrderEntity,
@@ -55,6 +56,7 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
     ProductOrdersSearchViewEntity,
     ProductOrderAddressEntity,
     NewsArticleEntity,
+    PartnershipLetterEntity,
   ],
   migrations: [MIGRATIONS_PATH],
   synchronize: false,

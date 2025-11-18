@@ -2,15 +2,20 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
 
+import { AuthCustomerRoleAddressesRepository } from '@/modules/auth/submodules/roles/submodules/customers/repositories';
 import { AuthCustomerRolesRepository } from '@/modules/auth/submodules/roles/submodules/customers/repositories/auth-customer-roles.repository';
-import { IAuthCustomerRole } from '@/modules/auth/submodules/roles/submodules/customers/types';
-import { AppException, ERROR_MESSAGES } from '@/shared';
+import {
+  IAuthCustomerRole,
+  IAuthCustomerRoleAddress,
+} from '@/modules/auth/submodules/roles/submodules/customers/types';
+import { AppException, DbUtil, ERROR_MESSAGES, IAddress } from '@/shared';
 
 @Injectable()
 export class AuthCustomerRolesService {
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly repo: AuthCustomerRolesRepository,
+    private readonly addressesRepo: AuthCustomerRoleAddressesRepository,
   ) {}
 
   async findOne(
@@ -41,8 +46,7 @@ export class AuthCustomerRolesService {
     userId: number,
     firstName: string | null,
     lastName: string | null,
-    address: string | null,
-    manager: EntityManager = this.dataSource.manager,
+    address: IAddress | null,
   ): Promise<IAuthCustomerRole> {
     const existingCustomerRole = await this.repo.findOneByUserId(userId, false);
 
@@ -56,32 +60,87 @@ export class AuthCustomerRolesService {
       );
     }
 
-    const customerRole = await this.repo.createOne(
-      userId,
-      firstName,
-      lastName,
-      address,
-      manager,
-    );
+    let result: IAuthCustomerRole;
 
-    return customerRole;
+    await this.dataSource.transaction(async (manager) => {
+      const authCustomerRole = await this.repo.createOne(
+        userId,
+        firstName,
+        lastName,
+        manager,
+      );
+
+      if (address !== null) {
+        const { id: authCustomerRoleId } = authCustomerRole;
+
+        const { city, street, building, block, apartment } = address;
+
+        await this.addressesRepo.createOne(
+          authCustomerRoleId,
+          city,
+          street,
+          building,
+          block,
+          apartment,
+        );
+
+        result = await this.repo.findOne(authCustomerRoleId, true);
+      }
+
+      result = authCustomerRole;
+    });
+
+    return result!;
   }
 
   async updateOne(
     id: number,
     firstName?: string | null,
     lastName?: string | null,
-    address?: string | null,
-    manager: EntityManager = this.dataSource.manager,
+    address?: IAddress | null,
   ): Promise<IAuthCustomerRole> {
-    const customerRole = await this.repo.updateOne(
-      id,
-      firstName,
-      lastName,
-      address,
-      manager,
-    );
+    const result = await this.dataSource.transaction(async (manager) => {
+      if (address !== undefined) {
+        const authCustomerRoleExisting = await this.repo.findOne(
+          id,
+          true,
+          manager,
+        );
 
-    return customerRole;
+        const existingAddress: IAuthCustomerRoleAddress | null =
+          DbUtil.getRelatedEntityOrThrow<
+            IAuthCustomerRole,
+            IAuthCustomerRoleAddress
+          >(authCustomerRoleExisting, 'address');
+
+        if (existingAddress) {
+          await this.addressesRepo.destroyOne(existingAddress.id);
+        }
+
+        if (address) {
+          const { city, street, building, block, apartment } = address;
+
+          await this.addressesRepo.createOne(
+            id,
+            city,
+            street,
+            building,
+            block,
+            apartment,
+          );
+        }
+      }
+
+      const authCustomerRole = await this.repo.updateOne(
+        id,
+        firstName,
+        lastName,
+        manager,
+      );
+
+      return authCustomerRole;
+    });
+
+    return result;
   }
 }

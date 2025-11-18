@@ -58,6 +58,7 @@ export class ProductOrdersRepository {
         'authCustomerRole',
         'productOrderItems',
         'productOrderItems.productItem',
+        'address',
       ],
     });
 
@@ -82,6 +83,7 @@ export class ProductOrdersRepository {
         'authCustomerRole',
         'productOrderItems',
         'productOrderItems.productItem',
+        'address',
       ],
     });
 
@@ -113,6 +115,7 @@ export class ProductOrdersRepository {
         'authCustomerRole',
         'productOrderItems',
         'productOrderItems.productItem',
+        'address',
       ],
     });
 
@@ -140,7 +143,6 @@ export class ProductOrdersRepository {
     discountValue: number,
     discountPercentage: number,
     manualPriceAdjustment: number,
-    address: string | null,
     phone: string,
     comment: string | null,
     status: ProductOrderStatus,
@@ -149,7 +151,6 @@ export class ProductOrdersRepository {
   ): Promise<IProductOrder> {
     const { id } = await manager.save(ProductOrderEntity, {
       authCustomerRoleId,
-      address,
       phone,
       comment,
       configShippingPrice,
@@ -174,7 +175,6 @@ export class ProductOrdersRepository {
     discountValue?: number,
     discountPercentage?: number,
     manualPriceAdjustment?: number,
-    address?: string | null,
     phone?: string,
     comment?: string | null,
     status?: ProductOrderStatus,
@@ -184,7 +184,6 @@ export class ProductOrdersRepository {
     if (
       authCustomerRoleId !== undefined ||
       manualPriceAdjustment !== undefined ||
-      address !== undefined ||
       phone !== undefined ||
       comment !== undefined ||
       status !== undefined ||
@@ -196,7 +195,6 @@ export class ProductOrdersRepository {
     ) {
       await manager.update(ProductOrderEntity, id, {
         authCustomerRoleId,
-        address,
         phone,
         comment,
         configShippingPrice,

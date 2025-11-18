@@ -15,15 +15,17 @@ import {
   ProductOrderDeliveryType,
   ProductOrderStatus,
 } from '@/modules/products/submodules/orders/constants';
+import { ProductOrderAddressDto } from '@/modules/products/submodules/orders/dtos/product-order-address.dto';
 import { ProductOrderItemDto } from '@/modules/products/submodules/orders/dtos/product-order-item.dto';
 import { IProductOrder } from '@/modules/products/submodules/orders/types';
 import { DtosUtil } from '@/shared/utils/dtos.util';
 
 export class ProductOrderDto implements IProductOrder {
-  @ApiProperty()
+  @ApiProperty({ type: ProductOrderAddressDto, nullable: true })
   @DtosUtil.isNullable()
-  @IsString()
-  address!: string | null;
+  @Type(() => ProductOrderAddressDto)
+  @ValidateNested()
+  address!: ProductOrderAddressDto | null;
 
   @ApiProperty()
   @IsString()

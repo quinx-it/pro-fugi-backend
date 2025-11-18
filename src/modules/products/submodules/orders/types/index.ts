@@ -5,7 +5,7 @@ import {
   ProductOrderDeliveryType,
   ProductOrderStatus,
 } from '@/modules/products/submodules/orders/constants';
-import { IIdentifiable } from '@/shared';
+import { IAddress, IIdentifiable } from '@/shared';
 
 export interface IProductOrderItem {
   id: number;
@@ -42,7 +42,7 @@ export interface IUpdateProductOrderItemAsAdmin {
 export interface ICreateProductOrder {
   deliveryType: ProductOrderDeliveryType;
   comment: string | null;
-  addressIfNotDefault: string | null;
+  addressIfNotDefault: IAddress | null;
   phoneIfNotDefault: string | null;
   productOrderItems: ICreateProductOrderItem[];
 }
@@ -54,7 +54,7 @@ export interface ICreateProductOrderAsAdmin extends ICreateProductOrder {
 
 export interface IUpdateProductOrderAsAdmin {
   status?: ProductOrderStatus;
-  addressIfNotDefault?: string | null;
+  addressIfNotDefault?: IAddress | null;
   deliveryType?: ProductOrderDeliveryType;
   manualPriceAdjustment?: number;
 }
@@ -67,7 +67,8 @@ export interface IProductOrder {
 
   productOrderItems?: IProductOrderItem[];
 
-  address: string | null;
+  // eslint-disable-next-line no-use-before-define
+  address?: IProductOrderAddress | null;
   phone: string;
 
   status: ProductOrderStatus;
@@ -125,3 +126,9 @@ export type IProductCustomerDiscount = {
   currentThreshold: number | null;
   nextThreshold: number | null;
 };
+export interface IProductOrderAddress extends IAddress {
+  id: number;
+
+  productOrder?: IProductOrder;
+  productOrderId: number;
+}

@@ -17,3 +17,11 @@ export interface IIsNullable {
 export interface IFile {
   fileName: string;
 }
+
+export interface IAddress {
+  city: string;
+  street: string;
+  building: string;
+  block: string | null;
+  apartment: string | null;
+}

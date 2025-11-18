@@ -10,6 +10,7 @@ import {
 } from '@/configs/env';
 import { AuthPhoneMethodEntity } from '@/modules/auth/submodules/methods/submodules/phone/entities/auth-phone-method.entity';
 import { AuthAdminRoleEntity } from '@/modules/auth/submodules/roles/submodules/admins/entities/auth-admin-role.entity';
+import { AuthCustomerRoleAddressEntity } from '@/modules/auth/submodules/roles/submodules/customers/entities';
 import { AuthCustomerRoleEntity } from '@/modules/auth/submodules/roles/submodules/customers/entities/auth-customer-role.entity';
 import { AuthUserEntity } from '@/modules/auth/submodules/users/entities';
 import { NewsArticleEntity } from '@/modules/news/entities';
@@ -19,6 +20,7 @@ import {
   ProductOrderItemEntity,
   ProductOrdersSearchViewEntity,
 } from '@/modules/products/submodules/orders/entities';
+import { ProductOrderAddressEntity } from '@/modules/products/submodules/orders/entities/product-order-address.entity';
 import {
   ProductCategoryEntity,
   ProductItemEntity,
@@ -40,6 +42,7 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
     AuthPhoneMethodEntity,
     AuthUserEntity,
     AuthCustomerRoleEntity,
+    AuthCustomerRoleAddressEntity,
     AuthAdminRoleEntity,
     ProductItemEntity,
     ProductReviewEntity,
@@ -50,6 +53,7 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
     ProductOrderEntity,
     ProductOrderItemEntity,
     ProductOrdersSearchViewEntity,
+    ProductOrderAddressEntity,
     NewsArticleEntity,
   ],
   migrations: [MIGRATIONS_PATH],

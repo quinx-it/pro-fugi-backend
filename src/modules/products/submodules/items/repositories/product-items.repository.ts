@@ -73,6 +73,20 @@ export class ProductItemsRepository {
     return { items, totalCount };
   }
 
+  async findMany(
+    ids: number[],
+    manager: EntityManager = this.dataSource.manager,
+  ): Promise<IProductItem[]> {
+    const productItems = await manager.find(ProductItemEntity, {
+      where: { id: In(ids) },
+      relations: ['productReviews', 'productCategory', 'productImages'],
+    });
+
+    return productItems.map((productItem) =>
+      ProductItemsUtil.toPlain(productItem),
+    );
+  }
+
   async findOne(
     id: number,
     throwIfNotFound: false,

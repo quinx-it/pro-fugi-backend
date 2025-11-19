@@ -123,6 +123,11 @@ export const ERROR_MESSAGES = {
     'Must provide at least pagination (page, limit, offset) and sort (sort_by, descending) params when querying this resource with admin auth role',
   PRODUCT_ORDERS_CUSTOMER_QUERY_MUST_NOT_PROVIDE_PARAMS:
     'Must not provide any params when querying this resource with customer auth role',
+  PRODUCT_FAVOURITES_CANNOT_HAVE_MORE_THAN_TEMPLATE: new Template<{
+    limit: string;
+  }>(
+    /* language=ejs */ `Cannot have more than <%= limit %> favourite product items in total`,
+  ),
 
   // endregion
 

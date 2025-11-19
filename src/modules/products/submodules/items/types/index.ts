@@ -68,6 +68,7 @@ export interface IProductItemSearchView {
   productCategoryId: number;
   specification: IProductSpecification;
   isArchived: boolean;
+  popularity: number;
 }
 
 export interface IProductImage {

@@ -113,11 +113,16 @@ export class FindProductItemsDto
 
   // region Sorting
 
-  @ApiProperty({ name: 'sort_by', required: false, type: String })
+  @ApiProperty({
+    name: 'sort_by',
+    required: false,
+    type: String,
+    default: 'popularity',
+  })
   @IsOptional()
   @IsString()
   @Expose({ name: 'sort_by' })
-  sortBy: keyof IProductItemSearchView = 'id';
+  sortBy: keyof IProductItemSearchView = 'popularity';
 
   @ApiProperty({ name: 'descending', required: false })
   @IsOptional()

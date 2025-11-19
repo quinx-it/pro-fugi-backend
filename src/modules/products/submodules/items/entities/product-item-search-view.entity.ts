@@ -55,4 +55,7 @@ export class ProductItemSearchViewEntity implements IProductItemSearchView {
 
   @ViewColumn()
   price!: number;
+
+  @ViewColumn()
+  popularity!: number;
 }

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import Redis from 'ioredis';
 
 import { PRODUCT_FAVOURITES_REDIS_KEY_TEMPLATE } from '@/modules/products/submodules/favourites/constants';
-import { InjectRedis } from '@/modules/redis/decorators';
+import { InjectRedis } from '@/shared/decorators';
 import { RedisUtil } from '@/shared/utils/redis.util';
 
 @Injectable()

@@ -4,8 +4,8 @@ import objectHash from 'object-hash';
 
 import { CONFIRMATION_CODE_REDIS_KEY_TEMPLATE } from '@/modules/auth/submodules/confirmations/constants';
 import { IConfirmationCodeEntity } from '@/modules/auth/submodules/confirmations/types';
-import { InjectRedis } from '@/modules/redis/decorators';
 import { AppException, ERROR_MESSAGES } from '@/shared';
+import { InjectRedis } from '@/shared/decorators';
 import { RedisUtil } from '@/shared/utils/redis.util';
 
 @Injectable()
@@ -20,18 +20,14 @@ export class ConfirmationCodesRepository {
   ): Promise<IConfirmationCodeEntity> {
     const key = ConfirmationCodesRepository.getRedisEntryName(subject, value);
 
-    const expiresAtSeconds = Math.round(expiresAt.getTime() / 1000);
-
     const entity = {
       subject,
       value,
-      expiresAt: new Date(expiresAtSeconds * 1000),
+      expiresAt,
       params,
     };
 
     await RedisUtil.set<TParams>(this.redis, key, params);
-
-    await this.redis.expire(key, expiresAtSeconds);
 
     return entity;
   }
@@ -79,7 +75,7 @@ export class ConfirmationCodesRepository {
   async destroyOne(subject: string, value: string): Promise<void> {
     const key = ConfirmationCodesRepository.getRedisEntryName(subject, value);
 
-    await this.redis.del(key);
+    await RedisUtil.delete(this.redis, key);
   }
 
   static getRedisEntryName(subject: string, value: string): string {

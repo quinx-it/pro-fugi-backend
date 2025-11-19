@@ -1,8 +1,25 @@
-import Redis from 'ioredis';
+import { DynamicModule, Provider } from '@nestjs/common';
+import Redis, { RedisOptions } from 'ioredis';
 
-import { REDIS_NULL_STR } from '@/shared/constants/redis.constants';
+import {
+  REDIS_NULL_STR,
+  REDIS_PROVIDER_NAME,
+} from '@/shared/constants/redis.constants';
 
 export class RedisUtil {
+  static getModule(config: RedisOptions): DynamicModule {
+    const redisProvider: Provider<Redis> = {
+      provide: REDIS_PROVIDER_NAME,
+      useFactory: () => new Redis(config),
+    };
+
+    return {
+      module: RedisUtil,
+      providers: [redisProvider],
+      exports: [redisProvider],
+    };
+  }
+
   static async get<T>(
     redis: Redis,
     key: string,
@@ -26,12 +43,23 @@ export class RedisUtil {
     redis: Redis,
     key: string,
     value: T | null,
+    expiresAt?: Date,
   ): Promise<T | null> {
     const valueStr = value !== null ? JSON.stringify(value) : REDIS_NULL_STR;
 
     await redis.set(key, valueStr);
 
+    if (expiresAt) {
+      const expiresAtSeconds = Math.round(expiresAt.getTime() / 1000);
+
+      await redis.expire(key, expiresAtSeconds);
+    }
+
     return value;
+  }
+
+  static async delete(redis: Redis, key: string): Promise<void> {
+    await redis.del(key);
   }
 
   static async addToSet<T>(

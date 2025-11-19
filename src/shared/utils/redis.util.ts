@@ -63,11 +63,21 @@ export class RedisUtil {
   static async removeFromSet<T>(
     redis: Redis,
     setName: string,
-    values: Set<T>,
+    values?: Set<T>,
   ): Promise<number> {
-    const strValues = Array.from(values).map((value) => JSON.stringify(value));
+    if (values) {
+      const strValues = Array.from(values).map((value) =>
+        JSON.stringify(value),
+      );
 
-    const affected = redis.srem(setName, strValues);
+      const affected = await redis.srem(setName, strValues);
+
+      return affected;
+    }
+
+    const affected = await redis.scard(setName);
+
+    await redis.del(setName);
 
     return affected;
   }

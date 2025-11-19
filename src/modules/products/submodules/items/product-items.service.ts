@@ -33,7 +33,7 @@ export class ProductItemsService {
     private readonly categoriesService: ProductCategoriesService,
   ) {}
 
-  async findMany(
+  async findManyPaginated(
     filter: IFilter<IProductItemSearchView>,
     specsFilter: IProductSpecification,
     sort: ISort<IProductItemSearchView>,
@@ -47,6 +47,12 @@ export class ProductItemsService {
     );
 
     return PaginationUtil.fromSinglePage(items, totalCount, pagination);
+  }
+
+  async findMany(ids: number[]): Promise<IProductItem[]> {
+    const productItems = await this.itemsRepo.findMany(ids);
+
+    return productItems;
   }
 
   async findOne(

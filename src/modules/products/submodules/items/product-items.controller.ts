@@ -68,7 +68,7 @@ export class ProductItemsController {
 
     const { specification, filter, sort, pagination } = query;
 
-    const products = await this.service.findMany(
+    const products = await this.service.findManyPaginated(
       { ...filter, isArchived },
       specification || {},
       sort,

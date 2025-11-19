@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 
 import {
   ProductCategoriesModule,
+  ProductFavouritesModule,
   ProductItemsModule,
   ProductOrdersModule,
   ProductReviewsModule,
@@ -13,6 +14,7 @@ import {
     ProductCategoriesModule,
     ProductReviewsModule,
     ProductOrdersModule,
+    ProductFavouritesModule,
   ],
 })
 export class ProductsModule {}

@@ -14,4 +14,5 @@ export enum ProductsEndPoint {
   ORDER_ITEM = 'products/orders/:product_order_id/items/:product_order_item_id',
   ORDER_ITEMS = 'products/orders/:product_order_id/items',
   ORDERS_DISCOUNT = 'products/discount',
+  FAVOURITES = 'products/favourites',
 }

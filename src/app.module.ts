@@ -7,11 +7,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { bullConfig, cacheConfig } from '@/configs';
 import { typeOrmConfig } from '@/configs/db.config';
-import { AuthModule } from '@/modules/auth/auth.module';
-import { NewsModule } from '@/modules/news/news.module';
-import { PartnershipModule } from '@/modules/partnership';
-import { ProductsModule } from '@/modules/products';
-import { RedisModule } from '@/modules/redis/redis.module';
+import {
+  AuthModule,
+  NewsModule,
+  PartnershipModule,
+  ProductsModule,
+} from '@/modules';
 import { SERVE_STATIC_OPTIONS, UniversalExceptionFilter } from '@/shared';
 
 @Module({
@@ -21,7 +22,6 @@ import { SERVE_STATIC_OPTIONS, UniversalExceptionFilter } from '@/shared';
     NewsModule,
     PartnershipModule,
 
-    RedisModule,
     TypeOrmModule.forRoot(typeOrmConfig),
     ServeStaticModule.forRoot(SERVE_STATIC_OPTIONS),
     BullModule.forRoot(bullConfig),

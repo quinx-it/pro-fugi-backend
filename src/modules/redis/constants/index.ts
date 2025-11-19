@@ -1,1 +1,0 @@
-export const REDIS_PROVIDER_NAME = 'REDIS_CLIENT';

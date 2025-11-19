@@ -50,9 +50,7 @@ export class RedisUtil {
     await redis.set(key, valueStr);
 
     if (expiresAt) {
-      const expiresAtSeconds = Math.round(expiresAt.getTime() / 1000);
-
-      await redis.expire(key, expiresAtSeconds);
+      await redis.expireat(key, Math.round(expiresAt.getTime() / 1000));
     }
 
     return value;

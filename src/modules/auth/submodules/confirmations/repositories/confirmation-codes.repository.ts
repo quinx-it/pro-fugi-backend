@@ -27,7 +27,7 @@ export class ConfirmationCodesRepository {
       params,
     };
 
-    await RedisUtil.set<TParams>(this.redis, key, params);
+    await RedisUtil.set<TParams>(this.redis, key, params, expiresAt);
 
     return entity;
   }

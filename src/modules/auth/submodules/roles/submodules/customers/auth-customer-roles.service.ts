@@ -95,19 +95,21 @@ export class AuthCustomerRolesService {
   }
 
   async updateOne(
-    id: number,
+    authUserId: number,
     firstName?: string | null,
     lastName?: string | null,
     address?: IAddress | null,
   ): Promise<IAuthCustomerRole> {
     const result = await this.dataSource.transaction(async (manager) => {
-      if (address !== undefined) {
-        const authCustomerRoleExisting = await this.repo.findOne(
-          id,
-          true,
-          manager,
-        );
+      const authCustomerRoleExisting = await this.repo.findOne(
+        authUserId,
+        true,
+        manager,
+      );
 
+      const { id: authCustomerRoleId } = authCustomerRoleExisting;
+
+      if (address !== undefined) {
         const existingAddress: IAuthCustomerRoleAddress | null =
           DbUtil.getRelatedEntityOrThrow<
             IAuthCustomerRole,
@@ -122,7 +124,7 @@ export class AuthCustomerRolesService {
           const { city, street, building, block, apartment } = address;
 
           await this.addressesRepo.createOne(
-            id,
+            authCustomerRoleId,
             city,
             street,
             building,
@@ -134,7 +136,7 @@ export class AuthCustomerRolesService {
       }
 
       const authCustomerRole = await this.repo.updateOne(
-        id,
+        authCustomerRoleId,
         firstName,
         lastName,
         manager,

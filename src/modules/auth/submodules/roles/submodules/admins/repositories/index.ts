@@ -1,1 +1,1 @@
-export * from '@/modules/auth/submodules/roles/submodules/admins/repositories/auth-admin-users.repository';
+export * from '@/modules/auth/submodules/roles/submodules/admins/repositories/auth-admin-roles.repository';

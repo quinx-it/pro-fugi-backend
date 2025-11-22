@@ -31,7 +31,6 @@ export const ERROR_MESSAGES = {
     value: string;
   }>(/* language=ejs */ 'User role <%= value %> is unknown'),
   AUTH_USERS_DATA_INVALID: 'User data is invalid',
-  AUTH_USERS_PROVIDER_ENTITY_NAME: 'Admin user',
   AUTH_METHODS_USERNAME_ENTITY_NAME: 'Phone and password auth option',
   AUTH_TOKENS_INVALID_OR_EXPIRED: 'Auth token is either invalid or expired',
   AUTH_CONFIRMATION_CODES_INVALID_OR_EXPIRED:

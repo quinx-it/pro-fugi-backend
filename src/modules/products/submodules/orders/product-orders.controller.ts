@@ -121,7 +121,13 @@ export class ProductOrdersController {
       return plainToInstance(ProductOrdersPaginatedDto, productOrders);
     }
 
-    throw new AppException(ERROR_MESSAGES.HTTP_INTERNAL_SERVER_ERROR);
+    throw AppException.fromTemplate(
+      ERROR_MESSAGES.AUTH_ROLE_REQUIRED_TEMPLATE,
+      {
+        authRole: [AuthRole.CUSTOMER, AuthRole.ADMIN].join(', '),
+      },
+      HttpStatus.FORBIDDEN,
+    );
   }
 
   @ApiResponse({

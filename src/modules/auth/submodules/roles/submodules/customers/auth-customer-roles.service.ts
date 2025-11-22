@@ -101,7 +101,7 @@ export class AuthCustomerRolesService {
     address?: IAddress | null,
   ): Promise<IAuthCustomerRole> {
     const result = await this.dataSource.transaction(async (manager) => {
-      const authCustomerRoleExisting = await this.repo.findOne(
+      const authCustomerRoleExisting = await this.repo.findOneByUserId(
         authUserId,
         true,
         manager,

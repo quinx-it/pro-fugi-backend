@@ -68,6 +68,7 @@ export class AuthCustomerRolesRepository {
   ): Promise<IAuthCustomerRole | null> {
     const authCustomerRole = await manager.findOne(AuthCustomerRoleEntity, {
       where: { authUserId },
+      relations: ['address'],
     });
 
     if (!authCustomerRole) {

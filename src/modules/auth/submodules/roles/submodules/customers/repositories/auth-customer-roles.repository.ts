@@ -37,7 +37,7 @@ export class AuthCustomerRolesRepository {
         throw AppException.fromTemplate(
           ERROR_MESSAGES.NOT_FOUND_TEMPLATE,
           {
-            value: ERROR_MESSAGES.AUTH_USERS_PROVIDER_ENTITY_NAME,
+            value: 'Auth customer role',
           },
           HttpStatus.BAD_REQUEST,
         );
@@ -75,7 +75,7 @@ export class AuthCustomerRolesRepository {
         throw AppException.fromTemplate(
           ERROR_MESSAGES.NOT_FOUND_TEMPLATE,
           {
-            value: ERROR_MESSAGES.AUTH_USERS_PROVIDER_ENTITY_NAME,
+            value: 'Auth customer role',
           },
           HttpStatus.BAD_REQUEST,
         );

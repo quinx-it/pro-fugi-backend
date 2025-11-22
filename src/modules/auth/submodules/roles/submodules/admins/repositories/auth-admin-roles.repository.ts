@@ -7,7 +7,7 @@ import { IAuthAdminRole } from '@/modules/auth/submodules/roles/submodules/admin
 import { AppException, ERROR_MESSAGES } from '@/shared';
 
 @Injectable()
-export class AdminUsersRepository {
+export class AuthAdminRolesRepository {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
   async findOne(
@@ -27,16 +27,16 @@ export class AdminUsersRepository {
     throwIfNotFound: boolean,
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IAuthAdminRole | null> {
-    const providerEntity = await manager.findOne(AuthAdminRoleEntity, {
+    const authAdminRole = await manager.findOne(AuthAdminRoleEntity, {
       where: { id },
     });
 
-    if (!providerEntity) {
+    if (!authAdminRole) {
       if (throwIfNotFound) {
         throw AppException.fromTemplate(
           ERROR_MESSAGES.NOT_FOUND_TEMPLATE,
           {
-            value: ERROR_MESSAGES.AUTH_USERS_PROVIDER_ENTITY_NAME,
+            value: 'Auth admin role',
           },
           HttpStatus.BAD_REQUEST,
         );
@@ -45,6 +45,6 @@ export class AdminUsersRepository {
       return null;
     }
 
-    return providerEntity;
+    return authAdminRole;
   }
 }

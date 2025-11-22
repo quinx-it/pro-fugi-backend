@@ -81,7 +81,7 @@ export class AuthRolesUtil {
     const rolesByPriority = AUTH_ROLES_PRIORITY_DESCENDING.map(
       (authRoleOfPriority) =>
         roles.includes(authRoleOfPriority) ? authRoleOfPriority : undefined,
-    );
+    ).filter((role) => role !== undefined);
 
     const [roleOfHighestPriority] = rolesByPriority;
 

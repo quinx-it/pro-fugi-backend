@@ -82,9 +82,10 @@ export class AuthCustomerRolesService {
           building,
           block,
           apartment,
+          manager,
         );
 
-        result = await this.repo.findOne(authCustomerRoleId, true);
+        result = await this.repo.findOne(authCustomerRoleId, true, manager);
       }
 
       result = authCustomerRole;
@@ -114,7 +115,7 @@ export class AuthCustomerRolesService {
           >(authCustomerRoleExisting, 'address');
 
         if (existingAddress) {
-          await this.addressesRepo.destroyOne(existingAddress.id);
+          await this.addressesRepo.destroyOne(existingAddress.id, manager);
         }
 
         if (address) {
@@ -127,6 +128,7 @@ export class AuthCustomerRolesService {
             building,
             block,
             apartment,
+            manager,
           );
         }
       }

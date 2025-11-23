@@ -5,12 +5,15 @@ import { AuthRolesModule } from '@/modules/auth/submodules';
 import { AuthTokensModule } from '@/modules/auth/submodules/tokens';
 import { AuthUsersController } from '@/modules/auth/submodules/users/auth-users.controller';
 import { AuthUsersService } from '@/modules/auth/submodules/users/auth-users.service';
-import { AuthUserEntity } from '@/modules/auth/submodules/users/entities';
+import {
+  AuthUserEntity,
+  AuthUsersSearchViewEntity,
+} from '@/modules/auth/submodules/users/entities';
 import { AuthUsersRepository } from '@/modules/auth/submodules/users/repositories/auth-users.repository';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AuthUserEntity]),
+    TypeOrmModule.forFeature([AuthUserEntity, AuthUsersSearchViewEntity]),
     forwardRef(() => AuthTokensModule),
     forwardRef(() => AuthRolesModule),
   ],

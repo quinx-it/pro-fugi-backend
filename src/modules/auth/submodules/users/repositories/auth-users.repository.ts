@@ -1,15 +1,69 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource, EntityManager } from 'typeorm';
+import { DataSource, EntityManager, In } from 'typeorm';
 
-import { AuthUserEntity } from '@/modules/auth/submodules/users/entities';
-import { IAuthUser } from '@/modules/auth/submodules/users/types';
+import {
+  AuthUserEntity,
+  AuthUsersSearchViewEntity,
+} from '@/modules/auth/submodules/users/entities';
+import {
+  IAuthUser,
+  IAuthUsersSearchView,
+} from '@/modules/auth/submodules/users/types';
 import { AuthUsersUtil } from '@/modules/auth/submodules/users/utils';
-import { AppException, ERROR_MESSAGES } from '@/shared';
+import {
+  AppException,
+  DbUtil,
+  ERROR_MESSAGES,
+  IFilter,
+  IPagination,
+  ISort,
+} from '@/shared';
 
 @Injectable()
 export class AuthUsersRepository {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+
+  async findManyAndCount(
+    filter: IFilter<IAuthUsersSearchView>,
+    sort: ISort<IAuthUsersSearchView>,
+    pagination: IPagination,
+    manager: EntityManager = this.dataSource.manager,
+  ): Promise<{ items: IAuthUser[]; count: number }> {
+    const where = DbUtil.filterToFindOptionsWhere(filter);
+    const order = DbUtil.sortToFindOptionsOrder(sort);
+    const { take, skip } = DbUtil.paginationToTakeAndSkip(pagination);
+
+    const [searchResults, count] = await manager.findAndCount(
+      AuthUsersSearchViewEntity,
+      {
+        where,
+        order,
+        take,
+        skip,
+      },
+    );
+
+    const ids = searchResults.map(({ id }) => id);
+
+    const authUsers = await manager.find(AuthUserEntity, {
+      where: { id: In(ids) },
+      relations: [
+        'authAdminRole',
+        'authCustomerRole',
+        'authCustomerRole.address',
+        'authPhoneMethods',
+      ],
+    });
+
+    const authUsersMap = new Map(authUsers.map((p) => [p.id, p]));
+
+    const items = ids
+      .map((id) => authUsersMap.get(id))
+      .filter((authUser): authUser is AuthUserEntity => authUser !== undefined);
+
+    return { items, count };
+  }
 
   async findOne(
     id: number,

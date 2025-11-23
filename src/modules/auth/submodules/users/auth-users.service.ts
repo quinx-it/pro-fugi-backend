@@ -5,8 +5,19 @@ import { DataSource, EntityManager } from 'typeorm';
 import { AuthCustomerRolesService } from '@/modules/auth/submodules/roles/submodules/customers/auth-customer-roles.service';
 import { IUpdateAuthCustomerRole } from '@/modules/auth/submodules/roles/submodules/customers/types';
 import { AuthUsersRepository } from '@/modules/auth/submodules/users/repositories/auth-users.repository';
-import { IAuthUser } from '@/modules/auth/submodules/users/types';
-import { AppException, ERROR_MESSAGES } from '@/shared';
+import {
+  IAuthUser,
+  IAuthUsersSearchView,
+} from '@/modules/auth/submodules/users/types';
+import {
+  AppException,
+  ERROR_MESSAGES,
+  IFilter,
+  IPaginated,
+  IPagination,
+  ISort,
+  PaginationUtil,
+} from '@/shared';
 
 @Injectable()
 export class AuthUsersService {
@@ -15,6 +26,20 @@ export class AuthUsersService {
     private readonly repo: AuthUsersRepository,
     private readonly customerRolesService: AuthCustomerRolesService,
   ) {}
+
+  async findManyPaginated(
+    filter: IFilter<IAuthUsersSearchView>,
+    sort: ISort<IAuthUsersSearchView>,
+    pagination: IPagination,
+  ): Promise<IPaginated<IAuthUser>> {
+    const { items, count } = await this.repo.findManyAndCount(
+      filter,
+      sort,
+      pagination,
+    );
+
+    return PaginationUtil.fromSinglePage(items, count, pagination);
+  }
 
   async findOne(
     id: number,

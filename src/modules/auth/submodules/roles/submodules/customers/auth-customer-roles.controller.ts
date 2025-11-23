@@ -26,7 +26,7 @@ export class AuthCustomerRolesController {
   @ApiResponse({ type: AuthCustomerRoleDto, status: HttpStatus.CREATED })
   @UseGuards(AccessTokenAuthGuard.REQUIRED)
   @ApiBearerAuth()
-  @Post(AuthEndPoint.ROLES_CUSTOMER)
+  @Post(AuthEndPoint.CURRENT_USER_CUSTOMER_ROLE)
   async createOne(
     @AuthPayload() authPayload: IAuthPayload,
     @Body() body: CreateAuthCustomerRoleDto,
@@ -47,7 +47,7 @@ export class AuthCustomerRolesController {
   @ApiResponse({ type: AuthCustomerRoleDto, status: HttpStatus.CREATED })
   @UseGuards(AccessTokenAuthGuard.REQUIRED)
   @ApiBearerAuth()
-  @Patch(AuthEndPoint.ROLES_CUSTOMER)
+  @Patch(AuthEndPoint.CURRENT_USER_CUSTOMER_ROLE)
   async updateOne(
     @AuthPayload() authPayload: IAuthPayload,
     @Body() body: UpdateAuthCustomerRoleDto,

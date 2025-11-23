@@ -71,7 +71,7 @@ export class FindProductOrdersDto
     type: String,
   })
   @IsOptional()
-  @Transform(DtosUtil.transformCommaSeparatedIntArray)
+  @Transform(DtosUtil.transformCommaSeparatedStringArray)
   @Expose({ name: 'auth_customer_role_name_in' })
   authCustomerRoleNameIn?: string[];
 
@@ -91,7 +91,7 @@ export class FindProductOrdersDto
     type: String,
   })
   @IsOptional()
-  @Transform(DtosUtil.transformCommaSeparatedIntArray)
+  @Transform(DtosUtil.transformCommaSeparatedStringArray)
   @Expose({ name: 'product_item_names_in' })
   productItemNamesIn?: string[];
 
@@ -101,7 +101,7 @@ export class FindProductOrdersDto
     type: String,
   })
   @IsOptional()
-  @Transform(DtosUtil.transformCommaSeparatedIntArray)
+  @Transform(DtosUtil.transformCommaSeparatedStringArray)
   @IsArray()
   @IsIn(Object.values(ProductOrderStatus), { each: true })
   @Expose({ name: 'status_in' })
@@ -113,7 +113,7 @@ export class FindProductOrdersDto
     type: String,
   })
   @IsOptional()
-  @Transform(DtosUtil.transformCommaSeparatedIntArray)
+  @Transform(DtosUtil.transformCommaSeparatedStringArray)
   @IsArray()
   @IsIn(Object.values(ProductOrderDeliveryType), { each: true })
   @Expose({ name: 'delivery_type_in' })

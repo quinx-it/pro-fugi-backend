@@ -9,6 +9,7 @@ import {
   LessThanOrEqual,
   MoreThanOrEqual,
   Like,
+  Raw,
 } from 'typeorm';
 
 import {
@@ -104,10 +105,20 @@ export class DbUtil {
         const containsValue = query[containKey] || query[containsKey];
 
         if (containsValue !== undefined) {
-          // @ts-expect-error TODO fix typings
-          findOptionsWhere[key as keyof FindOptionsWhere<T>] = Like(
-            `%${containsValue}%`,
-          );
+          if (Array.isArray(containsValue)) {
+            // @ts-expect-error TODO fix typings
+            findOptionsWhere[key as keyof FindOptionsWhere<T>] = Raw(
+              (col) => `${col} @> :arr`,
+              {
+                arr: containsValue,
+              },
+            );
+          } else {
+            // @ts-expect-error TODO fix typings
+            findOptionsWhere[key as keyof FindOptionsWhere<T>] = Like(
+              `%${containsValue}%`,
+            );
+          }
         }
       } else {
         // @ts-expect-error TODO fix typings

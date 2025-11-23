@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Type } from 'class-transformer';
-import { IsDate, ValidateNested } from 'class-validator';
+import { IsDate, IsInt, ValidateNested } from 'class-validator';
 
 import { IAuthPhoneMethod } from '@/modules/auth/submodules/methods/submodules/phone/types';
 import { AuthAdminRoleDto } from '@/modules/auth/submodules/roles/submodules/admins/dtos';
@@ -9,7 +9,8 @@ import { IAuthUser } from '@/modules/auth/submodules/users/types';
 import { DtosUtil } from '@/shared/utils/dtos.util';
 
 export class AuthUserDto implements IAuthUser {
-  @Exclude()
+  @ApiProperty()
+  @IsInt()
   id!: number;
 
   @ApiProperty()

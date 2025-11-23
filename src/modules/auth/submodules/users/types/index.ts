@@ -51,3 +51,13 @@ export interface IAuthCustomerPayload {
   authAdminRoleId: null;
   authRoles: AuthRole[];
 }
+
+export interface IAuthUsersSearchView {
+  id: number;
+  phone: string | null;
+  createdAt: Date;
+  adminName: string | null;
+  customerFullName: string | null;
+  customerAddress: string | null;
+  roles: AuthRole[];
+}

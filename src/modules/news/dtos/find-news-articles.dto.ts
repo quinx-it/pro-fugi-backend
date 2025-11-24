@@ -37,9 +37,19 @@ export class FindNewsArticlesDto
     type: String,
   })
   @IsOptional()
-  @Transform(DtosUtil.transformCommaSeparatedIntArray)
+  @Transform(DtosUtil.transformCommaSeparatedStringArray)
   @Expose({ name: 'tags_in' })
   tagsIn?: string[];
+
+  @ApiProperty({
+    name: 'tags_contain',
+    required: false,
+    type: String,
+  })
+  @IsOptional()
+  @Transform(DtosUtil.transformCommaSeparatedStringArray)
+  @Expose({ name: 'tags_contain' })
+  tagsContain?: string[];
 
   // region Pagination
 

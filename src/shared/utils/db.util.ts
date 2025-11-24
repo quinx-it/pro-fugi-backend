@@ -8,8 +8,8 @@ import {
   IsNull,
   LessThanOrEqual,
   MoreThanOrEqual,
-  Like,
   Raw,
+  ILike,
 } from 'typeorm';
 
 import {
@@ -115,14 +115,15 @@ export class DbUtil {
             );
           } else {
             // @ts-expect-error TODO fix typings
-            findOptionsWhere[key as keyof FindOptionsWhere<T>] = Like(
+            findOptionsWhere[key as keyof FindOptionsWhere<T>] = ILike(
               `%${containsValue}%`,
             );
           }
         }
       } else {
         // @ts-expect-error TODO fix typings
-        findOptionsWhere[key as keyof FindOptionsWhere<T>] = value;
+        findOptionsWhere[key as keyof FindOptionsWhere<T>] =
+          typeof value === 'string' ? ILike(`${value}`) : value;
       }
     });
 

@@ -20,62 +20,58 @@ export class JsonBinaryUtil {
     const parameters: Record<string, unknown> = {};
     let paramIndex = 0;
 
+    const buildRawPath = (segments: string[]): string =>
+      segments.length > 1
+        ? `${alias} #>> '{${segments.join(',')}}'`
+        : `${alias} ->> '${segments[0]}'`;
+
+    const buildLowerPath = (segments: string[]): string =>
+      `LOWER(${buildRawPath(segments)})`;
+
     Object.keys(input).forEach((key) => {
       const value = input[key];
 
-      if (value === undefined || value === null) {
-        return;
-      }
+      if (value === undefined || value === null) return;
 
       paramIndex += 1;
       const paramName = `p${paramIndex}`;
       let foundSuffix = false;
 
+      // ---------- NUMERIC SUFFIXES ----------
       Object.keys(SUFFIX_MAP).forEach((suffix) => {
-        const buildExpr = SUFFIX_MAP[suffix];
-
-        if (!key.endsWith(suffix)) {
-          return;
-        }
+        if (!key.endsWith(suffix)) return;
 
         foundSuffix = true;
+        const buildExpr = SUFFIX_MAP[suffix];
 
         const baseKey = key.slice(0, -suffix.length);
-        const pathSegments = baseKey.split('.');
+        const rawPath = buildRawPath(baseKey.split('.'));
 
-        const jsonPath =
-          pathSegments.length > 1
-            ? `${alias} #>> '{${pathSegments.join(',')}}'`
-            : `${alias} ->> '${pathSegments[0]}'`;
-
-        conditions.push(buildExpr(jsonPath, `:${paramName}`));
+        conditions.push(buildExpr(rawPath, `:${paramName}`));
         parameters[paramName] = value;
       });
 
-      if (foundSuffix) {
-        return;
-      }
+      if (foundSuffix) return;
 
       if (key.endsWith('In')) {
         const baseKey = key.slice(0, -2);
         const pathSegments = baseKey.split('.');
 
-        const jsonPath =
-          pathSegments.length > 1
-            ? `${alias} #>> '{${pathSegments.join(',')}}'`
-            : `${alias} ->> '${pathSegments[0]}'`;
-
+        const lowerPath = buildLowerPath(pathSegments);
         const arr = Array.isArray(value) ? value : [value];
-        parameters[paramName] = arr;
 
-        const isNumericArray = arr.length > 0 && typeof arr[0] === 'number';
+        const numeric = arr.length > 0 && typeof arr[0] === 'number';
 
-        if (isNumericArray) {
+        if (numeric) {
+          parameters[paramName] = arr;
           conditions.push(
-            `((${jsonPath})::numeric = ANY(:${paramName}::numeric[]))`,
+            `((${buildRawPath(
+              pathSegments,
+            )})::numeric = ANY(:${paramName}::numeric[]))`,
           );
         } else {
-          conditions.push(`(${jsonPath} = ANY(:${paramName}::text[]))`);
+          parameters[paramName] = arr.map((v) => String(v).toLowerCase());
+          conditions.push(`(${lowerPath} = ANY(:${paramName}::text[]))`);
         }
 
         return;
@@ -85,39 +81,31 @@ export class JsonBinaryUtil {
         const baseKey = key.replace(/Contains?$/, '');
         const pathSegments = baseKey.split('.');
 
-        const jsonPath =
-          pathSegments.length > 1
-            ? `${alias} #>> '{${pathSegments.join(',')}}'`
-            : `${alias} ->> '${pathSegments[0]}'`;
+        const lowerPath = buildLowerPath(pathSegments);
 
         const subConditions: string[] = [];
 
         if (Array.isArray(value)) {
           value.forEach((v, i) => {
             const subParamName = `${paramName}_${i}`;
-            subConditions.push(`${jsonPath} ILIKE :${subParamName}`);
-            parameters[subParamName] = `%${v}%`;
+            subConditions.push(`${lowerPath} ILIKE :${subParamName}`);
+            parameters[subParamName] = `%${String(v).toLowerCase()}%`;
           });
         } else {
-          subConditions.push(`${jsonPath} ILIKE :${paramName}`);
-          parameters[paramName] = `%${value}%`;
+          subConditions.push(`${lowerPath} ILIKE :${paramName}`);
+          parameters[paramName] = `%${String(value).toLowerCase()}%`;
         }
 
-        if (subConditions.length > 0) {
-          conditions.push(`(${subConditions.join(' OR ')})`);
-        }
+        conditions.push(`(${subConditions.join(' OR ')})`);
 
         return;
       }
 
       const pathSegments = key.split('.');
-      const jsonPath =
-        pathSegments.length > 1
-          ? `${alias} #>> '{${pathSegments.join(',')}}'`
-          : `${alias} ->> '${pathSegments[0]}'`;
+      const lowerPath = buildLowerPath(pathSegments);
 
-      conditions.push(`${jsonPath} = :${paramName}`);
-      parameters[paramName] = String(value);
+      parameters[paramName] = String(value).toLowerCase();
+      conditions.push(`${lowerPath} = :${paramName}`);
     });
 
     const sql = conditions.length > 0 ? conditions.join(' AND ') : 'TRUE';

@@ -28,7 +28,7 @@ import { AdminRoleAuthGuard } from '@/modules/auth/submodules/roles/submodules/a
 import { AccessTokenAuthGuard } from '@/modules/auth/submodules/tokens/guards/access-token-auth.guard';
 import { AuthPayload } from '@/modules/auth/submodules/users/decorators';
 import { IAuthPayload } from '@/modules/auth/submodules/users/types';
-import { NewsEndPoint } from '@/modules/news/constants';
+import { NEWS_IMAGES_PATH, NewsEndPoint } from '@/modules/news/constants';
 import {
   CreateNewsArticleDto,
   FindNewsArticlesDto,
@@ -37,7 +37,6 @@ import {
   UpdateNewsArticleDto,
 } from '@/modules/news/dtos';
 import { NewsService } from '@/modules/news/news.service';
-import { PRODUCT_REVIEW_IMAGES_PATH } from '@/modules/products/submodules/reviews/constants';
 import { FileDto } from '@/shared/dtos/file.dto';
 
 @Controller()
@@ -208,6 +207,6 @@ export class NewsController {
   async createOneImage(
     @UploadedFile() file: Express.Multer.File,
   ): Promise<FileDto> {
-    return FileDto.fromDir(PRODUCT_REVIEW_IMAGES_PATH, file.filename);
+    return FileDto.fromDir(NEWS_IMAGES_PATH, file.filename);
   }
 }

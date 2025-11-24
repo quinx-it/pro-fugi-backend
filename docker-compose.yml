@@ -35,6 +35,8 @@ services:
     restart: unless-stopped
     ports:
       - '${APP_HOST_PORT}:${APP_CONTAINER_PORT}'
+    volumes:
+        - ./static_data:/static
     depends_on:
       - postgres
       - redis
@@ -45,4 +47,6 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  static_data:
     driver: local

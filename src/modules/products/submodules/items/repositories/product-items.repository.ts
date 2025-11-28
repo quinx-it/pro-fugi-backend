@@ -60,7 +60,12 @@ export class ProductItemsRepository {
 
     const products = await manager.find(ProductItemEntity, {
       where: { id: In(ids) },
-      relations: ['productReviews', 'productCategory', 'productImages'],
+      relations: [
+        'productReviews',
+        'productCategory',
+        'productImages',
+        'productGroup',
+      ],
     });
 
     const productMap = new Map(products.map((p) => [p.id, p]));
@@ -79,7 +84,12 @@ export class ProductItemsRepository {
   ): Promise<IProductItem[]> {
     const productItems = await manager.find(ProductItemEntity, {
       where: { id: In(ids) },
-      relations: ['productReviews', 'productCategory', 'productImages'],
+      relations: [
+        'productReviews',
+        'productCategory',
+        'productImages',
+        'productGroup',
+      ],
     });
 
     return productItems.map((productItem) =>
@@ -106,7 +116,12 @@ export class ProductItemsRepository {
   ): Promise<IProductItem | null> {
     const product = await manager.findOne(ProductItemEntity, {
       where: { id },
-      relations: ['productReviews', 'productCategory', 'productImages'],
+      relations: [
+        'productReviews',
+        'productCategory',
+        'productImages',
+        'productGroup',
+      ],
     });
 
     if (!product && throwIfNotFound) {
@@ -125,6 +140,7 @@ export class ProductItemsRepository {
     description: string,
     specification: IProductSpecification,
     productCategoryId: number,
+    productGroupId: number | null,
     inStockNumber: number,
     basePrice: number,
     discountValue: number | null,
@@ -138,6 +154,7 @@ export class ProductItemsRepository {
         description,
         specification,
         productCategoryId,
+        productGroupId,
         inStockNumber,
         basePrice,
         discountValue,
@@ -156,6 +173,7 @@ export class ProductItemsRepository {
     description?: string,
     specification?: IProductSpecification,
     productCategoryId?: number,
+    productGroupId?: number | null,
     inStockNumber?: number,
     basePrice?: number,
     discountValue?: number | null,
@@ -169,13 +187,16 @@ export class ProductItemsRepository {
       inStockNumber !== undefined ||
       basePrice !== undefined ||
       discountValue !== undefined ||
-      discountPercentage !== undefined
+      discountPercentage !== undefined ||
+      productCategoryId !== undefined ||
+      productGroupId !== undefined
     ) {
       await manager.update(ProductItemEntity, id, {
         name,
         description,
         specification,
         productCategoryId,
+        productGroupId,
         inStockNumber,
         basePrice,
         discountValue,

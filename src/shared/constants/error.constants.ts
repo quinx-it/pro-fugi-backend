@@ -127,6 +127,8 @@ export const ERROR_MESSAGES = {
   }>(
     /* language=ejs */ `Cannot have more than <%= limit %> favourite product items in total`,
   ),
+  PRODUCT_GROUP_CATEGORY_MISMATCH:
+    'The product category of item does not match the product category of the group',
 
   // endregion
 

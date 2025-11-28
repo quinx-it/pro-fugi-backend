@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 
 import { ProductCategoryEntity } from '@/modules/products/submodules/categories/entities/product-category.entity';
+import { ProductGroupEntity } from '@/modules/products/submodules/groups/entities/product.group.entity';
 import { ProductImageEntity } from '@/modules/products/submodules/items/entities/product-image.entity';
 import {
   IProductItem,
@@ -52,6 +53,17 @@ export class ProductItemEntity implements IProductItem {
 
   @Column(DbType.INTEGER)
   productCategoryId!: number;
+
+  @ManyToOne(() => ProductGroupEntity, (category) => category.productItems, {
+    nullable: true,
+    onDelete: RefIntegrityRule.SET_NULL,
+    onUpdate: RefIntegrityRule.SET_NULL,
+  })
+  @JoinColumn()
+  productGroup?: ProductGroupEntity | null;
+
+  @Column(DbType.INTEGER, { nullable: true })
+  productGroupId!: number | null;
 
   @Column(DbType.JSONB, { default: JSON.stringify({}) })
   specification: IProductSpecification = {};

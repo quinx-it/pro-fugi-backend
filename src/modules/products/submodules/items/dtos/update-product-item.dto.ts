@@ -5,67 +5,79 @@ import {
   IsBoolean,
   IsDefined,
   IsNumber,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
 
 import { CreateProductImageDto } from '@/modules/products/submodules/items/dtos/create-product-image.dto';
 import {
-  ICreateProductItem,
   IProductSpecification,
+  IUpdateProductItem,
 } from '@/modules/products/submodules/items/types';
 import { IdentityDto } from '@/shared/dtos/identity.dto';
 import { DtosUtil } from '@/shared/utils/dtos.util';
 
-export class CreateProductItemDto implements ICreateProductItem {
+export class UpdateProductItemDto implements IUpdateProductItem {
   @ApiProperty()
+  @IsOptional()
   @IsString()
-  name!: string;
+  name?: string;
 
   @ApiProperty()
+  @IsOptional()
   @IsString()
-  description!: string;
+  description?: string;
 
   @ApiProperty()
+  @IsOptional()
   @IsNumber()
-  basePrice!: number;
+  basePrice?: number;
 
   @ApiProperty({ type: 'number', nullable: true, default: null })
+  @IsOptional()
   @DtosUtil.isNullable()
   @IsNumber()
-  discountValue!: number | null;
+  discountValue?: number | null;
 
   @ApiProperty({ type: 'number', nullable: true, default: null })
+  @IsOptional()
   @DtosUtil.isNullable()
   @IsNumber()
-  discountPercentage!: number | null;
+  discountPercentage?: number | null;
 
   @ApiProperty()
+  @IsOptional()
   @IsNumber()
-  inStockNumber!: number;
+  inStockNumber?: number;
 
   @ApiProperty()
+  @IsOptional()
   @IsBoolean()
-  isArchived!: boolean;
+  isArchived?: boolean;
 
   @ApiProperty({ type: 'object' })
+  @IsOptional()
   @IsDefined()
-  specification!: IProductSpecification;
+  specification?: IProductSpecification;
 
   @ApiProperty({ type: IdentityDto })
+  @IsOptional()
   @Type(() => IdentityDto)
   @ValidateNested()
-  productCategory!: IdentityDto;
+  productCategory?: IdentityDto;
 
   @ApiProperty({ type: IdentityDto })
+  @IsOptional()
   @DtosUtil.isNullable()
   @Type(() => IdentityDto)
   @ValidateNested()
-  productGroup!: IdentityDto | null;
+  productGroup?: IdentityDto | null;
 
   @ApiProperty({ type: CreateProductImageDto, isArray: true })
+  @IsOptional()
   @IsArray()
   @Type(() => CreateProductImageDto)
   @ValidateNested({ each: true })
-  productImages!: CreateProductImageDto[];
+  productImages?: CreateProductImageDto[];
 }

@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from '@/modules/auth/auth.module';
 import { ProductCategoriesModule } from '@/modules/products/submodules/categories/product-categories.module';
+import { ProductGroupsModule } from '@/modules/products/submodules/groups';
 import { ProductImageEntity } from '@/modules/products/submodules/items/entities/product-image.entity';
 import { ProductItemEntity } from '@/modules/products/submodules/items/entities/product-item.entity';
 import { ProductItemsController } from '@/modules/products/submodules/items/product-items.controller';
@@ -23,6 +24,7 @@ const { rootPath } = SERVE_STATIC_OPTIONS;
       ProductImageEntity,
     ]),
     ProductCategoriesModule,
+    ProductGroupsModule,
     AuthModule,
     MulterUtil.getModule(rootPath, 'images/products/items'),
   ],

@@ -3,6 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
 
 import { ProductCategoriesService } from '@/modules/products/submodules/categories/product-categories.service';
+import { ProductGroupsService } from '@/modules/products/submodules/groups/product-groups.service';
 import { ProductImagesRepository } from '@/modules/products/submodules/items/repositories';
 import { ProductItemsRepository } from '@/modules/products/submodules/items/repositories/product-items.repository';
 import {
@@ -31,6 +32,7 @@ export class ProductItemsService {
     private readonly itemsRepo: ProductItemsRepository,
     private readonly imagesRepo: ProductImagesRepository,
     private readonly categoriesService: ProductCategoriesService,
+    private readonly groupsService: ProductGroupsService,
   ) {}
 
   async findManyPaginated(
@@ -83,7 +85,8 @@ export class ProductItemsService {
     title: string,
     description: string,
     specification: IProductSpecification,
-    categoryId: number,
+    productCategoryId: number,
+    productGroupId: number | null,
     images: ICreateProductImage[],
     basePrice: number,
     discountValue: number | null,
@@ -91,8 +94,12 @@ export class ProductItemsService {
     inStockNumber: number,
   ): Promise<IProductItem> {
     const result = await this.dataSource.transaction(async (manager) => {
+      if (productGroupId) {
+        await this.groupsService.findOne(productGroupId, true);
+      }
+
       const { specificationSchema } = await this.categoriesService.findOne(
-        categoryId,
+        productCategoryId,
         true,
         manager,
       );
@@ -105,11 +112,24 @@ export class ProductItemsService {
         true,
       );
 
+      if (productGroupId) {
+        const { productCategoryId: productGroupCategoryId } =
+          await this.groupsService.findOne(productGroupId, true, manager);
+
+        if (productGroupCategoryId !== productCategoryId) {
+          throw new AppException(
+            ERROR_MESSAGES.PRODUCT_GROUP_CATEGORY_MISMATCH,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+
       const { id: itemId } = await this.itemsRepo.createOne(
         title,
         description,
         specification,
-        categoryId,
+        productCategoryId,
+        productGroupId,
         inStockNumber,
         basePrice,
         discountValue,
@@ -132,7 +152,8 @@ export class ProductItemsService {
     title?: string,
     description?: string,
     specification?: IProductSpecification,
-    categoryId?: number,
+    productCategoryId?: number,
+    productGroupId?: number | null,
     images?: ICreateProductImage[],
     basePrice?: number,
     discountValue?: number | null,
@@ -156,7 +177,7 @@ export class ProductItemsService {
 
       if (specification) {
         const { specificationSchema } = await this.categoriesService.findOne(
-          categoryId || currentProductCategoryId,
+          productCategoryId || currentProductCategoryId,
           true,
           manager,
         );
@@ -173,8 +194,8 @@ export class ProductItemsService {
       let actualSpecification = specification;
 
       if (
-        categoryId &&
-        currentProductCategoryId !== categoryId &&
+        productCategoryId &&
+        currentProductCategoryId !== productCategoryId &&
         !specification
       ) {
         actualSpecification = {};
@@ -188,12 +209,31 @@ export class ProductItemsService {
         await this.imagesRepo.createMany(itemId, images, manager);
       }
 
+      let productGroupIdModified: undefined | null | number = productGroupId;
+
+      if (
+        productCategoryId !== undefined &&
+        productCategoryId !== currentProductCategoryId
+      ) {
+        if (!productGroupId) {
+          productGroupIdModified = null;
+        } else {
+          const { productCategoryId: productGroupCategoryId } =
+            await this.groupsService.findOne(productGroupId, true, manager);
+
+          if (productGroupCategoryId !== productCategoryId) {
+            productGroupIdModified = null;
+          }
+        }
+      }
+
       const product = await this.itemsRepo.updateOne(
         itemId,
         title,
         description,
         actualSpecification,
-        categoryId,
+        productCategoryId,
+        productGroupIdModified,
         inStockNumber,
         basePrice,
         discountValue,

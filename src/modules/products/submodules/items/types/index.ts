@@ -1,4 +1,5 @@
 import { IProductCategory } from '@/modules/products/submodules/categories/types';
+import { IProductGroup } from '@/modules/products/submodules/groups/types';
 import { ProductImageType } from '@/modules/products/submodules/items/constants';
 import { IProductOrderItem } from '@/modules/products/submodules/orders/types';
 import { IProductReview } from '@/modules/products/submodules/reviews/types';
@@ -21,8 +22,23 @@ export interface ICreateProductItem {
   inStockNumber: number;
   specification: IProductSpecification;
   productCategory: IIdentifiable;
+  productGroup: IIdentifiable | null;
   isArchived: boolean;
   productImages: ICreateProductImage[];
+}
+
+export interface IUpdateProductItem {
+  name?: string;
+  description?: string;
+  basePrice?: number;
+  discountValue?: number | null;
+  discountPercentage?: number | null;
+  inStockNumber?: number;
+  specification?: IProductSpecification;
+  productCategory?: IIdentifiable;
+  productGroup?: IIdentifiable | null;
+  isArchived?: boolean;
+  productImages?: ICreateProductImage[];
 }
 
 export interface IProductItem {
@@ -42,6 +58,9 @@ export interface IProductItem {
 
   productCategory?: IProductCategory;
   productCategoryId: number;
+
+  productGroup?: IProductGroup | null;
+  productGroupId: number | null;
 
   productOrders?: IProductOrderItem[];
 
@@ -66,6 +85,7 @@ export interface IProductItemSearchView {
   inStockNumber: number;
   productReviewsCount: number;
   productCategoryId: number;
+  productGroupId: number | null;
   specification: IProductSpecification;
   isArchived: boolean;
   popularity: number;

@@ -18,6 +18,7 @@ import {
 } from '@/modules/auth/submodules/users/entities';
 import { NewsArticleEntity } from '@/modules/news/entities';
 import { PartnershipLetterEntity } from '@/modules/partnership/entities';
+import { ProductGroupEntity } from '@/modules/products/submodules/groups/entities';
 import { ProductImageEntity } from '@/modules/products/submodules/items/entities/product-image.entity';
 import {
   ProductOrderEntity,
@@ -53,6 +54,7 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
     ProductReviewEntity,
     ProductItemSearchViewEntity,
     ProductCategoryEntity,
+    ProductGroupEntity,
     ProductImageEntity,
     ProductReviewImageEntity,
     ProductOrderEntity,

@@ -10,6 +10,7 @@ import {
 } from 'class-validator';
 
 import { ProductCategoryWithNoSchemaDto } from '@/modules/products/submodules/categories/dtos/product-category-with-no-schema.dto';
+import { ProductGroupWithNoItemsDto } from '@/modules/products/submodules/groups/dtos';
 import { ProductImageDto } from '@/modules/products/submodules/items/dtos/product-image.dto';
 import {
   IProductItem,
@@ -76,9 +77,16 @@ export class ProductItemDto implements IProductItem {
   @ValidateNested()
   productCategory?: ProductCategoryWithNoSchemaDto;
 
-  @ApiProperty()
-  @IsNumber()
+  @Exclude()
   productCategoryId!: number;
+
+  @ApiProperty({ type: () => ProductGroupWithNoItemsDto })
+  @Type(() => ProductGroupWithNoItemsDto)
+  @ValidateNested()
+  productGroup?: ProductGroupWithNoItemsDto;
+
+  @Exclude()
+  productGroupId!: number;
 
   @Exclude()
   createdAt!: Date;

@@ -1,3 +1,4 @@
+import { IProductGroup } from '@/modules/products/submodules/groups/types';
 import { IProductItem } from '@/modules/products/submodules/items/types';
 import { IRange } from '@/shared';
 
@@ -26,6 +27,7 @@ export interface IProductCategory {
 
   specificationSchema: IProductSpecificationSchema;
   productItems?: IProductItem[];
+  productGroups?: IProductGroup[];
 
   isArchived: boolean;
 }

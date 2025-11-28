@@ -17,6 +17,8 @@ export class ProductItemsUtil {
       specification: object.specification,
       productCategory: object.productCategory,
       productCategoryId: object.productCategoryId,
+      productGroup: object.productGroup,
+      productGroupId: object.productGroupId,
       productImages: object.productImages,
       productReviews: object.productReviews,
       isArchived: object.isArchived,

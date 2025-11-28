@@ -47,6 +47,13 @@ export class FindProductItemsDto
   @Expose({ name: 'product_category_id' })
   productCategoryId?: number;
 
+  @ApiProperty({ name: 'product_group_id', required: false })
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  @Expose({ name: 'product_group_id' })
+  productGroupId?: number;
+
   @ApiProperty({ name: 'in_stock_count_min', required: false })
   @IsOptional()
   @IsNumber()
@@ -179,6 +186,7 @@ export class FindProductItemsDto
       nameContains,
       descriptionContains,
       productCategoryId,
+      productGroupId,
       priceMin,
       priceMax,
       ratingMin,
@@ -189,6 +197,7 @@ export class FindProductItemsDto
       nameContains,
       descriptionContains,
       productCategoryId,
+      productGroupId,
       priceMin,
       priceMax,
       ratingMin,

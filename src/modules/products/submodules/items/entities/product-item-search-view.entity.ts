@@ -36,6 +36,9 @@ export class ProductItemSearchViewEntity implements IProductItemSearchView {
   productCategoryId!: number;
 
   @ViewColumn()
+  productGroupId!: number;
+
+  @ViewColumn()
   inStockNumber!: number;
 
   @ViewColumn()

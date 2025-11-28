@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Put,
   Query,
@@ -33,6 +34,7 @@ import { PRODUCT_ITEMS_IMAGES_PATH } from '@/modules/products/submodules/items/c
 import {
   CreateProductItemDto,
   ProductItemsPaginatedDto,
+  UpdateProductItemDto,
 } from '@/modules/products/submodules/items/dtos';
 import { FindProductItemsDto } from '@/modules/products/submodules/items/dtos/find-product-items.dto';
 import { ProductItemDto } from '@/modules/products/submodules/items/dtos/product-item.dto';
@@ -92,6 +94,7 @@ export class ProductItemsController {
       description,
       specification,
       productCategory,
+      productGroup,
       productImages,
       inStockNumber,
     } = body;
@@ -101,6 +104,7 @@ export class ProductItemsController {
       description,
       specification,
       productCategory.id,
+      productGroup ? productGroup.id : null,
       productImages,
       basePrice,
       discountValue,
@@ -128,6 +132,7 @@ export class ProductItemsController {
       description,
       specification,
       productCategory,
+      productGroup,
       productImages,
       inStockNumber,
     } = body;
@@ -138,6 +143,46 @@ export class ProductItemsController {
       description,
       specification,
       productCategory.id,
+      productGroup ? productGroup.id : null,
+      productImages,
+      basePrice,
+      discountValue,
+      discountPercentage,
+      inStockNumber,
+    );
+
+    return plainToInstance(ProductItemDto, product);
+  }
+
+  @ApiResponse({ type: ProductItemDto, status: HttpStatus.OK })
+  @UseGuards(AdminRoleAuthGuard)
+  @UseGuards(AccessTokenAuthGuard.REQUIRED)
+  @ApiBearerAuth()
+  @Patch(ProductsEndPoint.ITEM)
+  async updateOne(
+    @Param('product_item_id', ParseIntPipe) productItemId: number,
+    @Body() body: UpdateProductItemDto,
+  ): Promise<ProductItemDto> {
+    const {
+      name,
+      basePrice,
+      discountValue,
+      discountPercentage,
+      description,
+      specification,
+      productCategory,
+      productGroup,
+      productImages,
+      inStockNumber,
+    } = body;
+
+    const product = await this.service.updateOne(
+      productItemId,
+      name,
+      description,
+      specification,
+      productCategory ? productCategory.id : undefined,
+      productGroup === null ? null : productGroup?.id,
       productImages,
       basePrice,
       discountValue,

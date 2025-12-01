@@ -8,6 +8,7 @@ import {
   SupportTelegramBotTopicsRepository,
   SupportTelegramBotUsersRepository,
 } from '@/modules/support/submodules/telegram-bot/repositories';
+import { AppException, ERROR_MESSAGES } from '@/shared';
 import { TelegrafUtil } from '@/shared/utils/telegraf.util';
 
 @Update()
@@ -20,7 +21,17 @@ export class SupportTelegramBotService {
     private readonly topicsRepo: SupportTelegramBotTopicsRepository,
     private readonly usersRepo: SupportTelegramBotUsersRepository,
   ) {
-    this.adminChatId = supportConfig.telegramBot.adminChatId;
+    const {
+      telegramBot: { adminChatId },
+    } = supportConfig;
+
+    if (!adminChatId) {
+      throw AppException.fromTemplate(ERROR_MESSAGES.NOT_PROVIDED_TEMPLATE, {
+        value: 'Support telegram bot admin chat id',
+      });
+    }
+
+    this.adminChatId = adminChatId;
   }
 
   @TelegrafUtil.onMessage()

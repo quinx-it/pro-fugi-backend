@@ -44,8 +44,8 @@ export const env = cleanEnv(process.env, {
   PRODUCTS_FAVOURITES_LIMIT: num(),
 
   SUPPORT_TELEGRAM_BOT_ENABLED: bool(),
-  SUPPORT_TELEGRAM_BOT_TOKEN: str(),
-  SUPPORT_TELEGRAM_BOT_ADMIN_CHAT_ID: num(),
+  SUPPORT_TELEGRAM_BOT_TOKEN: str({ default: undefined }),
+  SUPPORT_TELEGRAM_BOT_ADMIN_CHAT_ID: num({ default: undefined }),
 });
 
 export const APP_CONTAINER_PORT = env.APP_CONTAINER_PORT || env.APP_HOST_PORT;

@@ -10,6 +10,8 @@ import {
   MoreThanOrEqual,
   Raw,
   ILike,
+  Not,
+  And,
 } from 'typeorm';
 
 import {
@@ -64,8 +66,11 @@ export class DbUtil {
       key
         .replace(FilterSuffix.MIN, '')
         .replace(FilterSuffix.MAX, '')
+        .replace(FilterSuffix.DO_NOT_CONTAIN, '')
+        .replace(FilterSuffix.DOES_NOT_CONTAIN, '')
         .replace(FilterSuffix.CONTAINS, '')
         .replace(FilterSuffix.CONTAIN, '')
+        .replace(FilterSuffix.NOT_IN, '')
         .replace(FilterSuffix.IN, ''),
     );
 
@@ -93,9 +98,31 @@ export class DbUtil {
 
         const inValue = query[inKey];
 
-        if (inValue !== undefined) {
+        const notInKey = `${key}${FilterSuffix.NOT_IN}` as keyof IFilter<T>;
+
+        const notInValue = query[notInKey];
+
+        if (inValue && !notInValue) {
           // @ts-expect-error TODO fix typings
           findOptionsWhere[key as keyof FindOptionsWhere<T>] = In(inValue);
+        }
+
+        if (!inValue && notInValue) {
+          // @ts-expect-error TODO fix typings
+          findOptionsWhere[key as keyof FindOptionsWhere<T>] = Not(
+            // @ts-expect-error TODO fix typings
+            In(notInValue),
+          );
+        }
+
+        if (inValue && notInValue) {
+          // @ts-expect-error TODO fix typings
+          findOptionsWhere[key as keyof FindOptionsWhere<T>] = And(
+            // @ts-expect-error TODO fix typings
+            In(inValue),
+            // @ts-expect-error TODO fix typings
+            Not(In(notInValue)),
+          );
         }
 
         const containKey = `${key}${FilterSuffix.CONTAIN}` as keyof IFilter<T>;
@@ -104,7 +131,15 @@ export class DbUtil {
 
         const containsValue = query[containKey] || query[containsKey];
 
-        if (containsValue !== undefined) {
+        const doesNotContainKey =
+          `${key}${FilterSuffix.DO_NOT_CONTAIN}` as keyof IFilter<T>;
+        const doNotContainKey =
+          `${key}${FilterSuffix.DOES_NOT_CONTAIN}` as keyof IFilter<T>;
+
+        const doesNotContainValue =
+          query[doesNotContainKey] || query[doNotContainKey];
+
+        if (containsValue !== undefined && doesNotContainValue === undefined) {
           if (Array.isArray(containsValue)) {
             // @ts-expect-error TODO fix typings
             findOptionsWhere[key as keyof FindOptionsWhere<T>] = Raw(
@@ -117,6 +152,46 @@ export class DbUtil {
             // @ts-expect-error TODO fix typings
             findOptionsWhere[key as keyof FindOptionsWhere<T>] = ILike(
               `%${containsValue}%`,
+            );
+          }
+        }
+
+        if (doesNotContainValue !== undefined && containsValue === undefined) {
+          if (Array.isArray(containsValue)) {
+            // @ts-expect-error TODO fix typings
+            findOptionsWhere[key as keyof FindOptionsWhere<T>] = Raw(
+              (col) => `NOT (${col} @> :arr)`,
+              { arr: doesNotContainValue },
+            );
+          } else {
+            // @ts-expect-error TODO fix typings
+            findOptionsWhere[key] = Raw((col) => `NOT (${col} && :arr)`, {
+              arr: [doesNotContainValue],
+            });
+          }
+        }
+
+        if (containsValue !== undefined && doesNotContainValue !== undefined) {
+          if (
+            Array.isArray(containsValue) ||
+            Array.isArray(doesNotContainValue)
+          ) {
+            // @ts-expect-error TODO fix typings
+            findOptionsWhere[key as keyof FindOptionsWhere<T>] = Raw(
+              (col) => `${col} @> :arrInclude AND NOT (${col} @> :arrExclude)`,
+              {
+                arrInclude: containsValue,
+                arrExclude: doesNotContainValue,
+              },
+            );
+          } else {
+            // @ts-expect-error TODO fix typings
+            findOptionsWhere[key as keyof FindOptionsWhere<T>] = Raw(
+              (col) => `${col} ILIKE :include AND ${col} NOT ILIKE :exclude`,
+              {
+                include: `%${containsValue}%`,
+                exclude: `%${doesNotContainValue}%`,
+              },
             );
           }
         }

@@ -32,16 +32,6 @@ export class FindNewsArticlesDto
   contentMarkdownContains?: string;
 
   @ApiProperty({
-    name: 'tags_in',
-    required: false,
-    type: String,
-  })
-  @IsOptional()
-  @Transform(DtosUtil.transformCommaSeparatedStringArray)
-  @Expose({ name: 'tags_in' })
-  tagsIn?: string[];
-
-  @ApiProperty({
     name: 'tags_contain',
     required: false,
     type: String,
@@ -50,6 +40,16 @@ export class FindNewsArticlesDto
   @Transform(DtosUtil.transformCommaSeparatedStringArray)
   @Expose({ name: 'tags_contain' })
   tagsContain?: string[];
+
+  @ApiProperty({
+    name: 'tags_do_not_contain',
+    required: false,
+    type: String,
+  })
+  @IsOptional()
+  @Transform(DtosUtil.transformCommaSeparatedStringArray)
+  @Expose({ name: 'tags_do_not_contain' })
+  tagsDoNotContain?: string[];
 
   // region Pagination
 
@@ -95,14 +95,16 @@ export class FindNewsArticlesDto
       titleContains,
       descriptionContains,
       contentMarkdownContains,
-      tagsIn,
+      tagsContain,
+      tagsDoNotContain,
     } = this;
 
     return {
       titleContains,
       descriptionContains,
       contentMarkdownContains,
-      tagsIn,
+      tagsContain,
+      tagsDoNotContain,
     };
   }
 

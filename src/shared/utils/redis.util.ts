@@ -107,4 +107,59 @@ export class RedisUtil {
 
     return affected;
   }
+
+  static async addToHashTable<T>(
+    redis: Redis,
+    hashKey: string,
+    field: string,
+    value: T | null,
+  ): Promise<T | null> {
+    const valueStr = value !== null ? JSON.stringify(value) : REDIS_NULL_STR;
+    await redis.hset(hashKey, field, valueStr);
+
+    return value;
+  }
+
+  static async getFromHashTable<T>(
+    redis: Redis,
+    hashKey: string,
+    field: string,
+  ): Promise<T | null | undefined> {
+    const valueStr = await redis.hget(hashKey, field);
+
+    if (valueStr === null) {
+      return undefined;
+    }
+
+    if (valueStr === REDIS_NULL_STR) {
+      return null;
+    }
+
+    return JSON.parse(valueStr) as T;
+  }
+
+  static async removeFromHashTable(
+    redis: Redis,
+    hashKey: string,
+    fields: string | string[],
+  ): Promise<number> {
+    const fieldArray = Array.isArray(fields) ? fields : [fields];
+    const affected = await redis.hdel(hashKey, ...fieldArray);
+
+    return affected;
+  }
+
+  static async getHashTable<T>(
+    redis: Redis,
+    hashKey: string,
+  ): Promise<Record<string, T | null>> {
+    const hash = await redis.hgetall(hashKey);
+
+    return Object.fromEntries(
+      Object.entries(hash).map(([field, valueStr]) => [
+        field,
+        valueStr === REDIS_NULL_STR ? null : JSON.parse(valueStr),
+      ]),
+    ) as Record<string, T | null>;
+  }
 }

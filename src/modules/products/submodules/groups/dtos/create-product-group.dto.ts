@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsString, ValidateNested } from 'class-validator';
 
 import { ICreateProductGroup } from '@/modules/products/submodules/groups/types';
 import { IdentityDto } from '@/shared/dtos/identity.dto';
@@ -24,4 +24,10 @@ export class CreateProductGroupDto implements ICreateProductGroup {
   @Type(() => IdentityDto)
   @ValidateNested()
   productCategory!: IdentityDto;
+
+  @ApiProperty({ type: IdentityDto, isArray: true })
+  @IsArray()
+  @Type(() => IdentityDto)
+  @ValidateNested({ each: true })
+  productItems!: IdentityDto[];
 }

@@ -13,17 +13,19 @@ import { RedisUtil } from '@/shared/utils/redis.util';
 
 const { telegramBot } = supportConfig;
 
-const { token } = telegramBot;
+const { token, isEnabled } = telegramBot;
 
-if (!token) {
+if (!token && isEnabled) {
   throw AppException.fromTemplate(ERROR_MESSAGES.NOT_PROVIDED_TEMPLATE, {
-    value: 'Support telegram token or/and admin chat id',
+    value: 'Support telegram bot token',
   });
 }
 
+const telegrafModuleOptions = { token: token as string };
+
 @Module({
   imports: [
-    TelegrafModule.forRoot({ token }),
+    TelegrafModule.forRoot(telegrafModuleOptions),
     RedisUtil.getModule(redisConfig),
   ],
   providers: [

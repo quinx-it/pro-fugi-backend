@@ -8,13 +8,22 @@ import {
   SupportTelegramBotUsersRepository,
 } from '@/modules/support/submodules/telegram-bot/repositories';
 import { SupportTelegramBotService } from '@/modules/support/submodules/telegram-bot/support-telegram-bot.service';
+import { AppException, ERROR_MESSAGES } from '@/shared';
 import { RedisUtil } from '@/shared/utils/redis.util';
 
 const { telegramBot } = supportConfig;
 
+const { token } = telegramBot;
+
+if (!token) {
+  throw AppException.fromTemplate(ERROR_MESSAGES.NOT_PROVIDED_TEMPLATE, {
+    value: 'Support telegram token or/and admin chat id',
+  });
+}
+
 @Module({
   imports: [
-    TelegrafModule.forRoot(telegramBot),
+    TelegrafModule.forRoot({ token }),
     RedisUtil.getModule(redisConfig),
   ],
   providers: [

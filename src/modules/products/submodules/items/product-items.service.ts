@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
 
@@ -32,6 +32,7 @@ export class ProductItemsService {
     private readonly itemsRepo: ProductItemsRepository,
     private readonly imagesRepo: ProductImagesRepository,
     private readonly categoriesService: ProductCategoriesService,
+    @Inject(forwardRef(() => ProductGroupsService))
     private readonly groupsService: ProductGroupsService,
   ) {}
 

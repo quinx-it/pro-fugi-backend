@@ -31,9 +31,6 @@ export class ProductGroupEntity implements IProductGroup {
   @Column(DbType.INTEGER)
   productCategoryId!: number;
 
-  @OneToMany(
-    () => ProductItemEntity,
-    (productItem) => productItem.productCategory,
-  )
+  @OneToMany(() => ProductItemEntity, (productItem) => productItem.productGroup)
   productItems?: ProductItemEntity[];
 }

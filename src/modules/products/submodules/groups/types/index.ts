@@ -21,16 +21,21 @@ export interface ICreateProductGroup {
   imageFileName: string | null;
 
   productCategory: IIdentifiable;
+  productItems: IIdentifiable[];
 }
 
 export interface IReplaceProductGroup {
   name: string;
   description: string;
   imageFileName: string | null;
+
+  productItems: IIdentifiable[];
 }
 
 export interface IUpdateProductGroup {
   name?: string;
   description?: string;
   imageFileName?: string | null;
+
+  productItems?: IIdentifiable[];
 }

@@ -73,6 +73,7 @@ class ProductGroupsController {
       description,
       imageFileName,
       productCategory: { id: productCategoryId },
+      productItems,
     } = body;
 
     const productGroup = await this.service.createOne(
@@ -80,6 +81,7 @@ class ProductGroupsController {
       description,
       imageFileName,
       productCategoryId,
+      productItems.map((item) => item.id),
     );
 
     return plainToInstance(ProductGroupDto, productGroup);
@@ -92,18 +94,19 @@ class ProductGroupsController {
   @ApiBearerAuth()
   @UseGuards(AdminRoleAuthGuard)
   @UseGuards(AccessTokenAuthGuard.REQUIRED)
-  @Put(ProductsEndPoint.CATEGORY)
+  @Put(ProductsEndPoint.GROUP)
   async replaceOne(
     @Param('product_group_id', ParseIntPipe) productGroupId: number,
     @Body() body: ReplaceProductGroupDto,
   ): Promise<ProductGroupDto> {
-    const { name, description, imageFileName } = body;
+    const { name, description, imageFileName, productItems } = body;
 
     const productGroup = await this.service.updateOne(
       productGroupId,
       name,
       description,
       imageFileName,
+      productItems.map((item) => item.id),
     );
 
     return plainToInstance(ProductGroupDto, productGroup);
@@ -115,7 +118,7 @@ class ProductGroupsController {
   @ApiBearerAuth()
   @UseGuards(AdminRoleAuthGuard)
   @UseGuards(AccessTokenAuthGuard.REQUIRED)
-  @Delete(ProductsEndPoint.CATEGORY)
+  @Delete(ProductsEndPoint.GROUP)
   async destroyOne(
     @Param('product_group_id', ParseIntPipe) productGroupId: number,
   ): Promise<void> {

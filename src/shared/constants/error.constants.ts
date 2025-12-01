@@ -220,6 +220,15 @@ export const ERROR_MESSAGES = {
 
   // endregion
 
+  // region Telegraf
+
+  TELEGRAF_NOT_FOUND_IN_CONTEXT_TEMPLATE: new Template<{
+    value: string;
+  }>(/* language=ejs */ `Cannot find <%= value %> in telegraf context`),
+  TELEGRAF_CONTEXT_NOT_FOUND: 'Telegraf context not found',
+
+  //
+
   // region Cross-origin resource sharing
 
   ORIGIN_FORBIDDEN: 'Forbidden by CORS-policy',

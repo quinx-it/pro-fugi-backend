@@ -16,7 +16,18 @@ export type IFilter<T> = {
     | number[]
     | string;
 } & {
+  [K in keyof T as
+    | `${string & K}${typeof FilterSuffix.DO_NOT_CONTAIN}`
+    | `${string & K}${typeof FilterSuffix.DOES_NOT_CONTAIN}`]?:
+    | string[]
+    | number[]
+    | string;
+} & {
   [K in keyof T as `${string & K}${typeof FilterSuffix.IN}`]?:
+    | string[]
+    | number[];
+} & {
+  [K in keyof T as `${string & K}${typeof FilterSuffix.NOT_IN}`]?:
     | string[]
     | number[];
 };

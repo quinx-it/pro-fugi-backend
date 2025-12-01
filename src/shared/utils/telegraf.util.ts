@@ -335,42 +335,60 @@ export class TelegrafUtil {
   }
 
   static async getCommandArgs(context: Context): Promise<string[]> {
-    const messageText = await TelegrafUtil.getMessageText(context);
+    const messageText = TelegrafUtil.getMessageText(context, true);
 
     const args = messageText.split(' ').slice(1);
 
     return args;
   }
 
-  static async getMessageText(context: Context): Promise<string> {
+  static getMessageText(context: Context, throwIfNotFound: true): string;
+
+  static getMessageText(
+    context: Context,
+    throwIfNotFound: false,
+  ): string | null;
+
+  static getMessageText(
+    context: Context,
+    throwIfNotFound: boolean,
+  ): string | null {
     const { message } = context;
 
     if (!message) {
-      throw AppException.fromTemplate(
-        ERROR_MESSAGES.TELEGRAF_NOT_FOUND_IN_CONTEXT_TEMPLATE,
-        {
-          value: 'message',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (throwIfNotFound) {
+        throw AppException.fromTemplate(
+          ERROR_MESSAGES.TELEGRAF_NOT_FOUND_IN_CONTEXT_TEMPLATE,
+          {
+            value: 'message',
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      return null;
     }
 
-    const { text } = message as { text: string };
+    const { text } = message as { text: unknown };
 
     if (!text || typeof text !== 'string') {
-      throw AppException.fromTemplate(
-        ERROR_MESSAGES.TELEGRAF_NOT_FOUND_IN_CONTEXT_TEMPLATE,
-        {
-          value: 'message text',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (throwIfNotFound) {
+        throw AppException.fromTemplate(
+          ERROR_MESSAGES.TELEGRAF_NOT_FOUND_IN_CONTEXT_TEMPLATE,
+          {
+            value: 'message text',
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      return null;
     }
 
     return text;
   }
 
-  static async getMessageTopic(context: Context): Promise<number> {
+  static getMessageTopic(context: Context): number {
     const { message } = context;
 
     if (!message) {
@@ -445,7 +463,10 @@ export class TelegrafUtil {
       return;
     }
 
-    const { text } = message as { text: string | undefined };
+    const text =
+      ('caption' in message && message.caption) ||
+      TelegrafUtil.getMessageText(context, false) ||
+      undefined;
 
     if ('photo' in message && message.photo?.length) {
       const largestPhoto = message.photo[message.photo.length - 1];
@@ -488,5 +509,11 @@ export class TelegrafUtil {
         message_thread_id: topicId,
       });
     }
+  }
+
+  static isTopicNotFoundError(error: unknown): boolean {
+    const errorMessage = JSON.stringify(error);
+
+    return errorMessage.includes(TelegramErrorMessage.TOPIC_NOT_FOUND);
   }
 }

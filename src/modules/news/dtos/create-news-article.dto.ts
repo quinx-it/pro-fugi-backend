@@ -2,9 +2,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsDate, IsString } from 'class-validator';
 
+import { NEWS_IMAGES_PATH } from '@/modules/news/constants';
 import { IsMarkdown } from '@/modules/news/dtos/validators';
 import { ICreateNewsArticle } from '@/modules/news/types';
 import { DtosUtil } from '@/shared/utils/dtos.util';
+import { IsFileLocated } from '@/shared/validators/is-located';
 
 export class CreateNewsArticleDto implements ICreateNewsArticle {
   @ApiProperty()
@@ -21,6 +23,7 @@ export class CreateNewsArticleDto implements ICreateNewsArticle {
 
   @ApiProperty()
   @IsString()
+  @IsFileLocated(NEWS_IMAGES_PATH)
   imageFileName!: string;
 
   @ApiProperty({ type: 'string', isArray: true })

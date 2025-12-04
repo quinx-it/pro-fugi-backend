@@ -110,6 +110,7 @@ export class ProductGroupsService {
         undefined,
         undefined,
         undefined,
+        undefined,
         productGroupId,
       ),
     );

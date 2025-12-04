@@ -187,7 +187,7 @@ export class ProductGroupsService {
           name,
           description,
           imageFileName,
-          productGroupId,
+          undefined,
           transactionManager,
         );
 

@@ -92,6 +92,17 @@ export class ProductOrdersRepository {
     );
   }
 
+  async countByProductItem(
+    productItemId: number,
+    manager: EntityManager = this.dataSource.manager,
+  ): Promise<number> {
+    const count = await manager.count(ProductOrderEntity, {
+      where: { productOrderItems: { productItemId } },
+    });
+
+    return count;
+  }
+
   async findOne(
     id: number,
     throwIfNotFound: true,

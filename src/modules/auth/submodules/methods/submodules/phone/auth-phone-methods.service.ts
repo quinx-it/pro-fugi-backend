@@ -6,7 +6,7 @@ import { DataSource, EntityManager } from 'typeorm';
 import { authConfig } from '@/configs';
 import { AuthPhoneMethodsRepository } from '@/modules/auth/submodules/methods/submodules/phone/repositories/auth-phone-methods-repository.service';
 import { IAuthPhoneMethod } from '@/modules/auth/submodules/methods/submodules/phone/types';
-import { AppException, ERROR_MESSAGES } from '@/shared';
+import { AppException, DbUtil, ERROR_MESSAGES } from '@/shared';
 
 @Injectable()
 export class AuthPhoneMethodsService {
@@ -18,18 +18,25 @@ export class AuthPhoneMethodsService {
   async findLatestOneOfUser(
     authUserId: number,
     throwIfNotFound: boolean,
+    manager?: EntityManager,
   ): Promise<IAuthPhoneMethod | null>;
 
   async findLatestOneOfUser(
     authUserId: number,
     throwIfNotFound: true,
+    manager?: EntityManager,
   ): Promise<IAuthPhoneMethod>;
 
   async findLatestOneOfUser(
     authUserId: number,
     throwIfNotFound: boolean,
+    manager: EntityManager = this.dataSource.manager,
   ): Promise<IAuthPhoneMethod | null> {
-    const authMethods = await this.repo.findMany(authUserId);
+    const authMethods = await this.repo.findMany(
+      authUserId,
+      undefined,
+      manager,
+    );
 
     if (authMethods.length === 0) {
       if (throwIfNotFound) {
@@ -55,18 +62,21 @@ export class AuthPhoneMethodsService {
   async findLatestOneOfPhone(
     phone: string,
     throwIfNotFound: boolean,
+    manager?: EntityManager,
   ): Promise<IAuthPhoneMethod | null>;
 
   async findLatestOneOfPhone(
     phone: string,
     throwIfNotFound: true,
+    manager?: EntityManager,
   ): Promise<IAuthPhoneMethod>;
 
   async findLatestOneOfPhone(
     phone: string,
     throwIfNotFound: boolean,
+    manager: EntityManager = this.dataSource.manager,
   ): Promise<IAuthPhoneMethod | null> {
-    const authMethods = await this.repo.findMany(undefined, phone, undefined);
+    const authMethods = await this.repo.findMany(undefined, phone, manager);
 
     if (authMethods.length === 0) {
       if (throwIfNotFound) {
@@ -93,36 +103,49 @@ export class AuthPhoneMethodsService {
     userId: number,
     phone: string,
     password: string,
-    manager: EntityManager = this.dataSource.manager,
+    manager: EntityManager | null = null,
   ): Promise<IAuthPhoneMethod> {
-    const { passwordSaltingRounds } = authConfig;
+    return DbUtil.transaction(
+      async (transactionManager) => {
+        const { passwordSaltingRounds } = authConfig;
 
-    const passwordHashed = await bcrypt.hash(password, passwordSaltingRounds);
+        const passwordHashed = await bcrypt.hash(
+          password,
+          passwordSaltingRounds,
+        );
 
-    const authMethodsOfPhone = await this.repo.findMany(userId, phone, manager);
+        const authMethodsOfPhone = await this.repo.findMany(
+          userId,
+          phone,
+          transactionManager,
+        );
 
-    await Promise.all(
-      authMethodsOfPhone.map(async (authMethodOfPhone) => {
-        const { password: previousPassword } = authMethodOfPhone;
+        await Promise.all(
+          authMethodsOfPhone.map(async (authMethodOfPhone) => {
+            const { password: previousPassword } = authMethodOfPhone;
 
-        const isMatch = await bcrypt.compare(password, previousPassword);
+            const isMatch = await bcrypt.compare(password, previousPassword);
 
-        if (isMatch) {
-          throw new AppException(
-            ERROR_MESSAGES.AUTH_METHODS_PASSWORD_MUST_DIFFER,
-            HttpStatus.BAD_REQUEST,
-          );
-        }
-      }),
-    );
+            if (isMatch) {
+              throw new AppException(
+                ERROR_MESSAGES.AUTH_METHODS_PASSWORD_MUST_DIFFER,
+                HttpStatus.BAD_REQUEST,
+              );
+            }
+          }),
+        );
 
-    const authMethod = await this.repo.createOne(
-      userId,
-      phone,
-      passwordHashed,
+        const authMethod = await this.repo.createOne(
+          userId,
+          phone,
+          passwordHashed,
+          transactionManager,
+        );
+
+        return authMethod;
+      },
+      this.dataSource,
       manager,
     );
-
-    return authMethod;
   }
 }

@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
 
@@ -7,6 +7,7 @@ import {
   IProductCategory,
   IProductSpecificationSchema,
 } from '@/modules/products/submodules/categories/types';
+import { ProductItemsService } from '@/modules/products/submodules/items/product-items.service';
 import {
   AppException,
   DbUtil,
@@ -21,12 +22,14 @@ export class ProductCategoriesService {
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly repo: ProductCategoriesRepository,
+    @Inject(forwardRef(() => ProductItemsService))
+    private readonly productItemsService: ProductItemsService,
   ) {}
 
   async findMany(
     pagination: IPagination,
     isArchived?: boolean,
-    manager?: EntityManager,
+    manager: EntityManager = this.dataSource.manager,
   ): Promise<IPaginated<IProductCategory>> {
     const productCategories = await this.repo.findMany(
       isArchived,
@@ -70,15 +73,21 @@ export class ProductCategoriesService {
   async createOne(
     name: string,
     specificationSchema: IProductSpecificationSchema,
-    manager: EntityManager = this.dataSource.manager,
+    manager: EntityManager | null = null,
   ): Promise<IProductCategory> {
-    const productCategory = await this.repo.createOne(
-      name,
-      specificationSchema,
+    return DbUtil.transaction(
+      async (transactionManager) => {
+        const productCategory = await this.repo.createOne(
+          name,
+          specificationSchema,
+          transactionManager,
+        );
+
+        return productCategory;
+      },
+      this.dataSource,
       manager,
     );
-
-    return productCategory;
   }
 
   async updateOne(
@@ -86,43 +95,58 @@ export class ProductCategoriesService {
     name?: string,
     specificationSchema?: IProductSpecificationSchema,
     isArchived?: boolean,
-    manager: EntityManager = this.dataSource.manager,
+    manager: EntityManager | null = null,
   ): Promise<IProductCategory> {
-    const productCategory = await this.repo.updateOne(
-      productCategoryId,
-      name,
-      specificationSchema,
-      isArchived,
+    return DbUtil.transaction(
+      async (transactionManager) => {
+        const productCategory = await this.repo.updateOne(
+          productCategoryId,
+          name,
+          specificationSchema,
+          isArchived,
+          transactionManager,
+        );
+
+        return productCategory;
+      },
+      this.dataSource,
       manager,
     );
-
-    return productCategory;
   }
 
   async destroyOne(
     productCategoryId: number,
-    manager: EntityManager = this.dataSource.manager,
+    manager: EntityManager | null = null,
   ): Promise<void> {
-    try {
-      await this.repo.destroyOne(productCategoryId, manager);
-    } catch (error) {
-      if (DbUtil.isNoActionRelated(error)) {
-        const { name: productCategoryName } = await this.repo.findOne(
-          productCategoryId,
-          true,
-        );
+    await DbUtil.transaction(
+      async (transactionManager) => {
+        const productItemsCount =
+          await this.productItemsService.countByProductCategory(
+            productCategoryId,
+            transactionManager,
+          );
 
-        throw AppException.fromTemplate(
-          ERROR_MESSAGES.PRODUCT_CATEGORY_HAS_RELATED_ITEMS_TEMPLATE,
-          {
-            productCategoryName,
-            productCategoryId: productCategoryId.toString(),
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+        if (productItemsCount) {
+          const { name } = await this.repo.findOne(
+            productCategoryId,
+            true,
+            transactionManager,
+          );
 
-      throw error;
-    }
+          throw AppException.fromTemplate(
+            ERROR_MESSAGES.PRODUCT_CATEGORY_HAS_RELATED_ITEMS_TEMPLATE,
+            {
+              productCategoryName: name,
+              productCategoryId: productCategoryId.toString(),
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
+        await this.repo.destroyOne(productCategoryId, transactionManager);
+      },
+      this.dataSource,
+      manager,
+    );
   }
 }

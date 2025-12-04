@@ -12,6 +12,8 @@ import {
   ILike,
   Not,
   And,
+  DataSource,
+  EntityManager,
 } from 'typeorm';
 
 import {
@@ -58,8 +60,12 @@ export class DbUtil {
   }
 
   static filterToFindOptionsWhere<T extends object>(
-    query: IFilter<T>,
-  ): FindOptionsWhere<T> {
+    query?: IFilter<T>,
+  ): FindOptionsWhere<T> | undefined {
+    if (!query) {
+      return undefined;
+    }
+
     const findOptionsWhere: FindOptionsWhere<T> = {};
 
     const keys = Object.keys(query).map((key) =>
@@ -222,7 +228,13 @@ export class DbUtil {
     return { take, skip };
   }
 
-  static sortToFindOptionsOrder<T>(sort: ISort<T>): FindOptionsOrder<T> {
+  static sortToFindOptionsOrder<T>(
+    sort?: ISort<T>,
+  ): FindOptionsOrder<T> | undefined {
+    if (!sort) {
+      return undefined;
+    }
+
     const { descending, sortBy } = sort;
 
     if (sortBy === undefined) {
@@ -331,5 +343,19 @@ export class DbUtil {
       JSON.stringify(error).includes('UPDATE') &&
       JSON.stringify(error).includes('CASCADE')
     );
+  }
+
+  static async transaction<T>(
+    fn: (em: EntityManager) => Promise<T>,
+    dataSource: DataSource,
+    manager?: EntityManager | null,
+  ): Promise<T> {
+    if (!manager) {
+      return manager !== null
+        ? fn(dataSource.manager)
+        : dataSource.transaction(async (em) => fn(em));
+    }
+
+    return fn(manager);
   }
 }

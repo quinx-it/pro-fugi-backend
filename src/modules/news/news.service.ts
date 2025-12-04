@@ -1,9 +1,12 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 
 import { NewsArticlesRepository } from '@/modules/news/repositories';
 import { INewsArticle } from '@/modules/news/types';
 import {
   AppException,
+  DbUtil,
   ERROR_MESSAGES,
   IFilter,
   IPaginated,
@@ -14,13 +17,17 @@ import {
 
 @Injectable()
 export class NewsService {
-  constructor(private readonly repo: NewsArticlesRepository) {}
+  constructor(
+    private readonly repo: NewsArticlesRepository,
+    @InjectDataSource() private readonly dataSource: DataSource,
+  ) {}
 
   async findManyPaginated(
     filter: IFilter<INewsArticle>,
     allowUnpublished: boolean,
     sort: ISort<INewsArticle>,
     pagination: IPagination,
+    manager: EntityManager = this.dataSource.manager,
   ): Promise<IPaginated<INewsArticle>> {
     let publishAtMax = new Date();
 
@@ -37,6 +44,7 @@ export class NewsService {
       allowUnpublished ? filter : { ...filter, publishAtMax },
       sort,
       pagination,
+      manager,
     );
 
     return PaginationUtil.fromSinglePage(items, count, pagination);
@@ -46,22 +54,25 @@ export class NewsService {
     id: number,
     allowUnpublished?: boolean,
     throwIfNotFound?: true,
+    manager?: EntityManager,
   ): Promise<INewsArticle>;
 
   async findOne(
     id: number,
     allowUnpublished?: boolean,
     throwIfNotFound?: false,
+    manager?: EntityManager,
   ): Promise<INewsArticle | null>;
 
   async findOne(
     id: number,
     allowUnpublished?: boolean,
     throwIfNotFound: boolean = true,
+    manager: EntityManager = this.dataSource.manager,
   ): Promise<INewsArticle | null> {
     const newsArticle = throwIfNotFound
-      ? await this.repo.findOne(id, true)
-      : await this.repo.findOne(id, false);
+      ? await this.repo.findOne(id, true, manager)
+      : await this.repo.findOne(id, false, manager);
 
     if (newsArticle) {
       const { publishAt } = newsArticle;
@@ -93,17 +104,22 @@ export class NewsService {
     imageFileName: string,
     tags: string[],
     publishAt: Date | null,
+    manager: EntityManager | null = null,
   ): Promise<INewsArticle> {
-    const newsArticle = await this.repo.createOne(
-      title,
-      description,
-      contentMarkdown,
-      imageFileName,
-      tags,
-      publishAt,
+    return DbUtil.transaction(
+      async (transactionManager) =>
+        this.repo.createOne(
+          title,
+          description,
+          contentMarkdown,
+          imageFileName,
+          tags,
+          publishAt,
+          transactionManager,
+        ),
+      this.dataSource,
+      manager,
     );
-
-    return newsArticle;
   }
 
   async updateOne(
@@ -114,21 +130,34 @@ export class NewsService {
     imageFileName?: string,
     tags?: string[],
     publishAt?: Date | null,
+    manager: EntityManager | null = null,
   ): Promise<INewsArticle> {
-    const newsArticle = await this.repo.updateOne(
-      id,
-      title,
-      description,
-      contentMarkdown,
-      imageFileName,
-      tags,
-      publishAt,
+    return DbUtil.transaction(
+      async (transactionManager) =>
+        this.repo.updateOne(
+          id,
+          title,
+          description,
+          contentMarkdown,
+          imageFileName,
+          tags,
+          publishAt,
+          transactionManager,
+        ),
+      this.dataSource,
+      manager,
     );
-
-    return newsArticle;
   }
 
-  async destroyOne(id: number): Promise<void> {
-    await this.repo.destroyOne(id);
+  async destroyOne(
+    id: number,
+    manager: EntityManager | null = null,
+  ): Promise<void> {
+    return DbUtil.transaction(
+      async (transactionManager) =>
+        this.repo.destroyOne(id, transactionManager),
+      this.dataSource,
+      manager,
+    );
   }
 }

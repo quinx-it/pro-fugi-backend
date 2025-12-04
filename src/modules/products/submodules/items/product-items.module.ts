@@ -1,7 +1,8 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from '@/modules/auth/auth.module';
+import { ProductOrdersModule } from '@/modules/products/submodules';
 import { ProductCategoriesModule } from '@/modules/products/submodules/categories/product-categories.module';
 import { ProductGroupsModule } from '@/modules/products/submodules/groups';
 import { ProductImageEntity } from '@/modules/products/submodules/items/entities/product-image.entity';
@@ -23,8 +24,9 @@ const { rootPath } = SERVE_STATIC_OPTIONS;
       ProductItemSearchViewEntity,
       ProductImageEntity,
     ]),
-    ProductCategoriesModule,
-    ProductGroupsModule,
+    forwardRef(() => ProductCategoriesModule),
+    forwardRef(() => ProductGroupsModule),
+    forwardRef(() => ProductOrdersModule),
     AuthModule,
     MulterUtil.getModule(rootPath, 'images/products/items'),
   ],

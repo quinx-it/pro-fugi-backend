@@ -102,7 +102,6 @@ export class ProductGroupsService {
           true,
           transactionManager,
         );
-
         return productGroup;
       },
       this.dataSource,

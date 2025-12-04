@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 
 import { ProductCategoryEntity } from '@/modules/products/submodules/categories/entities/product-category.entity';
-import { ProductGroupEntity } from '@/modules/products/submodules/groups/entities/product.group.entity';
+import { ProductGroupEntity } from '@/modules/products/submodules/groups/entities/product-group.entity';
 import { ProductImageEntity } from '@/modules/products/submodules/items/entities/product-image.entity';
 import {
   IProductItem,

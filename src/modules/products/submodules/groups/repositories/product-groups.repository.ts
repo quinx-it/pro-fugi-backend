@@ -19,7 +19,7 @@ export class ProductGroupsRepository {
     const productCategories = await manager.find(ProductGroupEntity, {
       take,
       skip,
-      relations: ['productItems'],
+      relations: ['productItems', 'productCategory'],
     });
 
     return productCategories;
@@ -52,7 +52,7 @@ export class ProductGroupsRepository {
   ): Promise<IProductGroup | null> {
     const productGroup = await manager.findOne(ProductGroupEntity, {
       where: { id },
-      relations: ['productItems'],
+      relations: ['productItems', 'productCategory'],
     });
 
     if (!productGroup && throwIfNotFound) {
@@ -73,7 +73,7 @@ export class ProductGroupsRepository {
     productCategoryId: number,
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IProductGroup> {
-    const productGroup = await manager.save(
+    const { id: productGroupId } = await manager.save(
       ProductGroupEntity,
       manager.create(ProductGroupEntity, {
         name,
@@ -82,6 +82,8 @@ export class ProductGroupsRepository {
         productCategoryId,
       }),
     );
+
+    const productGroup = await this.findOne(productGroupId, true, manager);
 
     return productGroup;
   }

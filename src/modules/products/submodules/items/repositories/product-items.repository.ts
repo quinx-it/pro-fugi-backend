@@ -25,9 +25,9 @@ export class ProductItemsRepository {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
   async findManyAndCount(
-    filter: IFilter<IProductItemSearchView>,
-    specificationFilter: IProductSpecification,
-    sort: ISort<IProductItemSearchView>,
+    filter: IFilter<IProductItemSearchView> | undefined,
+    specificationFilter: IProductSpecification | undefined,
+    sort: ISort<IProductItemSearchView> | undefined,
     pagination: IPagination,
     manager: EntityManager = this.dataSource.manager,
   ): Promise<{ items: IProductItem[]; totalCount: number }> {
@@ -36,7 +36,8 @@ export class ProductItemsRepository {
     const { take, skip } = DbUtil.paginationToTakeAndSkip(pagination);
 
     const specification =
-      JSON.stringify(specificationFilter) === JSON.stringify({})
+      JSON.stringify(specificationFilter) === JSON.stringify({}) ||
+      !specificationFilter
         ? undefined
         : (JsonBinaryUtil.parseJsonbQuery(specificationFilter, {
             columnAlias: 'specification',
@@ -95,6 +96,17 @@ export class ProductItemsRepository {
     return productItems.map((productItem) =>
       ProductItemsUtil.toPlain(productItem),
     );
+  }
+
+  async countByProductCategory(
+    productCategoryId: number,
+    manager: EntityManager = this.dataSource.manager,
+  ): Promise<number> {
+    const count = await manager.count(ProductItemEntity, {
+      where: { productCategoryId },
+    });
+
+    return count;
   }
 
   async findOne(

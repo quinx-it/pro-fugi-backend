@@ -14,6 +14,7 @@ import {
   IProductSpecification,
 } from '@/modules/products/submodules/items/types';
 import ProductSpecificationUtil from '@/modules/products/submodules/items/utils/product-specification.util';
+import { ProductOrdersService } from '@/modules/products/submodules/orders/product-orders.service';
 import {
   AppException,
   DbUtil,
@@ -31,9 +32,12 @@ export class ProductItemsService {
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly itemsRepo: ProductItemsRepository,
     private readonly imagesRepo: ProductImagesRepository,
+    @Inject(forwardRef(() => ProductCategoriesService))
     private readonly categoriesService: ProductCategoriesService,
     @Inject(forwardRef(() => ProductGroupsService))
     private readonly groupsService: ProductGroupsService,
+    @Inject(forwardRef(() => ProductOrdersService))
+    private readonly ordersService: ProductOrdersService,
   ) {}
 
   async findManyPaginated(
@@ -41,19 +45,24 @@ export class ProductItemsService {
     specsFilter: IProductSpecification,
     sort: ISort<IProductItemSearchView>,
     pagination: IPagination,
+    manager: EntityManager = this.dataSource.manager,
   ): Promise<IPaginated<IProductItem>> {
     const { items, totalCount } = await this.itemsRepo.findManyAndCount(
       filter,
       specsFilter,
       sort,
       pagination,
+      manager,
     );
 
     return PaginationUtil.fromSinglePage(items, totalCount, pagination);
   }
 
-  async findMany(ids: number[]): Promise<IProductItem[]> {
-    const productItems = await this.itemsRepo.findMany(ids);
+  async findMany(
+    ids: number[],
+    manager: EntityManager = this.dataSource.manager,
+  ): Promise<IProductItem[]> {
+    const productItems = await this.itemsRepo.findMany(ids, manager);
 
     return productItems;
   }
@@ -82,6 +91,18 @@ export class ProductItemsService {
     return product;
   }
 
+  async countByProductCategory(
+    productCategoryId: number,
+    manager: EntityManager = this.dataSource.manager,
+  ): Promise<number> {
+    const count = await this.itemsRepo.countByProductCategory(
+      productCategoryId,
+      manager,
+    );
+
+    return count;
+  }
+
   async createOne(
     title: string,
     description: string,
@@ -93,59 +114,74 @@ export class ProductItemsService {
     discountValue: number | null,
     discountPercentage: number | null,
     inStockNumber: number,
+    manager: EntityManager | null = null,
   ): Promise<IProductItem> {
-    const result = await this.dataSource.transaction(async (manager) => {
-      if (productGroupId) {
-        await this.groupsService.findOne(productGroupId, true);
-      }
-
-      const { specificationSchema } = await this.categoriesService.findOne(
-        productCategoryId,
-        true,
-        manager,
-      );
-
-      ProductSpecificationUtil.validateMany(
-        specificationSchema,
-        specification,
-        true,
-        true,
-        true,
-      );
-
-      if (productGroupId) {
-        const { productCategoryId: productGroupCategoryId } =
-          await this.groupsService.findOne(productGroupId, true, manager);
-
-        if (productGroupCategoryId !== productCategoryId) {
-          throw new AppException(
-            ERROR_MESSAGES.PRODUCT_GROUP_CATEGORY_MISMATCH,
-            HttpStatus.BAD_REQUEST,
+    return DbUtil.transaction(
+      async (transactionManager) => {
+        if (productGroupId) {
+          await this.groupsService.findOne(
+            productGroupId,
+            true,
+            transactionManager,
           );
         }
-      }
 
-      const { id: itemId } = await this.itemsRepo.createOne(
-        title,
-        description,
-        specification,
-        productCategoryId,
-        productGroupId,
-        inStockNumber,
-        basePrice,
-        discountValue,
-        discountPercentage,
-        manager,
-      );
+        const { specificationSchema } = await this.categoriesService.findOne(
+          productCategoryId,
+          true,
+          transactionManager,
+        );
 
-      await this.imagesRepo.createMany(itemId, images, manager);
+        ProductSpecificationUtil.validateMany(
+          specificationSchema,
+          specification,
+          true,
+          true,
+          true,
+        );
 
-      const product = await this.itemsRepo.findOne(itemId, true, manager);
+        if (productGroupId) {
+          const { productCategoryId: productGroupCategoryId } =
+            await this.groupsService.findOne(
+              productGroupId,
+              true,
+              transactionManager,
+            );
 
-      return product;
-    });
+          if (productGroupCategoryId !== productCategoryId) {
+            throw new AppException(
+              ERROR_MESSAGES.PRODUCT_GROUP_CATEGORY_MISMATCH,
+              HttpStatus.BAD_REQUEST,
+            );
+          }
+        }
 
-    return result;
+        const { id: itemId } = await this.itemsRepo.createOne(
+          title,
+          description,
+          specification,
+          productCategoryId,
+          productGroupId,
+          inStockNumber,
+          basePrice,
+          discountValue,
+          discountPercentage,
+          transactionManager,
+        );
+
+        await this.imagesRepo.createMany(itemId, images, transactionManager);
+
+        const product = await this.itemsRepo.findOne(
+          itemId,
+          true,
+          transactionManager,
+        );
+
+        return product;
+      },
+      this.dataSource,
+      manager,
+    );
   }
 
   async updateOne(
@@ -160,118 +196,133 @@ export class ProductItemsService {
     discountValue?: number | null,
     discountPercentage?: number | null,
     inStockNumber?: number,
+    manager: EntityManager | null = null,
   ): Promise<IProductItem> {
-    const result = await this.dataSource.transaction(async (manager) => {
-      const currentProductItem = await this.itemsRepo.findOne(
-        itemId,
-        true,
-        manager,
-      );
-
-      const { productCategoryId: currentProductCategoryId } =
-        currentProductItem;
-
-      const currentProductImages = DbUtil.getRelatedEntityOrThrow<
-        IProductItem,
-        IProductImage[]
-      >(currentProductItem, 'productImages');
-
-      if (specification) {
-        const { specificationSchema } = await this.categoriesService.findOne(
-          productCategoryId || currentProductCategoryId,
+    return DbUtil.transaction(
+      async (transactionManager) => {
+        const currentProductItem = await this.itemsRepo.findOne(
+          itemId,
           true,
-          manager,
+          transactionManager,
         );
 
-        ProductSpecificationUtil.validateMany(
-          specificationSchema,
-          specification,
-          true,
-          true,
-          true,
-        );
-      }
+        const { productCategoryId: currentProductCategoryId } =
+          currentProductItem;
 
-      let actualSpecification = specification;
+        const currentProductImages = DbUtil.getRelatedEntityOrThrow<
+          IProductItem,
+          IProductImage[]
+        >(currentProductItem, 'productImages');
 
-      if (
-        productCategoryId &&
-        currentProductCategoryId !== productCategoryId &&
-        !specification
-      ) {
-        actualSpecification = {};
-      }
+        if (specification) {
+          const { specificationSchema } = await this.categoriesService.findOne(
+            productCategoryId || currentProductCategoryId,
+            true,
+            transactionManager,
+          );
 
-      if (images !== undefined) {
-        await this.imagesRepo.destroyMany(
-          currentProductImages.map((image) => image.id),
-          manager,
-        );
-        await this.imagesRepo.createMany(itemId, images, manager);
-      }
+          ProductSpecificationUtil.validateMany(
+            specificationSchema,
+            specification,
+            true,
+            true,
+            true,
+          );
+        }
 
-      let productGroupIdModified: undefined | null | number = productGroupId;
+        let actualSpecification = specification;
 
-      if (
-        productCategoryId !== undefined &&
-        productCategoryId !== currentProductCategoryId
-      ) {
-        if (!productGroupId) {
-          productGroupIdModified = null;
-        } else {
-          const { productCategoryId: productGroupCategoryId } =
-            await this.groupsService.findOne(productGroupId, true, manager);
+        if (
+          productCategoryId &&
+          currentProductCategoryId !== productCategoryId &&
+          !specification
+        ) {
+          actualSpecification = {};
+        }
 
-          if (productGroupCategoryId !== productCategoryId) {
+        if (images !== undefined) {
+          await this.imagesRepo.destroyMany(
+            currentProductImages.map((image) => image.id),
+            transactionManager,
+          );
+          await this.imagesRepo.createMany(itemId, images, transactionManager);
+        }
+
+        let productGroupIdModified: undefined | null | number = productGroupId;
+
+        if (
+          productCategoryId !== undefined &&
+          productCategoryId !== currentProductCategoryId
+        ) {
+          if (!productGroupId) {
             productGroupIdModified = null;
+          } else {
+            const { productCategoryId: productGroupCategoryId } =
+              await this.groupsService.findOne(
+                productGroupId,
+                true,
+                transactionManager,
+              );
+
+            if (productGroupCategoryId !== productCategoryId) {
+              productGroupIdModified = null;
+            }
           }
         }
-      }
 
-      const product = await this.itemsRepo.updateOne(
-        itemId,
-        title,
-        description,
-        actualSpecification,
-        productCategoryId,
-        productGroupIdModified,
-        inStockNumber,
-        basePrice,
-        discountValue,
-        discountPercentage,
-        manager,
-      );
+        const product = await this.itemsRepo.updateOne(
+          itemId,
+          title,
+          description,
+          actualSpecification,
+          productCategoryId,
+          productGroupIdModified,
+          inStockNumber,
+          basePrice,
+          discountValue,
+          discountPercentage,
+          transactionManager,
+        );
 
-      return product;
-    });
-
-    return result;
+        return product;
+      },
+      this.dataSource,
+      manager,
+    );
   }
 
   async destroyOne(
     productItemId: number,
     manager: EntityManager = this.dataSource.manager,
   ): Promise<void> {
-    try {
-      await this.itemsRepo.destroyOne(productItemId, manager);
-    } catch (error) {
-      if (DbUtil.isNoActionRelated(error)) {
-        const { name: productItemName } = await this.itemsRepo.findOne(
+    await DbUtil.transaction(
+      async (transactionManager) => {
+        const productOrdersCount = await this.ordersService.countByProductItem(
           productItemId,
-          true,
+          transactionManager,
         );
 
-        throw AppException.fromTemplate(
-          ERROR_MESSAGES.PRODUCT_ITEM_HAS_RELATED_ORDERS_TEMPLATE,
-          {
-            productItemName,
-            productItemId: productItemId.toString(),
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+        if (productOrdersCount) {
+          const { name } = await this.itemsRepo.findOne(
+            productItemId,
+            true,
+            transactionManager,
+          );
 
-      throw error;
-    }
+          throw AppException.fromTemplate(
+            ERROR_MESSAGES.PRODUCT_ITEM_HAS_RELATED_ORDERS_TEMPLATE,
+            {
+              productItemName: name,
+              productItemId: productItemId.toString(),
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
+        await this.itemsRepo.destroyOne(productItemId, transactionManager);
+      },
+      this.dataSource,
+      manager,
+    );
   }
 }

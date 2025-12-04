@@ -35,11 +35,11 @@ export class AuthCustomerRolesService {
     throwIfNotFound: boolean,
     manager: EntityManager = this.dataSource.manager,
   ): Promise<IAuthCustomerRole | null> {
-    const customerRole = throwIfNotFound
+    const authCustomerRole = throwIfNotFound
       ? await this.repo.findOne(id, true, manager)
       : await this.repo.findOne(id, false, manager);
 
-    return customerRole;
+    return authCustomerRole;
   }
 
   async createOne(
@@ -47,80 +47,36 @@ export class AuthCustomerRolesService {
     firstName: string | null,
     lastName: string | null,
     address: IAddress | null,
+    manager: EntityManager | null = null,
   ): Promise<IAuthCustomerRole> {
-    const existingCustomerRole = await this.repo.findOneByUserId(userId, false);
-
-    if (existingCustomerRole) {
-      throw AppException.fromTemplate(
-        ERROR_MESSAGES.ALREADY_EXISTS_TEMPLATE,
-        {
-          value: 'Auth customer role',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    let result: IAuthCustomerRole;
-
-    await this.dataSource.transaction(async (manager) => {
-      const authCustomerRole = await this.repo.createOne(
-        userId,
-        firstName,
-        lastName,
-        manager,
-      );
-
-      if (address !== null) {
-        const { id: authCustomerRoleId } = authCustomerRole;
-
-        const { city, street, building, block, apartment } = address;
-
-        await this.addressesRepo.createOne(
-          authCustomerRoleId,
-          city,
-          street,
-          building,
-          block,
-          apartment,
-          manager,
+    return DbUtil.transaction(
+      async (transactionManager) => {
+        const existingCustomerRole = await this.repo.findOneByUserId(
+          userId,
+          false,
+          transactionManager,
         );
 
-        result = await this.repo.findOne(authCustomerRoleId, true, manager);
-      }
-
-      result = authCustomerRole;
-    });
-
-    return result!;
-  }
-
-  async updateOne(
-    authUserId: number,
-    firstName?: string | null,
-    lastName?: string | null,
-    address?: IAddress | null,
-  ): Promise<IAuthCustomerRole> {
-    const result = await this.dataSource.transaction(async (manager) => {
-      const authCustomerRoleExisting = await this.repo.findOneByUserId(
-        authUserId,
-        true,
-        manager,
-      );
-
-      const { id: authCustomerRoleId } = authCustomerRoleExisting;
-
-      if (address !== undefined) {
-        const existingAddress: IAuthCustomerRoleAddress | null =
-          DbUtil.getRelatedEntityOrThrow<
-            IAuthCustomerRole,
-            IAuthCustomerRoleAddress
-          >(authCustomerRoleExisting, 'address');
-
-        if (existingAddress) {
-          await this.addressesRepo.destroyOne(existingAddress.id, manager);
+        if (existingCustomerRole) {
+          throw AppException.fromTemplate(
+            ERROR_MESSAGES.ALREADY_EXISTS_TEMPLATE,
+            {
+              value: 'Auth customer role',
+            },
+            HttpStatus.BAD_REQUEST,
+          );
         }
 
-        if (address) {
+        const authCustomerRole = await this.repo.createOne(
+          userId,
+          firstName,
+          lastName,
+          transactionManager,
+        );
+
+        if (address !== null) {
+          const { id: authCustomerRoleId } = authCustomerRole;
+
           const { city, street, building, block, apartment } = address;
 
           await this.addressesRepo.createOne(
@@ -130,20 +86,81 @@ export class AuthCustomerRolesService {
             building,
             block,
             apartment,
-            manager,
+            transactionManager,
+          );
+
+          return this.repo.findOne(
+            authCustomerRoleId,
+            true,
+            transactionManager,
           );
         }
-      }
 
-      const authCustomerRole = await this.repo.updateOne(
-        authCustomerRoleId,
-        firstName,
-        lastName,
-        manager,
-      );
+        return authCustomerRole;
+      },
+      this.dataSource,
+      manager,
+    );
+  }
 
-      return authCustomerRole;
-    });
+  async updateOne(
+    authUserId: number,
+    firstName?: string | null,
+    lastName?: string | null,
+    address?: IAddress | null,
+    manager: EntityManager | null = null,
+  ): Promise<IAuthCustomerRole> {
+    const result = await DbUtil.transaction(
+      async (transactionManager) => {
+        const authCustomerRoleExisting = await this.repo.findOneByUserId(
+          authUserId,
+          true,
+          transactionManager,
+        );
+
+        const { id: authCustomerRoleId } = authCustomerRoleExisting;
+
+        if (address !== undefined) {
+          const existingAddress: IAuthCustomerRoleAddress | null =
+            DbUtil.getRelatedEntityOrThrow<
+              IAuthCustomerRole,
+              IAuthCustomerRoleAddress
+            >(authCustomerRoleExisting, 'address');
+
+          if (existingAddress) {
+            await this.addressesRepo.destroyOne(
+              existingAddress.id,
+              transactionManager,
+            );
+          }
+
+          if (address) {
+            const { city, street, building, block, apartment } = address;
+
+            await this.addressesRepo.createOne(
+              authCustomerRoleId,
+              city,
+              street,
+              building,
+              block,
+              apartment,
+              transactionManager,
+            );
+          }
+        }
+
+        const authCustomerRole = await this.repo.updateOne(
+          authCustomerRoleId,
+          firstName,
+          lastName,
+          transactionManager,
+        );
+
+        return authCustomerRole;
+      },
+      this.dataSource,
+      manager,
+    );
 
     return result;
   }

@@ -1,6 +1,4 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
 
 import { productsConfig } from '@/configs/products.config';
 import { ProductFavouritesRepository } from '@/modules/products/submodules/favourites/repositories';
@@ -13,7 +11,6 @@ export class ProductFavouritesService {
   private readonly limit: number;
 
   constructor(
-    @InjectDataSource() private readonly dataSource: DataSource,
     private readonly repo: ProductFavouritesRepository,
     private readonly productItemsService: ProductItemsService,
   ) {

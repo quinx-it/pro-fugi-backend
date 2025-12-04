@@ -99,41 +99,48 @@ export class ProductReviewsService {
     rating: number,
     text: string | null,
     images: ICreateProductReviewImage[],
+    manager: EntityManager | null = null,
   ): Promise<IProductReview> {
-    const result = await this.dataSource.transaction(async (manager) => {
-      const existingReviewsCount = await this.repo.findCount(
-        productItemId,
-        customerRoleId,
-        manager,
-      );
-
-      if (existingReviewsCount) {
-        throw new AppException(
-          ERROR_MESSAGES.PRODUCT_REVIEWS_ALREADY_EXISTS_FOR_ITEM,
-          HttpStatus.BAD_REQUEST,
+    return DbUtil.transaction(
+      async (transactionManager) => {
+        const existingReviewsCount = await this.repo.findCount(
+          productItemId,
+          customerRoleId,
+          transactionManager,
         );
-      }
 
-      const { id: productReviewId } = await this.repo.createOne(
-        productItemId,
-        customerRoleId,
-        rating,
-        text,
-        manager,
-      );
+        if (existingReviewsCount) {
+          throw new AppException(
+            ERROR_MESSAGES.PRODUCT_REVIEWS_ALREADY_EXISTS_FOR_ITEM,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
 
-      await this.imagesRepo.createMany(productReviewId, images, manager);
+        const { id: productReviewId } = await this.repo.createOne(
+          productItemId,
+          customerRoleId,
+          rating,
+          text,
+          transactionManager,
+        );
 
-      const productReview = await this.repo.findOne(
-        productReviewId,
-        true,
-        manager,
-      );
+        await this.imagesRepo.createMany(
+          productReviewId,
+          images,
+          transactionManager,
+        );
 
-      return productReview;
-    });
+        const productReview = await this.repo.findOne(
+          productReviewId,
+          true,
+          transactionManager,
+        );
 
-    return result;
+        return productReview;
+      },
+      this.dataSource,
+      manager,
+    );
   }
 
   async updateOne(
@@ -143,49 +150,58 @@ export class ProductReviewsService {
     rating?: number,
     text?: string | null,
     images?: ICreateProductReviewImage[],
+    manager: EntityManager | null = null,
   ): Promise<IProductReview> {
-    const result = await this.dataSource.transaction(async (manager) => {
-      const productReview = await this.findOne(
-        productItemId,
-        reviewId,
-        true,
-        manager,
-      );
-
-      const { id: reviewCustomerRoleId } = DbUtil.getRelatedEntityOrThrow<
-        IProductReview,
-        IAuthCustomerRole
-      >(productReview, 'authCustomerRole');
-
-      const existingImages = DbUtil.getRelatedEntityOrThrow<
-        IProductReview,
-        IProductReviewImage[]
-      >(productReview, 'productReviewImages');
-
-      if (customerRoleId !== reviewCustomerRoleId) {
-        throw new AppException(
-          ERROR_MESSAGES.PRODUCT_REVIEW_CUSTOMER_ID_MISMATCH,
-          HttpStatus.BAD_REQUEST,
+    const result = await DbUtil.transaction(
+      async (transactionManager) => {
+        const productReview = await this.findOne(
+          productItemId,
+          reviewId,
+          true,
+          transactionManager,
         );
-      }
 
-      if (images !== undefined) {
-        await this.imagesRepo.destroyMany(
-          existingImages.map((existingImage) => existingImage.id),
-          manager,
+        const { id: reviewCustomerRoleId } = DbUtil.getRelatedEntityOrThrow<
+          IProductReview,
+          IAuthCustomerRole
+        >(productReview, 'authCustomerRole');
+
+        const existingImages = DbUtil.getRelatedEntityOrThrow<
+          IProductReview,
+          IProductReviewImage[]
+        >(productReview, 'productReviewImages');
+
+        if (customerRoleId !== reviewCustomerRoleId) {
+          throw new AppException(
+            ERROR_MESSAGES.PRODUCT_REVIEW_CUSTOMER_ID_MISMATCH,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
+        if (images !== undefined) {
+          await this.imagesRepo.destroyMany(
+            existingImages.map((existingImage) => existingImage.id),
+            transactionManager,
+          );
+          await this.imagesRepo.createMany(
+            reviewId,
+            images,
+            transactionManager,
+          );
+        }
+
+        const productReviewUpdated = await this.repo.updateOne(
+          reviewId,
+          rating,
+          text,
+          transactionManager,
         );
-        await this.imagesRepo.createMany(reviewId, images, manager);
-      }
 
-      const productReviewUpdated = await this.repo.updateOne(
-        reviewId,
-        rating,
-        text,
-        manager,
-      );
-
-      return productReviewUpdated;
-    });
+        return productReviewUpdated;
+      },
+      this.dataSource,
+      manager,
+    );
 
     return result;
   }
@@ -194,22 +210,28 @@ export class ProductReviewsService {
     customerRoleId: number,
     productItemId: number,
     productReviewId: number,
-    manager: EntityManager = this.dataSource.manager,
+    manager: EntityManager | null = null,
   ): Promise<void> {
-    const { authCustomerRoleId: reviewCustomerRoleId } = await this.findOne(
-      productItemId,
-      productReviewId,
-      true,
+    await DbUtil.transaction(
+      async (transactionManager) => {
+        const { authCustomerRoleId: reviewCustomerRoleId } = await this.findOne(
+          productItemId,
+          productReviewId,
+          true,
+          transactionManager,
+        );
+
+        if (customerRoleId !== reviewCustomerRoleId) {
+          throw new AppException(
+            ERROR_MESSAGES.PRODUCT_REVIEW_CUSTOMER_ID_MISMATCH,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
+        await this.repo.destroyOne(productReviewId, transactionManager);
+      },
+      this.dataSource,
       manager,
     );
-
-    if (customerRoleId !== reviewCustomerRoleId) {
-      throw new AppException(
-        ERROR_MESSAGES.PRODUCT_REVIEW_CUSTOMER_ID_MISMATCH,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    await this.repo.destroyOne(productReviewId, manager);
   }
 }

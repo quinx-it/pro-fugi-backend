@@ -102,6 +102,7 @@ export class ProductGroupsService {
           true,
           transactionManager,
         );
+
         return productGroup;
       },
       this.dataSource,
@@ -115,7 +116,7 @@ export class ProductGroupsService {
     description?: string,
     imageFileName?: string | null,
     productItemIds?: number[],
-    manager: EntityManager = this.dataSource.manager,
+    manager: EntityManager | null = null,
   ): Promise<IProductGroup> {
     return DbUtil.transaction(
       async (transactionManager) => {

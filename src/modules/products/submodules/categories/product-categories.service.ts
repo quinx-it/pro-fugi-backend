@@ -7,6 +7,7 @@ import {
   IProductCategory,
   IProductSpecificationSchema,
 } from '@/modules/products/submodules/categories/types';
+import { ProductGroupsService } from '@/modules/products/submodules/groups/product-groups.service';
 import { ProductItemsService } from '@/modules/products/submodules/items/product-items.service';
 import {
   AppException,
@@ -24,6 +25,8 @@ export class ProductCategoriesService {
     private readonly repo: ProductCategoriesRepository,
     @Inject(forwardRef(() => ProductItemsService))
     private readonly productItemsService: ProductItemsService,
+    @Inject(forwardRef(() => ProductGroupsService))
+    private readonly productGroupsService: ProductGroupsService,
   ) {}
 
   async findMany(
@@ -135,6 +138,29 @@ export class ProductCategoriesService {
 
           throw AppException.fromTemplate(
             ERROR_MESSAGES.PRODUCT_CATEGORY_HAS_RELATED_ITEMS_TEMPLATE,
+            {
+              productCategoryName: name,
+              productCategoryId: productCategoryId.toString(),
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
+        const productGroupsCount =
+          await this.productGroupsService.countByProductCategory(
+            productCategoryId,
+            transactionManager,
+          );
+
+        if (productGroupsCount) {
+          const { name } = await this.repo.findOne(
+            productCategoryId,
+            true,
+            transactionManager,
+          );
+
+          throw AppException.fromTemplate(
+            ERROR_MESSAGES.PRODUCT_CATEGORY_HAS_RELATED_GROUPS_TEMPLATE,
             {
               productCategoryName: name,
               productCategoryId: productCategoryId.toString(),

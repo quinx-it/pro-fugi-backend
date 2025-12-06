@@ -209,4 +209,16 @@ export class ProductGroupsService {
       manager,
     );
   }
+
+  async countByProductCategory(
+    productCategoryId: number,
+    manager: EntityManager = this.dataSource.manager,
+  ): Promise<number> {
+    const count = await this.repo.countByProductCategory(
+      productCategoryId,
+      manager,
+    );
+
+    return count;
+  }
 }

@@ -112,6 +112,12 @@ export const ERROR_MESSAGES = {
   }>(
     /* language=ejs */ 'Product category{ "id": <%= productCategoryId %>, "name": <%= productCategoryName %> } has related items and cannot be deleted. Delete the related items first or set \'isArchived\' to true',
   ),
+  PRODUCT_CATEGORY_HAS_RELATED_GROUPS_TEMPLATE: new Template<{
+    productCategoryId: string;
+    productCategoryName: string;
+  }>(
+    /* language=ejs */ 'Product category{ "id": <%= productCategoryId %>, "name": <%= productCategoryName %> } has related groups and cannot be deleted. Delete the related group first.',
+  ),
   PRODUCT_ITEM_HAS_RELATED_ORDERS_TEMPLATE: new Template<{
     productItemId: string;
     productItemName: string;

@@ -121,4 +121,15 @@ export class ProductGroupsRepository {
   ): Promise<void> {
     await manager.delete(ProductGroupEntity, productGroupId);
   }
+
+  async countByProductCategory(
+    productCategoryId: number,
+    manager: EntityManager = this.dataSource.manager,
+  ): Promise<number> {
+    const count = await manager.count(ProductGroupEntity, {
+      where: { productCategoryId },
+    });
+
+    return count;
+  }
 }
